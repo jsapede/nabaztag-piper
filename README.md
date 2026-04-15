@@ -201,21 +201,13 @@ apt install ffmpeg espeak-ng python3
 Le déploiement se fait en suivant les 6 étapes de la méthodologie générale:
 
 1. **Cloner le dépôt de base et ce depôt de sources modifiées**:
-
-Les sources modifiées :
-
    ```bash
    git clone https://github.com/jsapede/nabaztag-piper.git nabaztag-piper
-   ```
-
-Le dépôt d'origine :
-
-   ```bash
    git clone https://github.com/andreax79/ServerlessNabaztag.git ServerlessNabaztag
    cd ServerlessNabaztag
    ```
 
-1. **Copier les fichiers sources modifiés depuis nab-piper/**:
+2. **Copier les fichiers sources modifiés depuis nab-piper/**:
    ```bash
    # Le dossier nab-piper/ doit être à côté de ServerlessNabaztag/
    cp ../nabaztag-piper/vl/hooks.forth vl/
@@ -227,14 +219,14 @@ Le dépôt d'origine :
    cp ../nabaztag-piper/scripts/preproc.pl scripts/
    ```
 
-2. **Compiler le firmware**:
+3. **Compiler le firmware**:
    ```bash
    make compiler
    make firmware
    ```
    Le fichier `vl/bc.jsp` est généré.
 
-3. **Servir le dossier vl/ via un serveur web statique**:
+4. **Servir le dossier vl/ via un serveur web statique**:
    Le Nabaztag téléchargera `vl/bc.jsp` au démarrage. Voir [andreax79/ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag) pour les détails.
 
    **Option simple avec Python:**
@@ -261,7 +253,7 @@ Le dépôt d'origine :
    ```
    Mettre le dossier `vl/` complet dans le volume servi par Docker.
 
-4. **Copier et lancer le serveur Python TTS**:
+5. **Copier et lancer le serveur Python TTS**:
 
 ajustez le fichier `piper-tts.service` avant de le copier et le lancer :
 
@@ -272,7 +264,7 @@ ajustez le fichier `piper-tts.service` avant de le copier et le lancer :
    systemctl start piper-tts
    ```
 
-7. **Démarrer le Nabaztag**: Il téléchargera automatiquement le nouveau firmware depuis le serveur web.
+6. **Démarrer le Nabaztag**: Il téléchargera automatiquement le nouveau firmware depuis le serveur web.
 
 ---
 
