@@ -200,32 +200,41 @@ apt install ffmpeg espeak-ng python3
 
 Le déploiement se fait en suivant les 6 étapes de la méthodologie générale:
 
-1. **Cloner le dépôt de base**:
+1. **Cloner le dépôt de base et ce depôt de sources modifiées**:
+
+Les sources modifiées :
+
+   ```bash
+   git clone https://github.com/jsapede/nabaztag-piper.git nabaztag-piper
+   ```
+
+Le dépôt d'origine :
+
    ```bash
    git clone https://github.com/andreax79/ServerlessNabaztag.git ServerlessNabaztag
    cd ServerlessNabaztag
    ```
 
-2. **Copier les fichiers sources modifiés depuis nab-piper/**:
+1. **Copier les fichiers sources modifiés depuis nab-piper/**:
    ```bash
    # Le dossier nab-piper/ doit être à côté de ServerlessNabaztag/
-   cp ../nab-piper/vl/hooks.forth vl/
-   cp ../nab-piper/vl/config.forth vl/
-   cp ../nab-piper/firmware/audio/audiolib.mtl firmware/audio/
-   cp ../nab-piper/firmware/utils/url.mtl firmware/utils/
-   cp ../nab-piper/firmware/utils/config.mtl firmware/utils/
-   cp ../nab-piper/firmware/protos/ntp_protos.mtl firmware/protos/
-   cp ../nab-piper/scripts/preproc.pl scripts/
+   cp ../nabaztag-piper/vl/hooks.forth vl/
+   cp ../nabaztag-piper/vl/config.forth vl/
+   cp ../nabaztag-piper/firmware/audio/audiolib.mtl firmware/audio/
+   cp ../nabaztag-piper/firmware/utils/url.mtl firmware/utils/
+   cp ../nabaztag-piper/firmware/utils/config.mtl firmware/utils/
+   cp ../nabaztag-piper/firmware/protos/ntp_protos.mtl firmware/protos/
+   cp ../nabaztag-piper/scripts/preproc.pl scripts/
    ```
 
-3. **Compiler le firmware**:
+2. **Compiler le firmware**:
    ```bash
    make compiler
    make firmware
    ```
    Le fichier `vl/bc.jsp` est généré.
 
-4. **Servir le dossier vl/ via un serveur web statique**:
+3. **Servir le dossier vl/ via un serveur web statique**:
    Le Nabaztag téléchargera `vl/bc.jsp` au démarrage. Voir [andreax79/ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag) pour les détails.
 
    **Option simple avec Python:**
@@ -252,7 +261,7 @@ Le déploiement se fait en suivant les 6 étapes de la méthodologie générale:
    ```
    Mettre le dossier `vl/` complet dans le volume servi par Docker.
 
-5. **Copier et lancer le serveur Python TTS**:
+4. **Copier et lancer le serveur Python TTS**:
 
 ajustez le fichier `piper-tts.service` avant de le copier et le lancer :
 
