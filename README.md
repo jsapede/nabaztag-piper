@@ -264,7 +264,7 @@ ajustez le fichier `piper-tts.service` avant de le copier et le lancer :
    systemctl start piper-tts
    ```
 
-6. **Démarrer le Nabaztag**: Il téléchargera automatiquement le nouveau firmware depuis le serveur web.
+6. **Démarrer le Nabaztag**: Il téléchargera automatiquement le nouveau firmware depuis le serveur web. vous pourrez directement acceder au serveur web du nabaztage depuis http://IP_DU_NABAZTAG, pour tester les commandes
 
 ---
 
