@@ -1,0 +1,263 @@
+# =========================
+# Nabaztag - Scripts
+# =========================
+
+script:
+  # ========== GESTION OREILLES ==========
+  
+  nabaztag_move_left_ear:
+    alias: "Nabaztag - Oreille gauche"
+    description: "Bouge l'oreille gauche selon la position définie dans input_select"
+    sequence:
+      - action: rest_command.nabaztag_left_ear
+        data:
+          position: "{{ states('input_select.nabaztag_ear_position') }}"
+
+  nabaztag_move_right_ear:
+    alias: "Nabaztag - Oreille droite"
+    description: "Bouge l'oreille droite selon la position définie dans input_select"
+    sequence:
+      - action: rest_command.nabaztag_right_ear
+        data:
+          position: "{{ states('input_select.nabaztag_ear_position') }}"
+
+  nabaztag_move_both_ears:
+    alias: "Nabaztag - Les deux oreilles"
+    description: "Bouge les deux oreilles successivement"
+    sequence:
+      - action: rest_command.nabaztag_left_ear
+        data:
+          position: "{{ states('input_select.nabaztag_ear_position') }}"
+      - delay: "00:00:01"
+      - action: rest_command.nabaztag_right_ear
+        data:
+          position: "{{ states('input_select.nabaztag_ear_position') }}"
+
+  # ========== GESTION NEZ ==========
+  
+  nabaztag_set_nose:
+    alias: "Nabaztag - État du nez"
+    description: "Allume/éteint le nez selon la valeur du slider (uniquement si LED activée)"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.nabaztag_nose_enabled
+        state: "on"
+      - action: rest_command.nabaztag_nose
+        data:
+          state: "{{ states('input_number.nabaztag_nose_state') | int }}"
+
+  # ========== GESTION LEDs INFO ==========
+  
+  nabaztag_set_weather:
+    alias: "Nabaztag - Météo"
+    description: "Affiche la météo sur les LEDs (uniquement si LED météo activée)"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.nabaztag_weather_enabled
+        state: "on"
+      - action: rest_command.nabaztag_weather
+        data:
+          weather: "{{ states('input_number.nabaztag_weather') | int }}"
+
+  nabaztag_set_traffic:
+    alias: "Nabaztag - Trafic"
+    description: "Affiche le trafic sur les LEDs (uniquement si LED trafic activée)"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.nabaztag_traffic_enabled
+        state: "on"
+      - action: rest_command.nabaztag_traffic
+        data:
+          traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
+
+  nabaztag_set_pollution:
+    alias: "Nabaztag - Pollution"
+    description: "Affiche le niveau de pollution sur les LEDs (uniquement si LED pollution activée)"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.nabaztag_pollution_enabled
+        state: "on"
+      - action: rest_command.nabaztag_pollution
+        data:
+          pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
+
+  # ========== PAROLE ET SONS ==========
+  
+  nabaztag_talk:
+    alias: "Nabaztag - Parler"
+    description: "Fait dire un message au Nabaztag depuis input_text"
+    sequence:
+      - action: rest_command.nabaztag_say
+        data:
+          message: "{{ states('input_text.nabaztag_message') }}"
+
+  nabaztag_ack:
+    alias: "Nabaztag - Son Ack"
+    description: "Joue le son ACK"
+    sequence:
+      - action: rest_command.nabaztag_ack
+
+  nabaztag_abort:
+    alias: "Nabaztag - Son Abort"
+    description: "Joue le son ABORT"
+    sequence:
+      - action: rest_command.nabaztag_abort
+
+  nabaztag_communication:
+    alias: "Nabaztag - Son Communication"
+    description: "Joue le son COMMUNICATION"
+    sequence:
+      - action: rest_command.nabaztag_communication
+
+  nabaztag_ministop:
+    alias: "Nabaztag - Son Ministop"
+    description: "Joue le son MINISTOP"
+    sequence:
+      - action: rest_command.nabaztag_ministop
+
+  # ========== ANIMATIONS ==========
+  
+  nabaztag_taichi:
+    alias: "Nabaztag - Taichi"
+    description: "Lance l'animation Taichi"
+    sequence:
+      - action: rest_command.nabaztag_taichi
+
+  nabaztag_surprise:
+    alias: "Nabaztag - Surprise"
+    description: "Lance une animation surprise aléatoire"
+    sequence:
+      - action: rest_command.nabaztag_surprise
+
+  # ========== CONFIGURATION ==========
+  
+  nabaztag_apply_setup:
+    alias: "Nabaztag - Appliquer Setup"
+    description: "Envoie la configuration complète au Nabaztag"
+    sequence:
+      - action: rest_command.nabaztag_setup
+      - action: persistent_notification.create
+        metadata: {}
+        data:
+          message: Configuration envoyée avec succès
+
+  nabaztag_sync_time:
+    alias: "Nabaztag - Synchroniser l'heure"
+    description: "Synchronise l'heure via NTP"
+    sequence:
+      - action: rest_command.nabaztag_update_time
+
+  nabaztag_refresh_weather:
+    alias: "Nabaztag - Actualiser la météo"
+    description: "Force la mise à jour de la météo"
+    sequence:
+      - action: rest_command.nabaztag_update_weather
+
+  # ========== RÉVEIL ET ENDORMISSEMENT ==========
+  
+  nabaztag_wake_up:
+    alias: "Nabaztag - Réveil"
+    description: "Fait réveiller le Nabaztag: son, LED, oreilles, annonce"
+    sequence:
+      - action: rest_command.nabaztag_wakeup
+      - delay: "00:00:02"
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.nabaztaglife
+      - action: rest_command.nabaztag_taichi
+      - delay: "00:00:03"
+      - action: rest_command.nabaztag_left_ear
+        data:
+          position: "8"
+      - action: rest_command.nabaztag_right_ear
+        data:
+          position: "8"
+      - delay: "00:00:01"
+      - action: rest_command.nabaztag_say
+        data:
+          message: "Bonjour ! Je me réveille pour une nouvelle journée !"
+
+  nabaztag_go_to_sleep:
+    alias: "Nabaztag - Endormissement"
+    description: "Fait dormir le Nabaztag: annonce, réduire LEDs, oreilles vers le bas, désactive nabaztaglife"
+    sequence:
+      - action: rest_command.nabaztag_say
+        data:
+          message: "Bonne soirée ! Je vais me reposer maintenant."
+      - delay: "00:00:03"
+      - action: rest_command.nabaztag_taichi
+      - delay: "00:00:02"
+      - action: rest_command.nabaztag_left_ear
+        data:
+          position: "0"
+      - action: rest_command.nabaztag_right_ear
+        data:
+          position: "0"
+      - action: rest_command.nabaztag_nose
+        data:
+          state: "0"
+      - delay: "00:00:02"
+      - action: rest_command.nabaztag_sleep
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.nabaztaglife
+
+  # ========== SYNC HEURES ==========
+  
+  nabaztag_sync_sleep_time:
+    alias: "Nabaztag - Synchroniser heure coucher"
+    description: "Sync input_number.nabaztag_sleep_hour vers input_datetime.nabaztag_sleep_trigger"
+    sequence:
+      - variables:
+          sleep_hour: "{{ states('input_number.nabaztag_sleep_hour') | int }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.nabaztag_sleep_trigger
+        data:
+          time: "{{ '%02d:00:00' | format(sleep_hour) }}"
+
+  nabaztag_sync_wake_time:
+    alias: "Nabaztag - Synchroniser heure réveil"
+    description: "Sync input_number.nabaztag_wake_hour vers input_datetime.nabaztag_wake_trigger"
+    sequence:
+      - variables:
+          wake_hour: "{{ states('input_number.nabaztag_wake_hour') | int }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.nabaztag_wake_trigger
+        data:
+          time: "{{ '%02d:00:00' | format(wake_hour) }}"
+
+  # ========== RESET LEDs ==========
+  
+  nabaztag_reset_leds:
+    alias: "Nabaztag - Reset LEDs"
+    description: "Éteint toutes les LEDs (body) et le nez"
+    sequence:
+      - action: rest_command.nabaztag_clear
+      - action: rest_command.nabaztag_nose
+        data:
+          state: "0"
+
+  # ========== ACTIONS ALÉATOIRES ==========
+  
+  nabaztag_generate_random_action_times:
+    alias: "Générer heures actions aléatoires"
+    description: "Génère 2 heures aléatoires pour les actions Nabaztag Life"
+    sequence:
+      - variables:
+          h1: "{{ range(9, 22) | random }}"
+          m1: "{{ range(0, 60) | random }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.nabaztag_random_action_time_1
+        data:
+          time: "{{ '%02d:%02d:00' | format(h1, m1) }}"
+      - variables:
+          h2: "{{ range(9, 22) | random }}"
+          m2: "{{ range(0, 60) | random }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.nabaztag_random_action_time_2
+        data:
+          time: "{{ '%02d:%02d:00' | format(h2, m2) }}"

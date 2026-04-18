@@ -1,0 +1,218 @@
+type: vertical-stack
+cards:
+  - type: entities
+    title: 🎭 Nabaztag - Contrôle principal
+    entities:
+      - entity: input_boolean.nabaztaglife
+        name: Animations vivantes (HA)
+      - entity: input_boolean.nabaztag_weather_enabled
+        name: LED Météo
+      - entity: input_boolean.nabaztag_traffic_enabled
+        name: LED Trafic
+      - entity: input_boolean.nabaztag_pollution_enabled
+        name: LED Qualité air
+      - entity: input_boolean.nabaztag_nose_enabled
+        name: LED Nez
+
+  - type: entities
+    title: 🤖 Automatismes firmware
+    entities:
+      - entity: input_boolean.nabaztag_firmware_clock
+        name: Horloge ( heur )
+      - entity: input_boolean.nabaztag_firmware_halftime
+        name: Demi-heure
+      - entity: input_boolean.nabaztag_firmware_surprise
+        name: Surprise
+      - entity: input_boolean.nabaztag_firmware_taichi
+        name: Taichi
+
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Oreille gauche
+        icon: mdi:arrow-left-bold
+        tap_action:
+          action: call-service
+          service: script.nabaztag_move_left_ear
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Oreille droite
+        icon: mdi:arrow-right-bold
+        tap_action:
+          action: call-service
+          service: script.nabaztag_move_right_ear
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Les deux
+        icon: mdi:sync
+        tap_action:
+          action: call-service
+          service: script.nabaztag_move_both_ears
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Debout
+        icon: mdi:sleep-off
+        tap_action:
+          action: call-service
+          service: rest_command.nabaztag_wakeup
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Dodo
+        icon: mdi:sleep
+        tap_action:
+          action: call-service
+          service: rest_command.nabaztag_sleep
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Danse
+        icon: mdi:music-note
+        tap_action:
+          action: call-service
+          service: script.nabaztag_dance
+        entity: script.nabaztag_ear_dance
+      - type: button
+        name: Nez
+        icon: mdi:led-on
+        tap_action:
+          action: call-service
+          service: script.nabaztag_set_nose
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Météo
+        icon: mdi:weather-partly-cloudy
+        tap_action:
+          action: call-service
+          service: script.nabaztag_set_weather
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: Trafic
+        icon: mdi:traffic-light
+        tap_action:
+          action: call-service
+          service: script.nabaztag_set_traffic
+      - type: button
+        name: Pollution
+        icon: mdi:factory
+        tap_action:
+          action: call-service
+          service: script.nabaztag_set_pollution
+      - type: button
+        name: Dire Météo
+        icon: mdi:weather-cloudy
+        tap_action:
+          action: call-service
+          service: script.nabaztag_say_weather
+      - type: button
+        name: Dire Trafic
+        icon: mdi:car
+        tap_action:
+          action: call-service
+          service: script.nabaztag_say_traffic
+      - type: button
+        name: Dire Pollution
+        icon: mdi:thought-bubble
+        tap_action:
+          action: call-service
+          service: script.nabaztag_say_pollution
+  - type: entities
+    title: Sliders
+    show_header_toggle: false
+    entities:
+      - entity: input_number.nabaztag_weather
+        name: Météo (0-5)
+      - entity: input_number.nabaztag_traffic
+        name: Trafic (0-6)
+      - entity: input_number.nabaztag_pollution
+        name: Pollution (0-10)
+      - entity: input_number.nabaztag_nose_state
+        name: Nez LED (0-4)
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: Ack
+        icon: mdi:check-bold
+        tap_action:
+          action: call-service
+          service: rest_command.nabaztag_ack
+      - type: button
+        name: Abort
+        icon: mdi:close-circle
+        tap_action:
+          action: call-service
+          service: rest_command.nabaztag_abort
+      - type: button
+        name: Communication
+        icon: mdi:message-alert
+        tap_action:
+          action: call-service
+          service: rest_command.nabaztag_communication
+      - type: button
+        name: MiniStop
+        icon: mdi:stop-circle
+        tap_action:
+          action: call-service
+          service: rest_command.nabaztag_ministop
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Taichi Stop
+        icon: mdi:power
+        tap_action:
+          action: call-service
+          service: script.nabaztag_taichi_stop
+          service_data:
+            level: "0"
+      - show_name: true
+        show_icon: true
+        type: button
+        name: Taichi Min
+        icon: mdi:arrow-down
+        tap_action:
+          action: call-service
+          service: script.nabaztag_taichi_min
+          service_data:
+            level: "40"
+      - type: button
+        name: Taichi Moyen
+        icon: mdi:arrow-right-bold
+        tap_action:
+          action: call-service
+          service: script.nabaztag_taichi_medium
+          service_data:
+            level: "80"
+      - type: button
+        name: Taichi Max
+        icon: mdi:arrow-up-bold
+        tap_action:
+          action: call-service
+          service: script.nabaztag_taichi_max
+          service_data:
+            level: "255"
+  - type: horizontal-stack
+    cards:
+      - type: entity
+        entity: input_text.nabaztag_message
+      - type: button
+        icon: mdi:send
+        tap_action:
+          action: call-service
+          service: script.nabaztag_talk
+  - type: button
+    name: Reset LEDs
+    icon: mdi:led-off
+    tap_action:
+      action: call-service
+      service: script.nabaztag_reset_leds

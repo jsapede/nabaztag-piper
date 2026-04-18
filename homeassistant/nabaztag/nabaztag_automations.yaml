@@ -1,0 +1,271 @@
+# =========================
+# Nabaztag - Automatisations
+# =========================
+# 
+# Architecture:
+# - Mode Sleep/Active: heures fixes définies dans input_number (nabaztag_wake_hour, nabaztag_sleep_hour)
+# - Sync: input_number -> input_datetime chaque heure (pour trigger time)
+# - Nabaztag Life: actions aléatoires aux heures définies dans nabaztag_life.yaml
+# - Setup: envoyé au démarrage HA et lors de la reconnexion réseau (device_tracker.nmap_nabaztag)
+
+automation:
+
+  # ========== RÉVEIL (heure fixe) ==========
+  # Déclenché par input_datetime.nabaztag_wake_trigger (sync chaque heure depuis input_number)
+  
+  - id: nabaztag_auto_wakeup
+    alias: "Nabaztag - Réveil automatique"
+    description: "Déclenche le réveil à l'heure configurée (si nabaztaglife activé)"
+    mode: restart
+    trigger:
+      - trigger: time
+        at: input_datetime.nabaztag_wake_trigger
+    condition:
+      - condition: state
+        entity_id: input_boolean.nabaztaglife
+        state: "on"
+    action:
+      - action: script.nabaztag_wake_up
+
+  - id: nabaztag_sync_wake_time
+    alias: "Nabaztag - Sync heure réveil"
+    description: "Sync input_number.nabaztag_wake_hour vers input_datetime.nabaztag_wake_trigger chaque heure"
+    mode: single
+    trigger:
+      - trigger: time_pattern
+        minutes: "0"
+    action:
+      - variables:
+          wake_hour: "{{ states('input_number.nabaztag_wake_hour') | int }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.nabaztag_wake_trigger
+        data:
+          time: "{{ '%02d:00:00' | format(wake_hour) }}"
+
+  # ========== ENDORMISSEMENT (heure fixe) ==========
+  # Déclenché par input_datetime.nabaztag_sleep_trigger
+  
+  - id: nabaztag_auto_sleep
+    alias: "Nabaztag - Endormissement automatique"
+    description: "Déclenche l'endormissement à l'heure configurée (si nabaztaglife activé)"
+    mode: restart
+    trigger:
+      - trigger: time
+        at: input_datetime.nabaztag_sleep_trigger
+    condition:
+      - condition: state
+        entity_id: input_boolean.nabaztaglife
+        state: "on"
+    action:
+      - action: script.nabaztag_go_to_sleep
+
+  - id: nabaztag_sync_sleep_trigger
+    alias: "Nabaztag - Sync heure coucher"
+    description: "Sync input_number.nabaztag_sleep_hour vers input_datetime.nabaztag_sleep_trigger"
+    mode: restart
+    trigger:
+      - trigger: state
+        entity_id: input_number.nabaztag_sleep_hour
+    action:
+      - action: script.nabaztag_sync_sleep_time
+
+  # ========== GESTION LEDs ==========
+  # Réagit quand une LED est désactivée -> reset total + rallumer les LEDs actives
+  
+  - id: nabaztag_led_off_handler
+    alias: "Nabaztag - Gestion LED OFF"
+    description: "Reset LEDs + rallume celles qui sont activées (quand une LED est éteinte manuellement)"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: 
+          - input_boolean.nabaztag_weather_enabled
+          - input_boolean.nabaztag_traffic_enabled
+          - input_boolean.nabaztag_pollution_enabled
+          - input_boolean.nabaztag_nose_enabled
+        to: "off"
+    action:
+      - action: script.nabaztag_reset_leds
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_weather_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_weather
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_traffic_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_traffic
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_pollution_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_pollution
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_nose_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_nose
+
+  # ========== RECONNEXION RÉSEAU ==========
+  # Détection via device_tracker.nmap_nabaztag -> Envoie /setup + restaure LEDs
+  
+  - id: nabaztag_online
+    alias: "Nabaztag - Config après reconnexion"
+    description: "Envoie la config + restaure LEDs quand le Nabaztag se reconnecte au réseau"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: device_tracker.nmap_nabaztag
+        to: "home"
+    action:
+      - action: rest_command.nabaztag_setup
+      - action: script.nabaztag_reset_leds
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_weather_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_weather
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_traffic_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_traffic
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_pollution_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_pollution
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_nose_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_nose
+
+  # ========== DÉMARRAGE HOME ASSISTANT ==========
+  # Sync heures + envoie config complète + restaure LEDs
+  
+  - id: nabaztag_sync_all_at_startup
+    alias: "Nabaztag - Sync + Setup au démarrage"
+    description: "Sync heures, envoie /setup et restaure LEDs au démarrage de Home Assistant"
+    mode: single
+    trigger:
+      - trigger: homeassistant
+        event: start
+    action:
+      - action: script.nabaztag_sync_sleep_time
+      - action: script.nabaztag_sync_wake_time
+      - action: rest_command.nabaztag_setup
+      - action: script.nabaztag_reset_leds
+      - delay: "00:00:02"
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_weather_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_weather
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_traffic_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_traffic
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_pollution_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_pollution
+      - if:
+          - condition: state
+            entity_id: input_boolean.nabaztag_nose_enabled
+            state: "on"
+        then:
+          - action: script.nabaztag_set_nose
+
+  # ========== MISE À JOUR TRAFIC WAZE ==========
+  # Trigger sur changement du sensor Waze -> Met à jour input_number.nabaztag_traffic
+  
+  - id: nabaztag_update_traffic_from_waze
+    alias: "Nabaztag - Mise à jour trafic Waze"
+    description: "Met à jour l'indicateur de traffic (0-6) basé sur le sensor Waze"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: sensor.waze_trajet_domicile_travail
+    action:
+      - variables:
+          duration: "{{ trigger.to_state.state | float(0) }}"
+          traffic_level: >
+            {% if duration < 20 %}0
+            {% elif duration < 25 %}1
+            {% elif duration < 30 %}2
+            {% elif duration < 35 %}3
+            {% elif duration < 45 %}4
+            {% elif duration < 60 %}5
+            {% else %}6
+            {% endif %}
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.nabaztag_traffic
+        data:
+          value: "{{ traffic_level }}"
+
+  # ========== AUTO CONTROL FIRMWARE ==========
+  # Applique la configuration auto au reconnect du Nabaztag et au dmarrage de HA
+
+  - id: nabaztag_apply_autocontrol
+    alias: "Nabaztag - Appliquer configuration auto"
+    mode: restart
+    trigger:
+      - trigger: state
+        entity_id: device_tracker.nmap_nabaztag
+        to: "home"
+      - trigger: homeassistant
+        event: start
+    action:
+      - action: rest_command.nabaztag_autocontrol_clock
+        data:
+          clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_halftime
+        data:
+          halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_surprise
+        data:
+          surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_taichi
+        data:
+          taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+
+  # ========== NABAZTAG LIFE - DISABLE FIRMWARE SURPRISE/TAICHI ==========
+  # Quand Nabaztag Life est activ, dsactive les surprise et taichi du firmware
+
+  - id: nabaztaglife_on_disable_firmware
+    alias: "Nabaztag Life ON - Disable surprise/taichi"
+    mode: restart
+    trigger:
+      - trigger: state
+        entity_id: input_boolean.nabaztaglife
+        to: "on"
+    action:
+      - action: rest_command.nabaztag_autocontrol_surprise
+        data:
+          surprise: "0"
+      - action: rest_command.nabaztag_autocontrol_taichi
+        data:
+          taichi: "0"
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.nabaztag_firmware_surprise
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.nabaztag_firmware_taichi

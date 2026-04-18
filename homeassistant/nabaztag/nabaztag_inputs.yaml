@@ -1,0 +1,164 @@
+# =========================
+# Nabaztag - Inputs
+# =========================
+
+input_text:
+  nabaztag_ip_address:
+    name: "Adresse IP Nabaztag"
+    initial: "192.168.0.58"
+
+  nabaztag_message:
+    name: "Message à dire"
+    initial: "Bonjour, je m'appelle Nabaztag"
+    max: 255
+
+
+input_select:
+  nabaztag_ear_position:
+    name: "Position des oreilles"
+    options: ["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
+    initial: "5"
+
+  nabaztag_language:
+    name: "Langue"
+    options:
+      - "fr"
+      - "en"
+      - "es"
+      - "de"
+      - "it"
+    initial: "fr"
+
+  nabaztag_timezone_city:
+    name: "Ville/Timezone"
+    options:
+      - "Europe/Paris"
+      - "Europe/London"
+      - "America/New_York"
+      - "Asia/Tokyo"
+    initial: "Europe/Paris"
+
+
+input_number:
+  nabaztag_weather:
+    name: "Météo"
+    min: 0
+    max: 5
+    step: 1
+    mode: slider
+    initial: 1
+
+  nabaztag_traffic:
+    name: "Trafic"
+    min: 0
+    max: 6
+    step: 1
+    mode: slider
+    initial: 3
+
+  nabaztag_nose_state:
+    name: "État du nez"
+    min: 0
+    max: 4
+    step: 1
+    mode: slider
+    initial: 0
+
+  nabaztag_pollution:
+    name: "Pollution"
+    min: 0
+    max: 10
+    step: 1
+    mode: slider
+    initial: 3
+
+  nabaztag_wake_hour:
+    name: "Heure de réveil"
+    min: 0
+    max: 23
+    step: 1
+    initial: 7
+
+  nabaztag_sleep_hour:
+    name: "Heure de coucher"
+    min: 0
+    max: 23
+    step: 1
+    initial: 23
+
+  nabaztag_taichi_freq:
+    name: "Fréquence Taichi"
+    min: 0
+    max: 255
+    step: 1
+    mode: slider
+    initial: 80
+
+
+input_boolean:
+  nabaztag_daylight_saving:
+    name: "Heure d'été"
+    initial: off
+
+  nabaztaglife:
+    name: "Nabaztag Life"
+    initial: on
+    icon: mdi:rabbit
+
+  nabaztag_weather_enabled:
+    name: "LED Météo"
+    initial: on
+    icon: mdi:weather-partly-cloudy
+
+  nabaztag_traffic_enabled:
+    name: "LED Trafic"
+    initial: off
+    icon: mdi:traffic-light
+
+  nabaztag_pollution_enabled:
+    name: "LED Pollution"
+    initial: off
+    icon: mdi:factory
+
+  nabaztag_nose_enabled:
+    name: "LED Nez"
+    initial: off
+    icon: mdi:led-on
+
+  nabaztag_firmware_clock:
+    name: "Horloge (firmware)"
+    initial: on
+    icon: mdi:clock
+
+  nabaztag_firmware_halftime:
+    name: "Demi-heure (firmware)"
+    initial: on
+    icon: mdi:clock-outline
+
+  nabaztag_firmware_surprise:
+    name: "Surprise (firmware)"
+    initial: on
+    icon: mdi:emoticon-excited
+
+  nabaztag_firmware_taichi:
+    name: "Taichi (firmware)"
+    initial: on
+    icon: mdi:yoga
+
+
+input_datetime:
+  nabaztag_wake_trigger:
+    name: "Heure déclencheur réveil (auto)"
+    has_time: true
+
+  nabaztag_sleep_trigger:
+    name: "Heure déclencheur coucher"
+    has_time: true
+
+  nabaztag_random_action_time_1:
+    name: "Temps action aléatoire 1"
+    has_time: true
+
+  nabaztag_random_action_time_2:
+    name: "Temps action aléatoire 2"
+    has_time: true

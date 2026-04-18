@@ -19,14 +19,14 @@ http-post
 drop drop ;
 
 : on-time ( -- )  \ Hour hook
-sleeping? invert if  \ if not sleeping
+sleeping? invert autoclock-enabled @ and if  \ if not sleeping AND clock enabled
 nil server-url @ :: "/config/clock/" :: language @ :: "/" :: get-hour :: "/" :: 6 random 1 + :: ".mp3" :: str-join  \ url
 play-url
 then ;
 
 : on-halftime ( -- )  \ Half-hour hook
-sleeping? invert if  \ if not sleeping
-nil server-url @ :: "/config/clockall/" :: language @ :: "/" :: 12 random 1 + :: ".mp3" :: str-join  \ url
+sleeping? invert autohalftime-enabled @ and if  \ if not sleeping AND halftime enabled
+nil server-url @ :: "/config/clockall/" :: language @ :: "/" :: "hg0" :: 12 random 1 + :: ".mp3" :: str-join  \ url
 play-url
 then ;
 
