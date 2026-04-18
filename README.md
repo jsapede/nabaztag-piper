@@ -218,6 +218,7 @@ Le déploiement se fait en suivant les 6 étapes de la méthodologie générale:
    cp ../nabaztag-piper/firmware/protos/ntp_protos.mtl firmware/protos/
    cp ../nabaztag-piper/scripts/preproc.pl scripts/
    ```
+   **NB : Avant de compiler le firmwrare il faut éditer hooks.forth et remplacer l'adresse IP du serveur python (piper) utilisé par say** 
 
 3. **Compiler le firmware**:
    ```bash
