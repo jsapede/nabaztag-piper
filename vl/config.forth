@@ -1,8 +1,8 @@
 \ Configuration variables for Serverless Nabaztag
 
-\ Authentication
-"nabaztag" username !
-"1af59a24e534a10f29b5b22136df221f" md5-password !
+\ Authentication (disabled for open access)
+\ "nabaztag" username !
+\ "1af59a24e534a10f29b5b22136df221f" md5-password !
 
 \ Auto-control flags (default: 1 = enabled)
 1 variable autoclock-enabled       \ on-time clock (default: 1)
