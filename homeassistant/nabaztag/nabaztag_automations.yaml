@@ -22,6 +22,9 @@ automation:
         at: input_datetime.nabaztag_wake_trigger
     condition:
       - condition: state
+        entity_id: device_tracker.nmap_nabaztag
+        state: "home"
+      - condition: state
         entity_id: input_boolean.nabaztaglife
         state: "on"
     action:
@@ -55,6 +58,9 @@ automation:
         at: input_datetime.nabaztag_sleep_trigger
     condition:
       - condition: state
+        entity_id: device_tracker.nmap_nabaztag
+        state: "home"
+      - condition: state
         entity_id: input_boolean.nabaztaglife
         state: "on"
     action:
@@ -85,6 +91,10 @@ automation:
           - input_boolean.nabaztag_pollution_enabled
           - input_boolean.nabaztag_nose_enabled
         to: "off"
+    condition:
+      - condition: state
+        entity_id: device_tracker.nmap_nabaztag
+        state: "home"
     action:
       - action: script.nabaztag_reset_leds
       - if:
@@ -202,6 +212,10 @@ automation:
     trigger:
       - trigger: state
         entity_id: sensor.waze_trajet_domicile_travail
+    condition:
+      - condition: state
+        entity_id: device_tracker.nmap_nabaztag
+        state: "home"
     action:
       - variables:
           duration: "{{ trigger.to_state.state | float(0) }}"
