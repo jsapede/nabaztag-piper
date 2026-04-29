@@ -178,6 +178,7 @@ import os
 import socket
 import struct
 import subprocess
+import sys
 import time
 import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -190,6 +191,8 @@ import logging
 DEFAULT_PIPER_BINARY = "/root/.local/bin/piper"
 DEFAULT_VOICES_FOLDER = "/opt/configs/piper"
 DEFAULT_VOICE = "fr_FR-siwis-medium"
+DEFAULT_COQUI_MODEL = "vits"
+DEFAULT_COQUI_SPEAKER = "Frédéric"
 DEFAULT_SPEAKER = "0"
 DEFAULT_LENGTH_SCALE = "1.5"
 DEFAULT_NOISE_SCALE = "0.667"
@@ -228,6 +231,10 @@ SENTENCE_SILENCE = os.environ.get("PIPER_SENTENCE_SILENCE", DEFAULT_SENTENCE_SIL
 ESPEAK_BINARY = os.environ.get("ESPEAK_BINARY", DEFAULT_ESPEAK_BINARY)
 USE_PHONEMES = os.environ.get("PIPER_USE_PHONEMES", "false").lower() == "true"
 ESPEAK_VOICE = os.environ.get("ESPEAK_VOICE", DEFAULT_ESPEAK_VOICE)
+
+# Coqui TTS settings (utilise si --coqui flag)
+COQUI_MODEL = os.environ.get("COQUI_MODEL", DEFAULT_COQUI_MODEL)
+COQUI_SPEAKER = os.environ.get("COQUI_SPEAKER", DEFAULT_COQUI_SPEAKER)
 
 # FFmpeg settings
 FFMPEG_BINARY = os.environ.get("FFMPEG_BINARY", DEFAULT_FFMPEG_BINARY)
@@ -353,48 +360,44 @@ class TTSHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Missing 't' parameter")
             return
 
-        # Convert text to phonemes if enabled
-        piper_input = text
-        if USE_PHONEMES:
-            logger.info(f"Converting text to phonemes: '{text}'")
-            piper_input = text_to_phonemes(text)
-            logger.info(f"Phonemes: '{piper_input}'")
-
-        logger.info(f"Processing TTS: '{text}' with voice={voice}")
+        logger.info(f"Processing TTS: '{text}' voice={'coqui' if MODE_COQUI else 'piper'}")
 
         try:
             # Small delay to ensure Nabaztag is ready to receive
             time.sleep(0.1)
 
-            # Build Piper command with all parameters
-            # Note: Using --output_file - (writes WAV to stdout)
-            #       NOT --output_raw (which outputs raw PCM without WAV header!)
-            piper_cmd = [
-                PIPER_BINARY,
-                "-m",
-                voice,  # Voice model name
-                "--data-dir",
-                VOICES_FOLDER,  # Voice files directory
-                "-s",
-                SPEAKER,  # Speaker index
-                "--length-scale",
-                LENGTH_SCALE,  # Speech speed
-                "--noise-scale",
-                NOISE_SCALE,  # Breathing noise
-                "--noise-w-scale",
-                NOISE_W_SCALE,  # Phoneme width noise
-                "--volume",
-                VOLUME,  # Volume boost
-                "--sentence-silence",
-                SENTENCE_SILENCE,  # Sentence gaps
-                "--output_file",
-                "-",  # Write WAV to stdout
-            ]
+            # ─── Choix du moteur TTS : Piper ou Coqui ──────────────────
+            if MODE_COQUI:
+                # Coqui pipeline : subprocess coqui_cli.py
+                # Note: les phonemes espeak ne s'appliquent pas a Coqui
+                coqui_script = os.path.join(os.path.dirname(__file__), "coqui_cli.py")
+                tts_cmd = [sys.executable, coqui_script, "--model", COQUI_MODEL]
+                if COQUI_MODEL == "xtts" and COQUI_SPEAKER:
+                    tts_cmd += ["--speaker", COQUI_SPEAKER]
+                tts_input = text
+                logger.info(f"Coqui: {' '.join(tts_cmd)}")
+            else:
+                # Piper pipeline : subprocess piper
+                # Conversion phonemes (espeak) uniquement pour Piper
+                tts_input = text
+                if USE_PHONEMES:
+                    logger.info(f"Phonemes: '{text}'")
+                    tts_input = text_to_phonemes(text)
+                tts_cmd = [
+                    PIPER_BINARY, "-m", voice,
+                    "--data-dir", VOICES_FOLDER,
+                    "-s", SPEAKER,
+                    "--length-scale", LENGTH_SCALE,
+                    "--noise-scale", NOISE_SCALE,
+                    "--noise-w-scale", NOISE_W_SCALE,
+                    "--volume", VOLUME,
+                    "--sentence-silence", SENTENCE_SILENCE,
+                    "--output_file", "-",
+                ]
+                logger.debug(f"Piper: {' '.join(tts_cmd)}")
 
-            logger.debug(f"Piper command: {' '.join(piper_cmd)}")
-
-            # Build FFmpeg command for transcoding
-            # -f wav: Force WAV format for pipe input (from Piper)
+            # ─── Pipeline FFmpeg (commun aux deux) ─────────────────────
+            # -f wav: Force WAV format for pipe input (from Piper/Coqui)
             # highpass: Remove low rumble (small speaker can't reproduce)
             # treble: Boost high frequencies for speech clarity
             # volume: Boost output volume
@@ -403,7 +406,6 @@ class TTSHandler(BaseHTTPRequestHandler):
             # -acodec pcm_s16le: 16-bit PCM
             # -f s16le: Output raw signed 16-bit PCM (NOT WAV format)
             #           This avoids FFmpeg's streaming WAV issues (unknown size, LIST chunk)
-            # Build filter chain based on USE_FFMPEG_FILTERS flag
             if USE_FFMPEG_FILTERS:
                 filter_chain = f"highpass=f={FFMPEG_HIGH_PASS},treble=g={FFMPEG_TREBLE},volume={FFMPEG_VOLUME}"
             else:
@@ -430,9 +432,9 @@ class TTSHandler(BaseHTTPRequestHandler):
 
             logger.debug(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
 
-            # Launch Piper process
-            piper_proc = subprocess.Popen(
-                piper_cmd,
+            # Launch TTS process (Piper or Coqui)
+            tts_proc = subprocess.Popen(
+                tts_cmd,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
@@ -444,19 +446,19 @@ class TTSHandler(BaseHTTPRequestHandler):
                 ffmpeg_stderr = open("/tmp/ffmpeg_stderr.log", "w")
                 ffmpeg_proc = subprocess.Popen(
                     ffmpeg_cmd,
-                    stdin=piper_proc.stdout,
+                    stdin=tts_proc.stdout,
                     stdout=subprocess.PIPE,
                     stderr=ffmpeg_stderr,
                 )
-                # Allow piper to exit without blocking FFmpeg
-                piper_proc.stdout.close()
+                # Allow TTS to exit without blocking FFmpeg
+                tts_proc.stdout.close()
                 output_proc = ffmpeg_proc
 
                 # Log FFmpeg startup
                 logger.info(f"FFmpeg: Starting pipeline with filters: {filter_chain}")
             else:
-                output_proc = piper_proc
-                logger.info("FFmpeg disabled: using direct Piper output")
+                output_proc = tts_proc
+                logger.info("FFmpeg disabled: using direct TTS output")
 
             # Send HTTP headers immediately (before generating audio)
             # IMPORTANT: No Transfer-Encoding: chunked!
@@ -467,9 +469,9 @@ class TTSHandler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
 
-            # Feed text to Piper and stream output
-            piper_proc.stdin.write(text.encode("utf-8"))
-            piper_proc.stdin.close()
+            # Feed text to TTS and stream output
+            tts_proc.stdin.write(tts_input.encode("utf-8"))
+            tts_proc.stdin.close()
 
             bytes_sent = 0
 
@@ -503,7 +505,7 @@ class TTSHandler(BaseHTTPRequestHandler):
                         bytes_sent += len(chunk)
 
             # Wait for processes to finish
-            piper_proc.wait()
+            tts_proc.wait()
             if USE_FFMPEG:
                 ffmpeg_proc.wait()
                 # Log FFmpeg stderr for debugging
@@ -561,25 +563,37 @@ def main():
         action="store_true",
         help="Enable phoneme conversion via espeak-ng (IPA format for Piper)",
     )
+    parser.add_argument(
+        "--coqui",
+        action="store_true",
+        help="Use Coqui TTS instead of Piper (modele et speaker depuis .env)",
+    )
     args = parser.parse_args()
 
     # CLI flags override environment variable
     global USE_FFMPEG
     global USE_FFMPEG_FILTERS
     global USE_PHONEMES
+    global MODE_COQUI
     if args.no_ffmpeg:
         USE_FFMPEG = False
     elif args.ffmpeg:
         USE_FFMPEG = True
     USE_FFMPEG_FILTERS = not args.no_filters
     USE_PHONEMES = args.phonemes
+    MODE_COQUI = args.coqui
 
     server = HTTPServer((args.host, args.port), TTSHandler)
 
-    print(f"[TTS] Piper TTS Proxy started on http://{args.host}:{args.port}")
-    print(f"[TTS] Voice: {VOICE}")
-    print(f"[TTS] Voices folder: {VOICES_FOLDER}")
-    print(f"[TTS] Piper binary: {PIPER_BINARY}")
+    engine = "Coqui" if MODE_COQUI else "Piper"
+    print(f"[TTS] {engine} TTS Proxy started on http://{args.host}:{args.port}")
+    if MODE_COQUI:
+        print(f"[TTS] Coqui model: {COQUI_MODEL}")
+        if COQUI_MODEL == "xtts":
+            print(f"[TTS] Coqui speaker: {COQUI_SPEAKER}")
+    else:
+        print(f"[TTS] Piper voice: {VOICE}")
+        print(f"[TTS] Piper binary: {PIPER_BINARY}")
     print(
         f"[TTS] Piper params: length={LENGTH_SCALE}, noise={NOISE_SCALE}, "
         f"noise_w={NOISE_W_SCALE}, volume={VOLUME}, silence={SENTENCE_SILENCE}"

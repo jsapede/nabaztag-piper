@@ -1,5 +1,44 @@
 # Changelog - Nabaztag Serverless TTS
 
+## 2026-04-29 - Integration Coqui TTS (VITS) en subprocess
+
+### Nouveau moteur TTS : Coqui VITS
+
+Second moteur TTS ajoute au proxy, en plus de Piper :
+
+```
+Piper :  texte → stdin(Piper) → WAV → FFmpeg → Nabaztag
+Coqui :  texte → stdin(coqui_cli) → WAV → FFmpeg → Nabaztag
+                                ^
+                        (meme pipeline FFmpeg)
+```
+
+**Fichier** : `coqui_cli.py` — wrapper CLI qui lit stdin et ecrit WAV sur stdout,
+compatible avec l'architecture subprocess de Piper.
+
+**Activation** : flag `--coqui` sur le proxy :
+
+```bash
+python3 piper_tts_stream.py --port 6790              # Piper (defaut)
+python3 piper_tts_stream.py --port 6790 --coqui       # Coqui VITS
+```
+
+**Performance** : ~0.3s par phrase sur CPU, qualite vocale comparable a Piper.
+
+**Fichiers** :
+- `coqui_cli.py` — wrapper CLI Coqui (remplace le serveur HTTP precedent)
+- `install_coqui.sh` — script d'installation (venv + modeles + patch)
+- `piper_tts_stream.py` — flag `--coqui`, `COQUI_MODEL`, `COQUI_SPEAKER` depuis .env
+
+### Changements d'architecture
+
+- Suppression du serveur HTTP Coqui (port 6791)
+- Coqui utilise desormais le meme pattern que Piper : subprocess stdin/stdout
+- Le pipeline FFmpeg est strictement identique pour les deux moteurs
+- Service `coqui-tts.service` supprime (plus necessaire)
+
+---
+
 ## 2026-04-29 - Service systemd generique + TTS IP externalisee
 
 ### Service systemd generique
@@ -179,6 +218,7 @@ Nouveaux endpoints REST pour controler les 4 drapeaux auto-control:
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 2026-04-29 | Integration Coqui TTS VITS (subprocess, flag --coqui) |
 | 2026-04-29 | Service generique + TTS IP externalisee + README |
 | 2026-04-29 | Refactoring REST commands + autostatus + sensors |
 | 2026-04-18 | Auto-control + Bug NTP + Bug HTTP |
