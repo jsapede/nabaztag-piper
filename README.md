@@ -1,4 +1,4 @@
-# Nabaztag Serverless - TTS Local avec Piper
+# Nabaztag Serverless - TTS Local avec Piper et Coqui
 
 ## Préambule important
 
@@ -6,12 +6,12 @@
 
 Les adresses IP utilisées dans ce projet sont des **exemples** et doivent être ajustées à votre configuration réseau:
 
-- `192.168.0.42` - Adresse IP du serveur TTS (où tourne le proxy Python Piper)
+- `192.168.0.42` (ou `192.168.0.35`) - Adresse IP du serveur TTS (où tourne le proxy Python)
 - `192.168.0.58` - Adresse IP du Nabaztag (optionnel, pour info)
 
-**⚠️IMPORTANT: L'IP du serveur Python doit être changée dans `vl/hooks.forth` avant de recompiler le firmware!**
+**⚠️ L'IP du serveur Python est definie dans `vl/config.forth` et remplacee automatiquement par `install.sh` via la variable `TTS_SERVER_IP` du `.env`.**
 
-Voir la section "Guide de modification du firmware" pour plus de détails.
+Plus besoin de modifier les fichiers source manuellement.
 
 ---
 
@@ -19,7 +19,7 @@ Voir la section "Guide de modification du firmware" pour plus de détails.
 
 ```
 ┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
-│   Nabaztag v2   │       │   Serveur TTS    │       │     Piper      │
+│   Nabaztag v2   │       │   Serveur TTS    │       │  Piper / Coqui  │
 │  192.168.0.58   │──────▶│  192.168.0.42    │──────▶│  TTS neuronal   │
 │                 │  HTTP │    :6790         │       │   (22kHz WAV)  │
 │  say "texte"    │       │                  │       │                 │

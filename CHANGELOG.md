@@ -1,5 +1,44 @@
 # Changelog - Nabaztag Serverless TTS
 
+## 2026-04-29 - Corrections NTP, Taichi, LEDs, Installation
+
+### Bug Fix NTP (calcul du temps)
+
+**Fichier**: `firmware/utils/time.mtl`, `firmware/net/ntp.mtl`, `firmware/protos/time_protos.mtl`
+
+**Probleme**: Le temps etait decale de plusieurs minutes car l'uptime au moment du sync NTP etait compte deux fois (dans le timestamp NTP et dans l'uptime ajoute au timezone offset).
+
+**Correction**: Sauvegarde de l'uptime au moment du NTP (`_ntp_receive_time`), utilise `(time - _ntp_receive_time)` pour l'avancement de l'horloge au lieu de `time` (uptime complet). Intervalle NTP reduit a 1h.
+
+### Bug Fix Taichi
+
+**Fichier**: `vl/crontab.forth`
+
+**Probleme**: Le mot Forth `taici-freq` n'existe pas (typo: `taichi-freq`). La fonction `calc-taichi` echouait silencieusement, le taichi ne se declenchait **jamais**.
+
+### Bug Fix LEDs (Home Assistant)
+
+**Fichier**: `homeassistant/nabaztag/nabaztag_automations.yaml`
+
+**Probleme**: Le `choose` verifiait les etats en ordre. Togger pollution declenchait weather en premier (car weather ON). Correction: triggers separes avec `condition: trigger id`.
+
+### Fonctionnalites
+
+- **Flags auto-control dans `/status`**: `autoclock_enabled`, `autohalftime_enabled`, `autosurprise_enabled`, `autotaichi_enabled` lisibles directement (plus besoin de `/autostatus`)
+- **`server-url` configurable**: Handler SET ajoute dans `forth_memory`, parametre `u=` dans `/setup`
+- **`say`**: Utilise `TTS-SERVER$` constant au lieu d'IP hardcodee
+- **Proxy charge `.env`**: Fonction `_load_env()` au demarrage, plus besoin de variables d'environnement
+- **Install.sh**: Flag `--firmware`, skip si deja installe, stop/start services
+
+### Corrections mineures
+
+- `piper_tts_stream.py`: Retire `voice` param URL (engine selection uniquement via `.env`)
+- `piper_tts_stream.py`: `COQUI_VENV` pointe vers `GLOBAL_DIR/.venv`
+- `vl/locate.jsp`: Ajoute directive `# http`
+- `install/.env.example`: Port par defaut 6790
+
+---
+
 ## 2026-04-18 - Auto-Control + Bug Fixes NTP
 
 ### Auto-control
@@ -67,6 +106,7 @@ Supprimes du firmware. Utiliser `/forth` a la place.
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 2026-04-29 | Corrections NTP, Taichi, LEDs, Installation |
 | 2026-04-18 | Auto-control + Bug NTP + Bug HTTP |
 | 2024-04-15 | Architecture TTS complete |
 | 2024-04-14 | Version initiale Piper TTS |
