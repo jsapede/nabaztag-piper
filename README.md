@@ -141,7 +141,8 @@ Le dossier `homeassistant/` contient la configuration complète à intégrer dan
 ```yaml
 # Dans configuration.yaml
 homeassistant:
-  packages: !include_dir_named nabaztag
+  packages:
+    nabaztag: !include_dir_named nabaztag
 ```
 
 Ou copier le dossier `homeassistant/nabaztag/` vers votre dossier HA `packages/`.
