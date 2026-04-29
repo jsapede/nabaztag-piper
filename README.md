@@ -40,7 +40,7 @@ git clone https://github.com/jsapede/nabaztag-piper.git
 cd nabaztag-piper/install
 
 # Configurer
-cp .env.example /opt/nabaztag-piper/.env
+cp install/.env.example /opt/nabaztag-piper/.env
 vi /opt/nabaztag-piper/.env   # éditer GLOBAL_DIR, TTS_ENGINE...
 
 # Installer (--dry-run pour simuler)
@@ -200,7 +200,7 @@ nabaztag-piper/
 │   ├── install.sh              ← installateur unifié
 │   ├── piper_tts_stream.py     ← proxy TTS
 │   ├── coqui_cli.py            ← CLI Coqui
-│   └── .env.example            ← template .env
+│   └── .env.example            ← template .env (copier vers GLOBAL_DIR)
 ├── vl/                         ← sources Forth du firmware
 ├── firmware/                   ← sources MTL
 ├── homeassistant/              ← configuration HA
