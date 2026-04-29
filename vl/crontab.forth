@@ -27,7 +27,7 @@ play-chor
 then ;
 
 : calc-taichi ( -- ) \ Calculate next taichi time
-taici-freq @
+  taichi-freq @
 case
 255 of 255 endof
  40 of  40 endof

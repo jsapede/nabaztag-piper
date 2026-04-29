@@ -7,6 +7,7 @@
 #   cp .env.example /opt/nabaztag-piper/.env  &&  vi /opt/nabaztag-piper/.env
 #   ./install.sh                              # installation
 #   ./install.sh --dry-run                    # simulation
+#   ./install.sh --firmware                   # recompilation firmware uniquement
 #   ./install.sh --uninstall                  # désinstallation complète
 #
 # Le script détecte si .env a changé et réapplique les modifications.
@@ -17,9 +18,11 @@ set -e
 # ─── Modes ───────────────────────────────────────────────────
 DRY_RUN=false
 UNINSTALL=false
+FIRMWARE_ONLY=false
 for arg in "$@"; do
     [ "$arg" = "--dry-run" ] && DRY_RUN=true
     [ "$arg" = "--uninstall" ] && UNINSTALL=true
+    [ "$arg" = "--firmware" ] && FIRMWARE_ONLY=true
 done
 
 # ─── Chemins automatiques ────────────────────────────────────
@@ -112,6 +115,28 @@ fi
 [ -n "$CHANGED" ] && echo -e " ${YELLOW}Configuration modifiee, reinstallation${NC}"
 echo "═══════════════════════════════════════════════════════"
 
+# ─── Compilation firmware (utilisee par --firmware et etape 7) ─
+
+_compile_firmware() {
+    [ -n "$CHANGED" ] && (run make -C "$SOURCE_DIR" clean 2>/dev/null) || true
+    run sed -i "s|XXX\.XXX\.XXX\.XXX:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|;s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
+        "$SOURCE_DIR/vl/config.forth" 2>/dev/null || true
+    run make -C "$SOURCE_DIR" compiler 2>&1 || echo "   Compilateur deja present ou absent (pre-compiled utilise)"
+    run make -C "$SOURCE_DIR" firmware 2>&1 || true
+    run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
+    if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
+        echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
+    else
+        echo "   AVERTISSEMENT: firmware non compile - utiliser un binaire pre-compile"
+    fi
+}
+
+# ─── Mode firmware uniquement ────────────────────────────
+if [ "$FIRMWARE_ONLY" = true ]; then
+    _compile_firmware
+    exit 0
+fi
+
 # ─── 1. Dossier global ───────────────────────────────────────
 echo ""
 echo "1/10 Dossier global..."
@@ -190,21 +215,7 @@ fi
 # ─── 7. Compilation firmware ─────────────────────────────────
 echo ""
 echo "7/10 Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
-[ -n "$CHANGED" ] && (run make -C "$SOURCE_DIR" clean 2>/dev/null) || true
-# Substituer l'IP du TTS dans config.forth avant compilation
-# Remplace XXX.XXX.XXX.XXX ou une IP existante
-run sed -i "s|XXX\.XXX\.XXX\.XXX:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|;s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
-    "$SOURCE_DIR/vl/config.forth" 2>/dev/null || true
-# Compiler le compilateur MTL (si pas deja fait)
-run make -C "$SOURCE_DIR" compiler 2>&1 || echo "   Compilateur deja present ou absent (pre-compiled utilise)"
-# Compiler le firmware (ou utiliser le pre-compile)
-run make -C "$SOURCE_DIR" firmware 2>&1 || true
-run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
-if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
-    echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
-else
-    echo "   AVERTISSEMENT: firmware non compile - utiliser un binaire pre-compile"
-fi
+_compile_firmware
 
 # ─── 8. Serveur web static-web-server ─────────────────────────
 echo ""

@@ -5,7 +5,7 @@
 // Simple Network Time Protocol client (RFC 2030)
 //--------------------------------------------------------------------------------------------------
 
-const NTP_DELAY = 24 * 60 * 60 * 1000;; // Delay between time server requests (in ms)
+const NTP_DELAY = 60 * 60 * 1000;; // Delay between time server requests (in ms)
 const NTP_PROTOCOL_PORT = 123 ;;
 const NTP_PROTOCOL_EPHEMERAL_PORT = 49123 ;;
 
