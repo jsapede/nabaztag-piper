@@ -36,13 +36,14 @@ run() {
 }
 
 # ─── Chargement .env ─────────────────────────────────────────
-if [ -f "$PROJECT_DIR/.env" ]; then
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    source "$SCRIPT_DIR/.env"
+elif [ -f "$PROJECT_DIR/.env" ]; then
     source "$PROJECT_DIR/.env"
-elif [ -f "$GLOBAL_DIR/.env" ]; then
-    source "$GLOBAL_DIR/.env"
 else
-    echo -e "${RED}ERREUR${NC}: .env introuvable"
-    echo "  Copier install/.env.example vers votre GLOBAL_DIR/.env et editer"
+    echo -e "${RED}ERREUR${NC}: .env introuvable dans $SCRIPT_DIR ni $PROJECT_DIR"
+    echo "  cp install/.env.example .env"
+    echo "  vi .env  # editer la configuration"
     exit 1
 fi
 
@@ -123,7 +124,7 @@ echo "2/10 Copie des fichiers..."
 run cp "$SCRIPT_DIR/piper_tts_stream.py" "$GLOBAL_DIR/"
 run cp "$SCRIPT_DIR/coqui_cli.py" "$GLOBAL_DIR/"
 if [ ! -f "$GLOBAL_DIR/.env" ] || [ -n "$CHANGED" ]; then
-    run cp "$PROJECT_DIR/.env" "$GLOBAL_DIR/.env"
+    run cp "$SCRIPT_DIR/.env" "$GLOBAL_DIR/.env" 2>/dev/null || run cp "$PROJECT_DIR/.env" "$GLOBAL_DIR/.env" 2>/dev/null || true
     echo "   .env synchronise"
 fi
 
