@@ -104,23 +104,24 @@ rest_command:
     timeout: 10
 
   # ========== FIRMWARE AUTO CONTROL ==========
+  # Utilise /autocontrol (params: c=clock, h=halftime, s=surprise, t=taichi)
 
   nabaztag_autocontrol_clock:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ clock }}%20autoclock-enabled%20%21"
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/autocontrol?c={{ clock }}"
     method: get
     timeout: 10
 
   nabaztag_autocontrol_halftime:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ halftime }}%20autohalftime-enabled%20%21"
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/autocontrol?h={{ halftime }}"
     method: get
     timeout: 10
 
   nabaztag_autocontrol_surprise:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ surprise }}%20autosurprise-enabled%20%21"
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/autocontrol?s={{ surprise }}"
     method: get
     timeout: 10
 
   nabaztag_autocontrol_taichi:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ taichi }}%20autotaichi-enabled%20%21"
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/autocontrol?t={{ taichi }}"
     method: get
     timeout: 10
