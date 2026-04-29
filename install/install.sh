@@ -39,18 +39,21 @@ run() {
 }
 
 # ─── Chargement .env ─────────────────────────────────────────
-if [ -f "$SCRIPT_DIR/.env" ]; then
+# .env doit etre dans GLOBAL_DIR (pas dans le repo source)
+GLOBAL_DIR="${GLOBAL_DIR:-/opt/nabaztag-piper}"
+if [ -f "$GLOBAL_DIR/.env" ]; then
+    source "$GLOBAL_DIR/.env"
+elif [ -f "$SCRIPT_DIR/.env" ]; then
     source "$SCRIPT_DIR/.env"
 elif [ -f "$PROJECT_DIR/.env" ]; then
     source "$PROJECT_DIR/.env"
 else
-    echo -e "${RED}ERREUR${NC}: .env introuvable dans $SCRIPT_DIR ni $PROJECT_DIR"
-    echo "  cp install/.env.example .env"
-    echo "  vi .env  # editer la configuration"
+    echo -e "${RED}ERREUR${NC}: .env introuvable"
+    echo "  cp install/.env.example $GLOBAL_DIR/.env"
+    echo "  vi $GLOBAL_DIR/.env  # editer la configuration"
     exit 1
 fi
 
-GLOBAL_DIR="${GLOBAL_DIR:-/opt/nabaztag-piper}"
 SOURCE_DIR="$PROJECT_DIR"
 
 # Nom de voix depuis le chemin
@@ -148,10 +151,6 @@ echo ""
 echo "2/10 Copie des fichiers..."
 run cp "$SCRIPT_DIR/piper_tts_stream.py" "$GLOBAL_DIR/"
 run cp "$SCRIPT_DIR/coqui_cli.py" "$GLOBAL_DIR/"
-if [ ! -f "$GLOBAL_DIR/.env" ] || [ -n "$CHANGED" ]; then
-    run cp "$SCRIPT_DIR/.env" "$GLOBAL_DIR/.env" 2>/dev/null || run cp "$PROJECT_DIR/.env" "$GLOBAL_DIR/.env" 2>/dev/null || true
-    echo "   .env synchronise"
-fi
 
 # ─── 3. Dépendances système ──────────────────────────────────
 echo ""
