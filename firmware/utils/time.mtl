@@ -37,7 +37,7 @@ fun time_is_valid=
 fun _time_calculate_datetime offset=
     let time_high -> h in
     let time_low -> l in
-    let offset * 60 -> offset in
+    let offset * 60 + (time - _ntp_receive_time) -> offset in
     let if (l + offset) > 65536 then h + ((l + offset) >> 16) else h -> h in
     let (l + offset) % 65536 -> l in
     let ((h % 675) * 65536 + l) % 86400 -> time_of_the_day in   // 675 is 86400 >> 7

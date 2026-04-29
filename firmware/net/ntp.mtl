@@ -15,7 +15,8 @@ const NTP_PROTOCOL_EPHEMERAL_PORT = 49123 ;;
 fun _ntp_get_time_cb msg mac ipfrom=
     unregudp NTP_PROTOCOL_EPHEMERAL_PORT;
     set time_high = strgetword msg 40;
-    set time_low = strgetword msg 42;;
+    set time_low = strgetword msg 42;
+    set _ntp_receive_time = time;;
 
 /**
  * Create a NTP request packet
