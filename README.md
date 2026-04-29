@@ -158,7 +158,19 @@ Les 10 scripts Life sont pilotes par HA (pas par le firmware):
 | `firmware/utils/url.mtl` | url_encode/url_decode pour TTS |
 | `firmware/utils/config.mtl` | Francais par defaut |
 | `firmware/protos/ntp_protos.mtl` | Serveur NTP IP fixe |
+| `firmware/forth/stack.mtl` | Fix compilation: reordonnancement + `forth_pick` |
+| `firmware/forth/list.mtl` | Fix compilation: `forth_push_str` deplace |
 | `scripts/preproc.pl` | Timezone Europe/Paris |
+
+### Corrections compilation MTL
+
+Le firmware compile avec **0 erreur** (contre 2 avant correction).
+
+| Erreur | Cause | Correction |
+|--------|-------|------------|
+| `forth_push_str` | Le parseur MTL confond le champ `str` du type `Word` avec le type string `S` dans `[str:x]` | Fonction deplacee dans `forth/list.mtl` apres `[int:n]` qui amorce le parseur |
+| `forth_qdup` | `f.stack` infere `list S` au lieu de `list Word` — absence de contrainte de type avant usage | `forth_depth` (qui utilise `forth_push f [int:l]`) placee AVANT `forth_qdup` dans `stack.mtl` |
+| `forth_pick` | `let n.int -> i in` ne compile pas en MTL | Remplace par `set i = n.int` (l'acces `.int` fonctionne dans `set` mais pas dans `let`) |
 
 ---
 
