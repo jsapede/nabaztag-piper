@@ -136,16 +136,28 @@ Le firmware compile avec **0 erreur**. Endpoints principaux :
 
 ## Home Assistant
 
-Le dossier `homeassistant/` contient la configuration complète à intégrer dans Home Assistant :
+Le dossier `homeassistant/nabaztag/` contient les fichiers YAML de configuration complète
+à intégrer dans Home Assistant sous forme de package.
+
+Il suffit de copier le dossier `nabaztag/` et son contenu dans le dossier `/config` de Home Assistant :
+
+```bash
+/config/nabaztag/
+├── nabaztag_automations.yaml
+├── nabaztag_commands.yaml
+├── nabaztag_inputs.yaml
+├── nabaztag_life.yaml
+├── nabaztag_scripts.yaml
+└── nabaztag_sensors.yaml
+```
+
+Puis dans `configuration.yaml` :
 
 ```yaml
-# Dans configuration.yaml
 homeassistant:
   packages:
     nabaztag: !include_dir_named nabaztag
 ```
-
-Ou copier le dossier `homeassistant/nabaztag/` vers votre dossier HA `packages/`.
 
 ```bash
 homeassistant/
