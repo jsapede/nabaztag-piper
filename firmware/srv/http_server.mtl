@@ -407,6 +407,9 @@ fun http_get_setup sock args=
     config_set_wake_up http_arg_int args 'w';         // set wake up time
     config_set_go_to_bed http_arg_int args 'b';       // set go to bed time
     config_set_taichi_freq http_arg_int args 't';     // set taichi frequency
+    let http_arg_str args 'u' -> server_url in         // set server URL (pour mode SERVERLESS)
+        if server_url != nil then
+            config_set_server_url server_url;
     config_save;
     forth_interpreter WORD_UPDATE_WEATHER;
     http_send_header_and_close HTTP_204 nil sock;;

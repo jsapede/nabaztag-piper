@@ -205,6 +205,8 @@ fun _forth_memory_set_special f addr value=
         config_set_go_to_bed value.int
     else if addr == FORTH_MEMORY_NTP_SERVER then
         set ntp_server = value.str
+    else if addr == FORTH_MEMORY_SERVER_URL then
+        config_set_server_url value.str
     else if addr == FORTH_MEMORY_MD5_PASSWORD then
         set config_md5_password = value.str
     else if addr == FORTH_MEMORY_LEDS_BASE_BREATHING then (
