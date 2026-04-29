@@ -40,6 +40,6 @@ drop drop ;
 : say ( text --  )  \ Text to speech
 sleeping? invert if  \ if not sleeping
 url-encode >r
-nil "http://192.168.0.42:6790/say?t=" :: r> :: str-join \ url
+nil TTS-SERVER$ :: r> :: str-join \ url
 play-url
 then ;

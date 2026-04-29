@@ -1,5 +1,35 @@
 # Changelog - Nabaztag Serverless TTS
 
+## 2026-04-29 - Service systemd generique + TTS IP externalisee
+
+### Service systemd generique
+
+`piper-tts.service`: template avec `__INSTALL_DIR__` remplacable par sed.
+`install.sh`: script d'installation automatique qui configure le chemin.
+
+```bash
+./install.sh /opt/nabaztag-piper
+```
+
+### TTS IP externalisee dans `vl/config.forth`
+
+**Avant** : IP du TTS en dur dans `vl/hooks.forth` (ligne 43)
+**Apres** : Constante `TTS-SERVER$` dans `vl/config.forth` (ligne 12)
+
+```forth
+" http://192.168.0.42:6790/say?t=" constant TTS-SERVER$
+```
+
+L'utilisateur change l'IP avant recompilation, sans toucher au code de `hooks.forth`.
+
+### Documentation
+
+- README : section "Installation du proxy TTS" completee
+- README : nouvelle section "Modifier l'adresse du serveur TTS"
+- .env.example : ajout de `TTS_SERVER` et `TTS_PORT`
+
+---
+
 ## 2026-04-29 - Refactoring REST commands + Nettoyage final
 
 ### Refactoring REST commands (HA)
@@ -149,6 +179,7 @@ Nouveaux endpoints REST pour controler les 4 drapeaux auto-control:
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 2026-04-29 | Service generique + TTS IP externalisee + README |
 | 2026-04-29 | Refactoring REST commands + autostatus + sensors |
 | 2026-04-18 | Auto-control + Bug NTP + Bug HTTP |
 | 2024-04-15 | Architecture TTS complete |

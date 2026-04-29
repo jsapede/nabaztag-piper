@@ -176,19 +176,86 @@ Le firmware compile avec **0 erreur** (contre 2 avant correction).
 
 ## Installation du proxy TTS
 
-### Deploiement
+### Prérequis
 
 ```bash
-# Installer les dependances
+# Dépendances système
 apt install ffmpeg espeak-ng python3-pip
 
-# Copier et lancer
-python3 tts_server.py --port 6790
+# Piper (modèle neuronal français)
+# → https://github.com/OHF-Voice/piper1-gpl
+# ou via pip: pip install piper-tts
 ```
 
-### Variables d'environnement
+### Installation automatique
 
-Voir `.env.example` pour toutes les options configurables.
+```bash
+# 1. Copier et éditer la configuration
+cp .env.example .env
+# → Éditer .env : PIPER_BINARY, PIPER_VOICES_FOLDER
+
+# 2. Installer le service systemd
+chmod +x install.sh
+./install.sh /chemin/vers/le/projet
+
+# 3. Vérifier
+journalctl -u piper-tts -f
+```
+
+### Installation manuelle
+
+```bash
+# Adapter les chemins dans piper-tts.service
+sed 's|__INSTALL_DIR__|/opt/nabaztag-piper|g' piper-tts.service > /etc/systemd/system/piper-tts.service
+
+systemctl daemon-reload
+systemctl enable --now piper-tts
+```
+
+### Test
+
+```bash
+# Générer un fichier WAV de test
+curl 'http://192.168.0.42:6790/say?t=bonjour' -o /tmp/test.wav
+file /tmp/test.wav  # → RIFF WAVE audio
+```
+
+---
+
+## Modifier l'adresse du serveur TTS
+
+Le serveur TTS Piper tourne sur `192.168.0.42:6790`. Si vous devez le deplacer :
+
+### 1. Dans le firmware (avant recompilation)
+
+**Fichier**: `vl/config.forth` ligne 12
+
+```forth
+" http://NEW_IP:6790/say?t=" constant TTS-SERVER$
+```
+
+Remplacer `NEW_IP` par l'adresse de votre serveur TTS.
+
+### 2. Variable d'environnement
+
+**Fichier**: `.env`
+
+```bash
+TTS_SERVER=NEW_IP
+TTS_PORT=6790
+```
+
+### 3. Recompiler le firmware
+
+```bash
+make firmware
+```
+
+### 4. Redemarrer le service
+
+```bash
+systemctl restart piper-tts
+```
 
 ---
 
