@@ -139,21 +139,12 @@ Le firmware compile avec **0 erreur**. Endpoints principaux :
 Le dossier `homeassistant/` contient la configuration complète à intégrer dans Home Assistant :
 
 ```yaml
-# Dans configuration.yaml de Home Assistant (ou packages/)
+# Dans configuration.yaml
 homeassistant:
-  packages:
-    nabaztag: !include_dir_named ../path/to/nabaztag-piper/homeassistant/nabaztag
-    nabaztag_lovelace: !include_dir_named ../path/to/nabaztag-piper/homeassistant/lovelace
+  packages: !include_dir_named nabaztag
 ```
 
-Ou copier le dossier `homeassistant/nabaztag/` dans votre dossier `packages/` :
-
-```bash
-cp -r homeassistant/nabaztag /config/packages/
-# puis dans configuration.yaml :
-homeassistant:
-  packages: !include_dir_named packages
-```
+Ou copier le dossier `homeassistant/nabaztag/` vers votre dossier HA `packages/`.
 
 ```bash
 homeassistant/
