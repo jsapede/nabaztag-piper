@@ -136,8 +136,7 @@ which uv >/dev/null 2>&1 && echo "   uv present" || (curl -LsSf https://astral.s
 export PATH="$HOME/.local/bin:$PATH"
 which uv >/dev/null 2>&1 || (echo "ERREUR: uv non installe"; exit 1)
 
-DEPS="espeak-ng ffmpeg python3-pip"
-[ "$BUILD_FIRMWARE" = "true" ] && DEPS="$DEPS build-essential make"
+DEPS="espeak-ng ffmpeg python3-pip build-essential make"
 run apt-get update -qq
 run apt-get install -y -qq $DEPS
 
@@ -184,38 +183,26 @@ fi
 
 # ─── 7. Compilation firmware ─────────────────────────────────
 echo ""
-if [ "$BUILD_FIRMWARE" = "true" ]; then
-    echo "7/10 Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
-    [ -n "$CHANGED" ] && run make -C "$SOURCE_DIR" clean 2>/dev/null || true
-    # Substituer l'IP du TTS dans config.forth avant compilation
-    run sed -i "s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
-        "$SOURCE_DIR/vl/config.forth"
-    run make -C "$SOURCE_DIR" compiler 2>&1
-    run make -C "$SOURCE_DIR" firmware 2>&1
-    run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/"
-    echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
-else
-    echo "7/10 Compilation ignoree"
-fi
+echo "7/10 Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
+[ -n "$CHANGED" ] && run make -C "$SOURCE_DIR" clean 2>/dev/null || true
+# Substituer l'IP du TTS dans config.forth avant compilation
+run sed -i "s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
+    "$SOURCE_DIR/vl/config.forth"
+run make -C "$SOURCE_DIR" compiler 2>&1
+run make -C "$SOURCE_DIR" firmware 2>&1
+run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/"
+echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
 
 # ─── 8. Serveur web static-web-server ─────────────────────────
 echo ""
-if [ "$ENABLE_WEB_SERVER" = "true" ]; then
-    echo "8/10 Installation serveur web..."
-    if [ ! -f "$SWS_BIN" ] || [ -n "$CHANGED" ]; then
-        SWS_URL="https://github.com/static-web-server/static-web-server/releases/download/$SWS_VERSION/static-web-server-$SWS_VERSION-x86_64-unknown-linux-gnu.tar.gz"
-        run wget -q "$SWS_URL" -O /tmp/sws.tar.gz
-        SWS_DIR=$(tar tzf /tmp/sws.tar.gz | head -1 | cut -d/ -f1)
-        run tar xzf /tmp/sws.tar.gz -C /usr/local/bin/ --strip-components=1 "$SWS_DIR/static-web-server"
-        run chmod +x "$SWS_BIN"
-        run rm -f /tmp/sws.tar.gz
-    fi
-    # Copier le firmware si compilé
-    if [ -d "$SOURCE_DIR/vl" ] && [ ! -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
-        run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/"
-    fi
-else
-    echo "8/10 Serveur web ignore"
+echo "8/10 Installation serveur web..."
+if [ ! -f "$SWS_BIN" ] || [ -n "$CHANGED" ]; then
+    SWS_URL="https://github.com/static-web-server/static-web-server/releases/download/$SWS_VERSION/static-web-server-$SWS_VERSION-x86_64-unknown-linux-gnu.tar.gz"
+    run wget -q "$SWS_URL" -O /tmp/sws.tar.gz
+    SWS_DIR=$(tar tzf /tmp/sws.tar.gz | head -1 | cut -d/ -f1)
+    run tar xzf /tmp/sws.tar.gz -C /usr/local/bin/ --strip-components=1 "$SWS_DIR/static-web-server"
+    run chmod +x "$SWS_BIN"
+    run rm -f /tmp/sws.tar.gz
 fi
 
 # ─── 9. Service nabaztag-tts ─────────────────────────────────
@@ -253,8 +240,9 @@ rm -f /tmp/nabaztag-tts.service
 
 # ─── 10. Service nabaztag-webserver ──────────────────────────
 echo ""
-if [ "$ENABLE_WEB_SERVER" = "true" ]; then
+if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
     echo "10/10 Service nabaztag-webserver..."
+    WEB_PORT="${WEB_SERVER_PORT:-80}"
     WEB_CONTENT="[Unit]
 Description=Nabaztag Firmware Web Server
 After=network.target
@@ -283,6 +271,10 @@ WantedBy=multi-user.target
     fi
     rm -f /tmp/nabaztag-webserver.service
 else
+    echo "10/10 Service web : firmware non compile, service DESACTIVE"
+fi
+    rm -f /tmp/nabaztag-webserver.service
+else
     echo "10/10 Service web ignore"
 fi
 
@@ -294,13 +286,11 @@ echo ""
 echo "  Proxy TTS : $GLOBAL_DIR/piper_tts_stream.py"
 echo "  Moteur    : ${TTS_ENGINE:-piper}"
 echo "  Port TTS  : ${TTS_PORT:-6790}"
-if [ "$ENABLE_WEB_SERVER" = "true" ]; then
-    echo "  Web serveur: http://localhost:${WEB_SERVER_PORT:-80}/vl/"
-fi
+echo "  Web serveur: http://localhost:${WEB_SERVER_PORT:-80}/vl/"
 echo ""
 echo "  systemctl status nabaztag-tts"
 echo "  journalctl -u nabaztag-tts -f"
-[ "$ENABLE_WEB_SERVER" = "true" ] && echo "  journalctl -u nabaztag-webserver -f"
+echo "  journalctl -u nabaztag-webserver -f"
 echo ""
 echo "  Desinstaller : ./install.sh --uninstall"
 echo "═══════════════════════════════════════════════════════"

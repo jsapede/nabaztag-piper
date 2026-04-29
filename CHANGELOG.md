@@ -1,5 +1,22 @@
 # Changelog - Nabaztag Serverless TTS
 
+## 2026-04-29 - Compilation firmware toujours + serveur web automatique
+
+BUILD_FIRMWARE et ENABLE_WEB_SERVER supprimes du .env. Le firmware est
+toujours compile, le serveur web est toujours installe et demarre des
+que le fichier bc.jsp est present dans le dossier firmware/vl/.
+
+### Changements
+
+| Fichier | Changement |
+|---------|-----------|
+| `.env` | Suppression BUILD_FIRMWARE, ENABLE_WEB_SERVER |
+| `.env.example` | Idem |
+| `install/install.sh` | Compilation toujours, serveur web avec check bc.jsp |
+| `README.md` | Suppression mentions BUILD_FIRMWARE/ENABLE_WEB_SERVER |
+
+---
+
 ## 2026-04-29 - IP TTS auto-détectée + divers correctifs
 
 ### IP TTS obligatoire dans .env

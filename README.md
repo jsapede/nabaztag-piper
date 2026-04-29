@@ -74,10 +74,10 @@ file test.wav                 # → RIFF WAVE 16000 Hz
 | 4 | pip install piper-tts | — |
 | 5 | Télécharge la voix Piper (.onnx) | PIPER_VOICE_PATH |
 | 6 | Installe Coqui (venv + PyTorch CPU) | TTS_ENGINE=coqui |
-| 7 | Compile le firmware | BUILD_FIRMWARE=true |
-| 8 | Installe static-web-server | ENABLE_WEB_SERVER=true |
+| 7 | **Compile le firmware** (toujours) | TTS_SERVER_IP |
+| 8 | Installe static-web-server | — |
 | 9 | Crée le service nabaztag-tts | — |
-| 10 | Crée le service nabaztag-webserver | ENABLE_WEB_SERVER=true |
+| 10 | Crée le service nabaztag-webserver (si bc.jsp présent) | — |
 
 ### Configuration (.env)
 
@@ -87,6 +87,7 @@ TTS_SERVER_IP=XXX.XXX.XXX.XXX        # IP du proxy TTS (obligatoire)
 TTS_PORT=6790
 TTS_ENGINE=piper                     # piper | coqui
 PIPER_VOICE_PATH=fr/fr_FR/siwis/medium
+WEB_SERVER_PORT=80
 ```
 
 > **⚠️ `TTS_SERVER_IP` est obligatoire.** Par défaut (`XXX.XXX.XXX.XXX`),
