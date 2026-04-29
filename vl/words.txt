@@ -119,6 +119,7 @@ RESUME-TASK    ( task-id -- flag )                      Resume the task with the
 REVISION       ( -- str )                               Push the revision string onto the stack
 ROT            ( n1 n2 n3 -- n2 n3 n1 )                 Rotate third item to top
 SAY            ( text --  )                             Text to speech
+SAY-PUSH       ( str -- ) (internal)                    Push a string onto the Forth stack for the say word
 SET-INFO-ANIMATION ( data n -- )                        Set info animation n from json
 SLEEP          ( -- )                                   Put the Nabaztag into sleep mode
 SLEEPING-TIME? ( -- flag )                              Check if current hour is in the sleep interval
@@ -158,6 +159,10 @@ XOR            ( n1 n2 -- flag )                        Logical XOR
 Variables
 ---------
 
+AUTOCLOCK-ENABLED                                       Auto clock enabled
+AUTOHALFTIME-ENABLED                                    Auto halftime enabled
+AUTOSURPRISE-ENABLED                                    Auto surprise enabled
+AUTOTAICHI-ENABLED                                      Auto taichi enabled
 CITY-CODE                                               City code (timezone)
 CRONTAB-LAST-MINUTE                                     Crontab last checked minute
 DST                                                     Daylight Saving Time

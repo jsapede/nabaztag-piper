@@ -26,6 +26,11 @@ type Forth=[
     forth_task          // associated task
 ];;
 
+var _autoclock_enabled = 1;;
+var _autohalftime_enabled = 1;;
+var _autosurprise_enabled = 1;;
+var _autotaichi_enabled = 1;;
+
 proto forth_compare_words 2;;
 proto forth_dict_to_str 2;;
 proto forth_execute_code 2;;
@@ -40,7 +45,7 @@ proto forth_interpreter_resume 1;;
 proto forth_interpreter_setup 5;;
 proto forth_list_to_str 2;;
 proto forth_new_state 0;;
-proto forth_push_str 2;;
+proto forth_say_push 2;;
 proto forth_word_fmt 1;;
 proto forth_word_list_to_array 1;;
 

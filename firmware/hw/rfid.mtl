@@ -65,7 +65,7 @@ fun rfid_control=
 
             // RFID hook
             let forth_new_state -> f in (
-                forth_push_str f webmac rfid;
+                set f.stack = [str:webmac netMac] :: [str:rfid] :: f.stack;
                 forth_interpreter_ex WORD_ON_RFID f nil nil nil
             )
 		)

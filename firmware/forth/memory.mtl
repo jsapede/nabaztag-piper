@@ -39,6 +39,10 @@ const FORTH_MEMORY_LEDS_OVERRIDE_CENTER = (1<<29) + 38 + 2;;
 const FORTH_MEMORY_LEDS_OVERRIDE_RIGHT = (1<<29) + 38 + 3;;
 const FORTH_MEMORY_LEDS_OVERRIDE_BASE = (1<<29) + 38 + 4;;
 const FORTH_MEMORY_LEDS_BASE_BREATHING = (1<<29) + 43;;
+const FORTH_MEMORY_AUTOCLOCK_ENABLED  = (1<<29) + 44;;
+const FORTH_MEMORY_AUTOHALFTIME_ENABLED = (1<<29) + 45;;
+const FORTH_MEMORY_AUTOSURPRISE_ENABLED = (1<<29) + 46;;
+const FORTH_MEMORY_AUTOTAICHI_ENABLED  = (1<<29) + 47;;
 
 type MemoryBlock = [
     memory_block_size   // size of the memory block
@@ -156,6 +160,14 @@ fun _forth_memory_get_special f addr=
         [str:config_md5_password]
     else if addr == FORTH_MEMORY_LEDS_BASE_BREATHING then
         [int:leds_base_breathing]
+    else if addr == FORTH_MEMORY_AUTOCLOCK_ENABLED then
+        [int:_autoclock_enabled]
+    else if addr == FORTH_MEMORY_AUTOHALFTIME_ENABLED then
+        [int:_autohalftime_enabled]
+    else if addr == FORTH_MEMORY_AUTOSURPRISE_ENABLED then
+        [int:_autosurprise_enabled]
+    else if addr == FORTH_MEMORY_AUTOTAICHI_ENABLED then
+        [int:_autotaichi_enabled]
     else if addr == FORTH_MEMORY_INFO_DURATION then
         [int:info_duration]
     else if addr >= FORTH_MEMORY_INFO_PALETTE && addr < FORTH_MEMORY_INFO_PALETTE + FORTH_MEMORY_INFO_PALETTE_SIZE then
@@ -197,6 +209,18 @@ fun _forth_memory_set_special f addr value=
         set config_md5_password = value.str
     else if addr == FORTH_MEMORY_LEDS_BASE_BREATHING then (
         set leds_base_breathing = value.int; nil
+    )
+    else if addr == FORTH_MEMORY_AUTOCLOCK_ENABLED then (
+        set _autoclock_enabled = value.int; nil
+    )
+    else if addr == FORTH_MEMORY_AUTOHALFTIME_ENABLED then (
+        set _autohalftime_enabled = value.int; nil
+    )
+    else if addr == FORTH_MEMORY_AUTOSURPRISE_ENABLED then (
+        set _autosurprise_enabled = value.int; nil
+    )
+    else if addr == FORTH_MEMORY_AUTOTAICHI_ENABLED then (
+        set _autotaichi_enabled = value.int; nil
     )
     else if addr == FORTH_MEMORY_INFO_DURATION then (
         set info_duration = value.int; nil

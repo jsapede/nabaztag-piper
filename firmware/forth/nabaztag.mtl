@@ -140,3 +140,11 @@ fun forth_gc f=
  */
 fun forth_revision f=
     forth_push f [str:BYTECODE_REVISION_STR];;
+
+/**
+ * SAY-PUSH ( str -- ) (internal)
+ * Push a string onto the Forth stack for the say word
+ */
+fun forth_say_push f text=
+    forth_push f [str:text];
+    0;;
