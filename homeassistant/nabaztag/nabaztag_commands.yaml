@@ -18,7 +18,7 @@ rest_command:
   # ========== TEXT TO SPEECH ==========
 
   nabaztag_say:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/say?t={{ message | urlencode }}"
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/say?t={{ message }}"
     method: get
     timeout: 30
 
