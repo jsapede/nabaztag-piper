@@ -5,7 +5,8 @@
 \  2. Changer language$ si besoin (fr/en/es/de/it)
 
 \ TTS Server address (changez ici avant de recompiler)
-" http://192.168.0.42:6790/say?t=" constant TTS-SERVER$
+\ Modifie automatiquement par install.sh via TTS_SERVER_IP et TTS_PORT dans .env
+" http://XXX.XXX.XXX.XXX:6790/say?t=" constant TTS-SERVER$
 
 \ Language (fr = default)
 " fr" constant LANGUAGE$

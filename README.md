@@ -83,9 +83,19 @@ file test.wav                 # → RIFF WAVE 16000 Hz
 
 ```bash
 GLOBAL_DIR=/opt/nabaztag-piper       # dossier d'exécution
-TTS_ENGINE=piper                     # piper | coqui
+TTS_SERVER_IP=XXX.XXX.XXX.XXX        # IP du proxy TTS (obligatoire)
 TTS_PORT=6790
+TTS_ENGINE=piper                     # piper | coqui
 PIPER_VOICE_PATH=fr/fr_FR/siwis/medium
+```
+
+> **⚠️ `TTS_SERVER_IP` est obligatoire.** Par défaut (`XXX.XXX.XXX.XXX`),
+> `install.sh` détecte automatiquement l'IP de la machine et demande
+> confirmation. Le Nabaztag doit pouvoir joindre cette IP sur le port `TTS_PORT`.
+> Si le proxy TTS change de machine, modifiez cette IP et relancez `install.sh`.    
+
+
+### Changer la voix Piper
 BUILD_FIRMWARE=true                  # compiler le firmware
 ENABLE_WEB_SERVER=true               # servir le firmware
 WEB_SERVER_PORT=80

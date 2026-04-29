@@ -93,6 +93,21 @@ echo " Source  : $SOURCE_DIR"
 echo " Global  : $GLOBAL_DIR"
 echo " Moteur  : ${TTS_ENGINE:-piper}"
 echo " VoIP    : $VOICE_NAME"
+
+# ─── Détection IP TTS ────────────────────────────────────
+TTS_SERVER_IP="${TTS_SERVER_IP:-XXX.XXX.XXX.XXX}"
+if [ "$TTS_SERVER_IP" = "XXX.XXX.XXX.XXX" ]; then
+    DETECTED_IP=$(hostname -I | awk '{print $1}')
+    echo ""
+    echo -e " ${YELLOW}⚠️  TTS_SERVER_IP non configure${NC}"
+    echo "   IP detectee : $DETECTED_IP"
+    echo "   Le Nabaztag utilisera cette IP pour le TTS"
+    echo "   (port ${TTS_PORT:-6790})"
+    echo ""
+    printf "   Confirmer l'IP [%s] : " "$DETECTED_IP"
+    read -r input
+    TTS_SERVER_IP="${input:-$DETECTED_IP}"
+fi
 [ -n "$CHANGED" ] && echo -e " ${YELLOW}Configuration modifiee, reinstallation${NC}"
 echo "═══════════════════════════════════════════════════════"
 
@@ -170,8 +185,11 @@ fi
 # ─── 7. Compilation firmware ─────────────────────────────────
 echo ""
 if [ "$BUILD_FIRMWARE" = "true" ]; then
-    echo "7/10 Compilation du firmware..."
+    echo "7/10 Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
     [ -n "$CHANGED" ] && run make -C "$SOURCE_DIR" clean 2>/dev/null || true
+    # Substituer l'IP du TTS dans config.forth avant compilation
+    run sed -i "s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
+        "$SOURCE_DIR/vl/config.forth"
     run make -C "$SOURCE_DIR" compiler 2>&1
     run make -C "$SOURCE_DIR" firmware 2>&1
     run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/"

@@ -1,5 +1,27 @@
 # Changelog - Nabaztag Serverless TTS
 
+## 2026-04-29 - IP TTS auto-détectée + divers correctifs
+
+### IP TTS obligatoire dans .env
+
+`TTS_SERVER_IP` doit être renseigné dans `.env`. Par défaut (`XXX.XXX.XXX.XXX`),
+`install.sh` détecte l'IP de la machine hôte et demande confirmation avant
+de compiler le firmware. La substitution est automatique dans `vl/config.forth`.
+
+Changement d'IP : modifier `.env` et relancer `install.sh` → recompilation.
+
+### Fichiers modifiés
+
+| Fichier | Changement |
+|---------|-----------|
+| `.env` | Ajout `TTS_SERVER_IP=XXX.XXX.XXX.XXX` |
+| `.env.example` | Idem + commentaires |
+| `install/install.sh` | Détection IP + confirmation + sed avant compilation |
+| `vl/config.forth` | IP remplacée par placeholder + commentaire |
+| `README.md` | Note sur l'obligation IP TTS |
+
+---
+
 ## 2026-04-29 - Version finale multi-TTS
 
 ### Architecture générale
