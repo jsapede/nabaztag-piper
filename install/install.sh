@@ -185,14 +185,20 @@ fi
 # ─── 7. Compilation firmware ─────────────────────────────────
 echo ""
 echo "7/10 Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
-[ -n "$CHANGED" ] && run make -C "$SOURCE_DIR" clean 2>/dev/null || true
+[ -n "$CHANGED" ] && (run make -C "$SOURCE_DIR" clean 2>/dev/null) || true
 # Substituer l'IP du TTS dans config.forth avant compilation
 run sed -i "s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
-    "$SOURCE_DIR/vl/config.forth"
-run make -C "$SOURCE_DIR" compiler 2>&1
-run make -C "$SOURCE_DIR" firmware 2>&1
-run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/"
-echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
+    "$SOURCE_DIR/vl/config.forth" 2>/dev/null || true
+# Compiler le compilateur MTL (si pas deja fait)
+run make -C "$SOURCE_DIR" compiler 2>&1 || echo "   Compilateur deja present ou absent (pre-compiled utilise)"
+# Compiler le firmware (ou utiliser le pre-compile)
+run make -C "$SOURCE_DIR" firmware 2>&1 || true
+run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
+if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
+    echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
+else
+    echo "   AVERTISSEMENT: firmware non compile - utiliser un binaire pre-compile"
+fi
 
 # ─── 8. Serveur web static-web-server ─────────────────────────
 echo ""

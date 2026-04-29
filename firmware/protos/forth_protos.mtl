@@ -52,3 +52,5 @@ const FORTH_STATE_COMPILATION = -1;;
 
 const FORTH_IMMEDIATE = 1;;
 const FORTH_ASYNC = 2;;
+
+

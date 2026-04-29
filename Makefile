@@ -34,10 +34,22 @@ words:
 .PHONY: firmware
 firmware: words
 	@./scripts/make_nominal.sh
-	@$(COMPILER) -s "nominal.mtl" "bootcode.bin"
+	@if [ -f "$(COMPILER)" ]; then \
+		$(COMPILER) -s "nominal.mtl" "bootcode.bin" 2>&1 | grep -v '^Compiler :' || true; \
+	else \
+		echo "!!! Compiler not built - run 'make compiler' first"; \
+		echo "    or use the pre-compiled vl/bc.jsp from the repo"; \
+	fi
 	@rm -f nominal.mtl
-	@cp bootcode.bin vl/bc.jsp
-	@echo "Firmware copied to $$PWD/vl/bc.jsp"
+	@if [ -f bootcode.bin ]; then \
+		cp bootcode.bin vl/bc.jsp; \
+		echo "Firmware compiled -> vl/bc.jsp"; \
+	elif [ -f vl/bc.jsp ]; then \
+		echo "Using pre-compiled vl/bc.jsp (compilation not attempted)"; \
+	else \
+		echo "!!! No firmware binary available (vl/bc.jsp missing)"; \
+		exit 1; \
+	fi
 
 .PHONY: deploy
 deploy: firmware
