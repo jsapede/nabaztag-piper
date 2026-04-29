@@ -436,7 +436,13 @@ fun http_get_autocontrol sock args=
     forth_interpreter_ex code nil nil nil (fixarg2 #_http_autocontrol_cb sock);;
 
 /**
+<<<<<<< Updated upstream
  * Auto-status callback: reads 4 Forth variables from stack via forth_interpreter_ex
+=======
+ * Auto-status callback: reads 4 Forth variables from stack
+ * Forth code: "autoclock-enabled @ autohalftime-enabled @ autosurprise-enabled @ autotaichi-enabled @"
+ * Stack after: [taichi, surprise, halftime, clock] (top-to-bottom)
+>>>>>>> Stashed changes
  */
 fun _http_autostatus_cb f sock=
     let hd f.stack -> taichi_val in
@@ -451,8 +457,14 @@ fun _http_autostatus_cb f sock=
     http_send_content_and_close sock "application/json" json;;
 
 /**
+<<<<<<< Updated upstream
  * Auto-status: GET current auto-control flags as JSON
  * Uses Forth interpreter (MTL cannot read Forth variables directly)
+=======
+ * Auto-status: Get current status of automatic features
+ * Returns JSON: {"clock":1,"halftime":1,"surprise":1,"taichi":1}
+ * Uses forth_interpreter_ex (MTL cannot read Forth variables directly)
+>>>>>>> Stashed changes
  */
 fun http_get_autostatus sock args=
     forth_interpreter_ex 

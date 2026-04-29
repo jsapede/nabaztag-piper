@@ -38,6 +38,22 @@ http_get_autostatus: execute "autoclock-enabled @ autohalftime-enabled @ ..."
 
 **Endpoint**: `GET /autostatus` → `{"clock":1,"halftime":1,"surprise":1,"taichi":1}`
 
+### Fix compilation MTL (zero erreur)
+
+Deux erreurs de typage MTL corrigees :
+
+**`forth_push_str`** — Le compilateur MTL ne peut pas utiliser `[str:x]` (le nom `str`
+entre en conflit avec le type string `S`). Solution : deplacer la fonction dans
+`forth/list.mtl` apres `[int:n]` qui amorce le parseur de litteraux struct.
+
+**`forth_qdup`** — Erreur de chainage d'inference (`f.stack` non type `list Word`).
+Solution : reordonner les fonctions dans `stack.mtl` — `forth_depth` (qui utilise
+`forth_push f [int:l]`) placee AVANT `forth_qdup` (qui necessite `f.stack : list Word`).
+
+Le firmware compile maintenant **sans aucune erreur**.
+
+**Fichier**: `firmware/forth/stack.mtl`, `firmware/forth/list.mtl`
+
 ### Fix `/autocontrol` (compilation)
 
 Le code MTL original `set autoclock-enabled@=clock` ne compile pas.
