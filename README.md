@@ -139,17 +139,25 @@ Le firmware compile avec **0 erreur**. Endpoints principaux :
 Le dossier `homeassistant/` contient la configuration complète :
 
 ```bash
-homeassistant/nabaztag/
-├── nabaztag_automations.yaml   # 4 automations
-├── nabaztag_scripts.yaml       # 12 scripts
-├── nabaztag_commands.yaml      # 2 REST commands (nabaztag_api + nabaztag_autocontrol)
-├── nabaztag_inputs.yaml        # 18 helpers
-├── nabaztag_life.yaml          # 10 scripts Life + 5 automations
-└── nabaztag_sensors.yaml       # 2 REST sensors (/status, /autostatus)
-homeassistant/lovelace/
-├── nabaztag_lovelace.yaml      # Dashboard principal
-├── nabaztag_lovelace_config.yaml
-└── nabaztag_led_guide.yaml     # Guide des LEDs
+homeassistant/
+├── nabaztag/                    ← Config HA (automations, scripts, commands...)
+│   ├── nabaztag_automations.yaml
+│   ├── nabaztag_scripts.yaml
+│   ├── nabaztag_commands.yaml
+│   ├── nabaztag_inputs.yaml
+│   ├── nabaztag_life.yaml
+│   └── nabaztag_sensors.yaml
+├── lovelace/                    ← Cartes du dashboard
+│   ├── nabaztag_lovelace.yaml
+│   ├── nabaztag_lovelace_config.yaml
+│   └── nabaztag_led_guide.yaml
+└── docs/                        ← Documentation détaillée
+    ├── AUTOMATIONS.md           ← Guide des automations
+    ├── SCRIPTS.md               ← Guide des scripts
+    ├── REST_COMMANDS.md         ← Guide des commandes REST
+    ├── INPUTS.md                ← Guide des helpers/inputs
+    ├── NABAZTAG_LIFE.md         ← Guide du module Life
+    └── SOUNDS_GUIDE.md          ← Guide des sons et animations
 ```
 
 ## Structure du projet
