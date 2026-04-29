@@ -133,6 +133,20 @@ Chaque flag a son `input_boolean` dans HA (`nabaztag_firmware_clock`, etc.)
 et son toggle est automatiquement sync avec le firmware via l'automation
 `nabaztag_firmware_toggle`.
 
+### Architecture TTS
+
+Le texte a prononcer circule ainsi :
+
+```
+HA ──▶ /say?t=message ──▶ firmware say() ──▶ TTS-SERVER$ ──▶ Piper TTS
+```
+
+HA appelle simplement `GET /say?t=message` (via `rest_command.nabaztag_api`).
+L'adresse du serveur TTS est definie dans `vl/config.forth` (constante `TTS-SERVER$`).
+
+**Pour changer l'IP du TTS** : editer `vl/config.forth` ligne 12 et recompiler le firmware.
+Aucun changement necessaire dans la configuration Home Assistant.
+
 ---
 
 ## Nabaztag Life (HA pilote)
@@ -149,7 +163,7 @@ Les 10 scripts Life sont pilotes par HA (pas par le firmware):
 
 | Fichier | Modification |
 |---------|-------------|
-| `vl/config.forth` | 4 variables auto-control + auth desactivee |
+| `vl/config.forth` | 4 variables auto-control + constante TTS-SERVER$ + auth desactivee |
 | `vl/hooks.forth` | Verification drapeaux clock/halftime + TTS Piper |
 | `vl/crontab.forth` | Verification drapeaux surprise/taichi |
 | `firmware/srv/http_server.mtl` | /autocontrol, /autostatus, fixes HTTP |
