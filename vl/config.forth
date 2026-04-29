@@ -4,7 +4,7 @@
 \ via TTS_SERVER_IP et TTS_PORT dans .env
 
 \ TTS Server address (modifie par install.sh)
-" http://XXX.XXX.XXX.XXX:6790/say?t=" constant TTS-SERVER$
+"http://192.168.0.42:6970/say?t=" constant TTS-SERVER$
 
 \ Authentication (disabled for open access)
 \ "nabaztag" username !
