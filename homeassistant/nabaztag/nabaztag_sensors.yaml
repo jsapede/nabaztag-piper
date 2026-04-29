@@ -29,20 +29,4 @@ sensor:
     scan_interval: 120
     timeout: 10
 
-  # ========== FIRMWARE AUTO STATUS ==========
-  # Récupère l'état réel des 4 flags firmware depuis /autostatus
-  # Permet de vérifier la syncro avec les input_boolean HA
 
-  - platform: rest
-    name: "Nabaztag Firmware Auto Status"
-    unique_id: nabaztag_firmware_autostatus
-    resource_template: "http://{{ states('input_text.nabaztag_ip_address') }}/autostatus"
-    method: GET
-    value_template: "OK"
-    json_attributes:
-      - clock
-      - halftime
-      - surprise
-      - taichi
-    scan_interval: 60
-    timeout: 10

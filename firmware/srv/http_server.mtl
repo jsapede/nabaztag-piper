@@ -435,9 +435,6 @@ fun http_get_autocontrol sock args=
         nil -> code in
     forth_interpreter_ex code nil nil nil (fixarg2 #_http_autocontrol_cb sock);;
 
-// /autostatus removed: MTL compiler cannot read Forth variables directly.
-// Use /forth with "autoclock-enabled @ . cr autohalftime-enabled @ ." instead.
-
 /**
  * Format a list of words to a string
  */

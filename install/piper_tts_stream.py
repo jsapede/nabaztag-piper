@@ -326,7 +326,6 @@ class TTSHandler(BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         params = dict(urllib.parse.parse_qsl(parsed.query))
         text = params.get("t", "")
-        voice = params.get("voice", VOICE)  # Default from config
 
         if not text:
             self.send_response(400)
