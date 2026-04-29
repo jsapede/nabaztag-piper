@@ -1,315 +1,179 @@
-# Nabaztag Serverless - TTS Local avec Piper
+# Nabaztag Piper — TTS local + Firmware
 
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                      HOME ASSISTANT                           │
-│                                                               │
-│  rest_command.nabaztag_api ───▶ HTTP GET                     │
-│  rest_command.nabaztag_autocontrol ───▶ HTTP GET             │
-│  sensor.nabaztag_status ◀─── HTTP GET (via REST sensor)      │
-│  sensor.nabaztag_firmware_autostatus ◀─── HTTP GET           │
-│                                                               │
-│  Automations: reconnexion, toggle LEDs, trafic, firmware      │
-│  Scripts: restore LEDs, oreilles, parole, setup               │
-│  Nabaztag Life: 10 scripts + 5 automations                   │
-└──────────────────────┬────────────────────────────────────────┘
-                       │ HTTP
-┌──────────────────────▼────────────────────────────────────────┐
-│                      NABAZTAG FIRMWARE                         │
-│                                                               │
-│  /autocontrol ──▶ forth_interpreter ──▶ set flags              │
-│  /autostatus  ──▶ forth_interpreter ──▶ read flags             │
-│  /forth       ──▶ forth_interpreter ──▶ arbitrary Forth code   │
-│  /say         ──▶ say() ──▶ HTTP ──▶ +─────────────────────+ │
-│  /weather     ──▶ info_service_update   │   Piper TTS       │ │
-│  /traffic     ──▶ info_service_update   │   192.168.0.42    │ │
-│  ...           ──▶ divers endpoints     │   :6790           │ │
-│                                         │   (FFmpeg + Piper)│ │
-│  Automatismes firmware (autonomes):     └───────────────────┘ │
-│    autoclock-enabled (on-time hook)                            │
-│    autohalftime-enabled (on-halftime hook)                     │
-│    autosurprise-enabled (crontab)                              │
-│    autotaichi-enabled (crontab)                                │
-└──────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│   Nabaztag v2                        │
+│   (firmware custom)                  │
+│                                      │
+│   /say?t=... ──▶ HTTP :6790          │
+│   bc.jsp       ◀── HTTP :80          │
+└──────────────────┬───────────────────┘
+                   │
+┌──────────────────▼───────────────────┐
+│         Proxy TTS (port 6790)         │
+│   piper_tts_stream.py                │
+│                                      │
+│   TTS_ENGINE=piper → Piper subproc   │
+│   TTS_ENGINE=coqui → Coqui subproc   │
+│                                      │
+│   FFmpeg pipeline commun :           │
+│     highpass=f=300, treble=g=3       │
+│     resample 22050→16000 Hz          │
+│     WAV s16le mono → Nabaztag        │
+└──────────────────┬───────────────────┘
+                   │
+    ┌──────────────┴──────────────┐
+    │                              │
+┌───▼────────────┐    ┌───────────▼────┐
+│ voices/piper/   │    │ .venv/ (Coqui) │
+│ .onnx + .json   │    │ VITS français  │
+└─────────────────┘    └────────────────┘
 ```
 
----
+## Quick start
 
-## Endpoints REST du firmware
+```bash
+# Cloner
+git clone https://github.com/jsapede/nabaztag-piper.git
+cd nabaztag-piper/install
 
-| Endpoint | Methode | Parametres | Description |
-|----------|---------|------------|-------------|
-| `/autocontrol` | GET | c=0/1, h=0/1, s=0/1, t=0/1 | Controler les 4 automatismes firmware |
-| `/autostatus` | GET | - | JSON `{clock,halftime,surprise,taichi}` |
-| `/status` | GET | - | JSON complet (sleep, config, leds, ears...) |
-| `/say` | GET | t=texte | Parler (TTS via Piper) |
-| `/left` | GET | p=0..16, d=0 | Oreille gauche |
-| `/right` | GET | p=0..16, d=0 | Oreille droite |
-| `/nose` | GET | v=0..4 | LED Nez |
-| `/weather` | GET | v=0..5 | LED Meteo |
-| `/traffic` | GET | v=0..6 | LED Trafic |
-| `/pollution` | GET | v=0..10 | LED Pollution |
-| `/clear` | GET | - | Reset toutes les LEDs |
-| `/setup` | GET | j=&k=&l=&c=&d=&w=&b=&t= | Config complete |
-| `/surprise` | GET | - | Son aleatoire |
-| `/communication` | GET | - | Son communication |
-| `/ack` | GET | - | Son ack |
-| `/ministop` | GET | - | Son ministop |
-| `/taichi` | GET | - | Mouvement taichi |
-| `/play` | GET | u=url | Jouer audio URL |
-| `/sleep` | GET | - | Veille |
-| `/wakeup` | GET | - | Reveil |
-| `/stop` | GET | - | Stop tout |
-| `/reboot` | GET | - | Redemarrage |
-| `/forth` | GET/POST | c=code Forth | Execute code Forth arbitraire |
+# Configurer
+cp .env.example /opt/nabaztag-piper/.env
+vi /opt/nabaztag-piper/.env   # éditer GLOBAL_DIR, TTS_ENGINE...
 
----
+# Installer (--dry-run pour simuler)
+./install.sh                  # installation complète
+./install.sh --dry-run        # simulation
 
-## Controle depuis Home Assistant
+# Désinstaller
+./install.sh --uninstall
 
-Le projet integre une configuration Home Assistant complete dans `homeassistant/`.
-
-### 2 REST commands suffisent
-
-```yaml
-# Exemple: dire un message
-- action: rest_command.nabaztag_api
-  data:
-    endpoint: say
-    query: "t=Bonjour le monde"
-
-# Exemple: oreille gauche
-- action: rest_command.nabaztag_api
-  data:
-    endpoint: left
-    query: "p=5&d=0"
-
-# Exemple: controler les 4 flags firmware
-- action: rest_command.nabaztag_autocontrol
-  data:
-    clock: "1"
-    halftime: "0"
-    surprise: "1"
-    taichi: "1"
+# Tester
+curl http://localhost:6790/say?t=Bonjour -o test.wav
+file test.wav                 # → RIFF WAVE 16000 Hz
 ```
 
-Voir `homeassistant/nabaztag/nabaztag_commands.yaml` pour la liste complete des 25 endpoints supportes.
-
-### REST sensors disponibles
-
-| Sensor | Endpoint | Attributs | Scan |
-|--------|----------|-----------|------|
-| `sensor.nabaztag_status` | `/status` | sleep_state, wake_up, go_to_bed, language, rev | 120s |
-| `sensor.nabaztag_firmware_autostatus` | `/autostatus` | clock, halftime, surprise, taichi | 60s |
-
-### Fichiers de configuration
-
-| Fichier | Contenu |
-|---------|---------|
-| `nabaztag_commands.yaml` | 2 REST commands generiques |
-| `nabaztag_automations.yaml` | 4 automations (reconnexion, LEDs, trafic, firmware) |
-| `nabaztag_scripts.yaml` | 12 scripts (restore LEDs, toggles, oreilles, parole...) |
-| `nabaztag_inputs.yaml` | 18 helpers (IP, message, flags, horaires...) |
-| `nabaztag_life.yaml` | 10 scripts Life + 5 automations |
-| `nabaztag_sensors.yaml` | 2 REST sensors (/status, /autostatus) |
-| `lovelace/` | 3 cartes Lovelace (principal, config, guide LEDs) |
-
----
-
-## Automatismes firmware (4 drapeaux)
-
-Le firmware integre 4 comportements autonomes, controlables depuis HA:
-
-| Variable Forth | Cle /autocontrol | Defaut | Declencheur |
-|---------------|-------------------|--------|-------------|
-| `autoclock-enabled` | c | 1 (ON) | `hooks.forth` — heure pile |
-| `autohalftime-enabled` | h | 1 (ON) | `hooks.forth` — demi-heure |
-| `autosurprise-enabled` | s | 1 (ON) | `crontab.forth` — aleatoire |
-| `autotaichi-enabled` | t | 1 (ON) | `crontab.forth` — frequence configurable |
-
-Chaque flag a son `input_boolean` dans HA (`nabaztag_firmware_clock`, etc.)
-et son toggle est automatiquement sync avec le firmware via l'automation
-`nabaztag_firmware_toggle`.
-
-### Architecture TTS
-
-Le texte a prononcer circule ainsi :
-
-```
-HA ──▶ /say?t=message ──▶ firmware say() ──▶ TTS-SERVER$ ──▶ Piper TTS
-```
-
-HA appelle simplement `GET /say?t=message` (via `rest_command.nabaztag_api`).
-L'adresse du serveur TTS est definie dans `vl/config.forth` (constante `TTS-SERVER$`).
-
-**Pour changer l'IP du TTS** : editer `vl/config.forth` ligne 12 et recompiler le firmware.
-Aucun changement necessaire dans la configuration Home Assistant.
-
----
-
-## Nabaztag Life (HA pilote)
-
-Les 10 scripts Life sont pilotes par HA (pas par le firmware):
-
-- Blagues, annonce meteo/trafic, etirement, baillement, danse oreilles
-- 3 actions aleatoires par heure (2 horaires definis + 1 heure pleine)
-- Desactivable via `input_boolean.nabaztaglife`
-
----
-
-## Fichiers modifies (vs firmware original)
-
-| Fichier | Modification |
-|---------|-------------|
-| `vl/config.forth` | 4 variables auto-control + constante TTS-SERVER$ + auth desactivee |
-| `vl/hooks.forth` | Verification drapeaux clock/halftime + TTS Piper |
-| `vl/crontab.forth` | Verification drapeaux surprise/taichi |
-| `firmware/srv/http_server.mtl` | /autocontrol, /autostatus, fixes HTTP |
-| `firmware/net/ntp.mtl` | Bug fix: soustraction uptime retiree |
-| `firmware/audio/audiolib.mtl` | Buffers: 64KB/512KB |
-| `firmware/utils/url.mtl` | url_encode/url_decode pour TTS |
-| `firmware/utils/config.mtl` | Francais par defaut |
-| `firmware/protos/ntp_protos.mtl` | Serveur NTP IP fixe |
-| `firmware/forth/stack.mtl` | Fix compilation: reordonnancement + `forth_pick` |
-| `firmware/forth/list.mtl` | Fix compilation: `forth_push_str` deplace |
-| `scripts/preproc.pl` | Timezone Europe/Paris |
-
-### Corrections compilation MTL
-
-Le firmware compile avec **0 erreur** (contre 2 avant correction).
-
-| Erreur | Cause | Correction |
-|--------|-------|------------|
-| `forth_push_str` | Le parseur MTL confond le champ `str` du type `Word` avec le type string `S` dans `[str:x]` | Fonction deplacee dans `forth/list.mtl` apres `[int:n]` qui amorce le parseur |
-| `forth_qdup` | `f.stack` infere `list S` au lieu de `list Word` — absence de contrainte de type avant usage | `forth_depth` (qui utilise `forth_push f [int:l]`) placee AVANT `forth_qdup` dans `stack.mtl` |
-| `forth_pick` | `let n.int -> i in` ne compile pas en MTL | Remplace par `set i = n.int` (l'acces `.int` fonctionne dans `set` mais pas dans `let`) |
-
----
-
-## Installation du proxy TTS
+## Installation détaillée
 
 ### Prérequis
 
-```bash
-# Dépendances système
-apt install ffmpeg espeak-ng python3-pip
+- Ubuntu/Debian (testé sur 24.04)
+- Python ≥ 3.10
+- 6GB RAM libre (pour Coqui : 600MB)
+- Connexion internet (téléchargement des modèles)
 
-# Piper (modèle neuronal français)
-# → https://github.com/OHF-Voice/piper1-gpl
-# ou via pip: pip install piper-tts
-```
+### Le script `install.sh` fait tout automatiquement
 
-### Installation automatique
+| # | Étape | Selon .env |
+|---|-------|-----------|
+| 1 | Crée le dossier global | GLOBAL_DIR |
+| 2 | Copie les fichiers proxy | — |
+| 3 | Installe espeak-ng, ffmpeg, build-essential, make, uv | — |
+| 4 | pip install piper-tts | — |
+| 5 | Télécharge la voix Piper (.onnx) | PIPER_VOICE_PATH |
+| 6 | Installe Coqui (venv + PyTorch CPU) | TTS_ENGINE=coqui |
+| 7 | Compile le firmware | BUILD_FIRMWARE=true |
+| 8 | Installe static-web-server | ENABLE_WEB_SERVER=true |
+| 9 | Crée le service nabaztag-tts | — |
+| 10 | Crée le service nabaztag-webserver | ENABLE_WEB_SERVER=true |
 
-```bash
-# 1. Copier et éditer la configuration
-cp .env.example .env
-# → Éditer .env : PIPER_BINARY, PIPER_VOICES_FOLDER
-
-# 2. Installer le service systemd
-chmod +x install.sh
-./install.sh /chemin/vers/le/projet
-
-# 3. Vérifier
-journalctl -u piper-tts -f
-```
-
-### Installation manuelle
+### Configuration (.env)
 
 ```bash
-# Adapter les chemins dans piper-tts.service
-sed 's|__INSTALL_DIR__|/opt/nabaztag-piper|g' piper-tts.service > /etc/systemd/system/piper-tts.service
-
-systemctl daemon-reload
-systemctl enable --now piper-tts
-```
-
-### Test
-
-```bash
-# Générer un fichier WAV de test
-curl 'http://192.168.0.42:6790/say?t=bonjour' -o /tmp/test.wav
-file /tmp/test.wav  # → RIFF WAVE audio
-```
-
----
-
-## Modifier l'adresse du serveur TTS
-
-Le serveur TTS Piper tourne sur `192.168.0.42:6790`. Si vous devez le deplacer :
-
-### 1. Dans le firmware (avant recompilation)
-
-**Fichier**: `vl/config.forth` ligne 12
-
-```forth
-" http://NEW_IP:6790/say?t=" constant TTS-SERVER$
-```
-
-Remplacer `NEW_IP` par l'adresse de votre serveur TTS.
-
-### 2. Variable d'environnement
-
-**Fichier**: `.env`
-
-```bash
-TTS_SERVER=NEW_IP
+GLOBAL_DIR=/opt/nabaztag-piper       # dossier d'exécution
+TTS_ENGINE=piper                     # piper | coqui
 TTS_PORT=6790
+PIPER_VOICE_PATH=fr/fr_FR/siwis/medium
+BUILD_FIRMWARE=true                  # compiler le firmware
+ENABLE_WEB_SERVER=true               # servir le firmware
+WEB_SERVER_PORT=80
 ```
 
-### 3. Recompiler le firmware
+### Changer la voix Piper
 
 ```bash
-make firmware
+# 1. Écouter les voix : https://rhasspy.github.io/piper-samples/
+# 2. Explorer les modèles : https://huggingface.co/rhasspy/piper-voices/tree/main
+# 3. Modifier .env
+PIPER_VOICE_PATH=fr/fr_FR/gilles/low  # voix masculine française
+# 4. Relancer install.sh (détecte les changements)
+./install.sh
 ```
 
-### 4. Redemarrer le service
+## Services systemd
+
+| Service | Rôle | Port |
+|---------|------|------|
+| `nabaztag-tts` | Proxy TTS (Piper ou Coqui) | 6790 |
+| `nabaztag-webserver` | Serveur web firmware | 80 |
 
 ```bash
-systemctl restart piper-tts
+systemctl status nabaztag-tts
+journalctl -u nabaztag-tts -f
+journalctl -u nabaztag-webserver -f
 ```
 
----
+## Firmware
 
-## Compilation du firmware
+Le firmware Nabaztag est dans `vl/` (Forth) et `firmware/` (MTL). Compilation :
 
 ```bash
-# Compiler le compilateur MTL
-make compiler
-
-# Compiler le firmware (produit vl/bc.jsp)
-make firmware
+make compiler      # compiler le compilateur MTL
+make firmware      # compiler le firmware → vl/bc.jsp
 ```
 
----
+Le firmware compile avec **0 erreur**. Endpoints principaux :
+
+| Endpoint | Description |
+|----------|-------------|
+| `/autocontrol?c=0/1&h=0/1&s=0/1&t=0/1` | 4 flags firmware |
+| `/autostatus` | JSON des flags |
+| `/say?t=texte` | TTS |
+| `/forth?c=code` | Interpréteur Forth |
+| `/setup?j=&k=&l=...` | Configuration |
+
+## Home Assistant
+
+Le dossier `homeassistant/` contient la configuration complète :
+
+```bash
+homeassistant/nabaztag/
+├── nabaztag_automations.yaml   # 4 automations
+├── nabaztag_scripts.yaml       # 12 scripts
+├── nabaztag_commands.yaml      # 2 REST commands (nabaztag_api + nabaztag_autocontrol)
+├── nabaztag_inputs.yaml        # 18 helpers
+├── nabaztag_life.yaml          # 10 scripts Life + 5 automations
+└── nabaztag_sensors.yaml       # 2 REST sensors (/status, /autostatus)
+homeassistant/lovelace/
+├── nabaztag_lovelace.yaml      # Dashboard principal
+├── nabaztag_lovelace_config.yaml
+└── nabaztag_led_guide.yaml     # Guide des LEDs
+```
 
 ## Structure du projet
 
 ```
-/
-├── vl/                          # Forth files (web UI + config + hooks)
-├── firmware/                    # MTL source (http_server, ntp, audio...)
-├── scripts/                     # Preprocessing + compilation
-├── homeassistant/               # Home Assistant configuration
-│   ├── nabaztag/                # Commands, automations, scripts, inputs...
-│   └── lovelace/                # Dashboard cards
-├── tts_server.py                # Serveur TTS Python (Piper + FFmpeg)
-├── piper_tts_stream.py          # Proxy TTS stream
-├── .env.example                 # Configuration exemple
+nabaztag-piper/
+├── install/
+│   ├── install.sh              ← installateur unifié
+│   ├── piper_tts_stream.py     ← proxy TTS
+│   ├── coqui_cli.py            ← CLI Coqui
+│   └── .env.example            ← template .env
+├── vl/                         ← sources Forth du firmware
+├── firmware/                   ← sources MTL
+├── homeassistant/              ← configuration HA
+├── Makefile
 ├── CHANGELOG.md
-├── README.md
-└── Makefile                     # Build system
+└── README.md
 ```
 
----
-
-## Depot GitHub
+## Dépôt GitHub
 
 ```
 https://github.com/jsapede/nabaztag-piper
 → Fork de andreax79/ServerlessNabaztag
 ```
 
-Voir `CHANGELOG.md` pour l'historique complet des modifications.
+Voir `CHANGELOG.md` pour l'historique complet.

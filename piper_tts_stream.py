@@ -213,7 +213,7 @@ ESPEAK_VOICE = os.environ.get("ESPEAK_VOICE", "fr")
 
 # ─── Coqui (uniquement si TTS_ENGINE=coqui) ───────────────
 COQUI_MODEL = os.environ.get("COQUI_MODEL", "vits")
-COQUI_VENV = os.path.join(PROJECT_DIR, os.environ.get("COQUI_VENV", "venvs/coqui"))
+COQUI_VENV = os.path.join(PROJECT_DIR, ".venv")
 COQUI_PYTHON = os.path.join(COQUI_VENV, "bin/python3")
 COQUI_CLI = os.path.join(PROJECT_DIR, "coqui_cli.py")
 
