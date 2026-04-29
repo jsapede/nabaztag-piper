@@ -105,6 +105,11 @@ rest_command:
 
   # ========== FIRMWARE AUTO CONTROL ==========
 
+  nabaztag_autocontrol:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/autocontrol?c={{ clock | default('') }}&h={{ halftime | default('') }}&s={{ surprise | default('') }}&t={{ taichi | default('') }}"
+    method: get
+    timeout: 10
+
   nabaztag_autocontrol_clock:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ clock }}%20autoclock-enabled%20%21"
     method: get

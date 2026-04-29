@@ -24,6 +24,10 @@ sensor:
       - go_to_bed
       - taichi_freq
       - sleep_state
+      - autoclock_enabled
+      - autohalftime_enabled
+      - autosurprise_enabled
+      - autotaichi_enabled
       - streaming_state
       - rev
     scan_interval: 120
