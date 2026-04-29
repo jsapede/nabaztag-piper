@@ -44,11 +44,17 @@ automation:
     mode: single
     trigger:
       - trigger: state
-        entity_id: 
-          - input_boolean.nabaztag_weather_enabled
-          - input_boolean.nabaztag_traffic_enabled
-          - input_boolean.nabaztag_pollution_enabled
-          - input_boolean.nabaztag_nose_enabled
+        entity_id: input_boolean.nabaztag_weather_enabled
+        id: weather
+      - trigger: state
+        entity_id: input_boolean.nabaztag_traffic_enabled
+        id: traffic
+      - trigger: state
+        entity_id: input_boolean.nabaztag_pollution_enabled
+        id: pollution
+      - trigger: state
+        entity_id: input_boolean.nabaztag_nose_enabled
+        id: nose
     condition:
       - condition: state
         entity_id: binary_sensor.ping_nabaztag
@@ -56,51 +62,23 @@ automation:
     action:
       - choose:
           - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_weather_enabled
-                state: "on"
+              - condition: trigger
+                id: weather
             sequence:
               - action: script.nabaztag_toggle_weather
           - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_weather_enabled
-                state: "off"
-            sequence:
-              - action: script.nabaztag_toggle_weather
-          - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_traffic_enabled
-                state: "on"
+              - condition: trigger
+                id: traffic
             sequence:
               - action: script.nabaztag_toggle_traffic
           - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_traffic_enabled
-                state: "off"
-            sequence:
-              - action: script.nabaztag_toggle_traffic
-          - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_pollution_enabled
-                state: "on"
+              - condition: trigger
+                id: pollution
             sequence:
               - action: script.nabaztag_toggle_pollution
           - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_pollution_enabled
-                state: "off"
-            sequence:
-              - action: script.nabaztag_toggle_pollution
-          - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_nose_enabled
-                state: "on"
-            sequence:
-              - action: script.nabaztag_toggle_nose
-          - conditions:
-              - condition: state
-                entity_id: input_boolean.nabaztag_nose_enabled
-                state: "off"
+              - condition: trigger
+                id: nose
             sequence:
               - action: script.nabaztag_toggle_nose
 
