@@ -280,10 +280,6 @@ WantedBy=multi-user.target
 else
     echo "10/10 Service web : firmware non compile, service DESACTIVE"
 fi
-    rm -f /tmp/nabaztag-webserver.service
-else
-    echo "10/10 Service web ignore"
-fi
 
 # ─── Résumé ──────────────────────────────────────────────────
 echo ""
