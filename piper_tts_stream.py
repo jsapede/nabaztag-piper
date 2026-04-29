@@ -185,71 +185,46 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
 
 # ==============================================================================
-# CONFIGURATION (fallback defaults)
+# CONFIGURATION (depuis .env)
 # ==============================================================================
 
-DEFAULT_PIPER_BINARY = "/root/.local/bin/piper"
-DEFAULT_VOICES_FOLDER = "/opt/configs/piper"
-DEFAULT_VOICE = "fr_FR-siwis-medium"
-DEFAULT_COQUI_MODEL = "vits"
-DEFAULT_COQUI_SPEAKER = "Frédéric"
-DEFAULT_SPEAKER = "0"
-DEFAULT_LENGTH_SCALE = "1.5"
-DEFAULT_NOISE_SCALE = "0.667"
-DEFAULT_NOISE_W_SCALE = "0.333"
-DEFAULT_VOLUME = "1"
-DEFAULT_SENTENCE_SILENCE = "0.2"
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Phoneme preprocessing configuration
-DEFAULT_ESPEAK_BINARY = "/usr/bin/espeak-ng"
-DEFAULT_USE_PHONEMES = False
-DEFAULT_ESPEAK_VOICE = "fr"
+# ─── Moteur TTS ───────────────────────────────────────────
+TTS_ENGINE = os.environ.get("TTS_ENGINE", "piper")
+MODE_COQUI = TTS_ENGINE == "coqui"
+TTS_PORT = int(os.environ.get("TTS_PORT", "6790"))
 
-# FFmpeg configuration
-DEFAULT_FFMPEG_BINARY = "/usr/bin/ffmpeg"
-DEFAULT_USE_FFMPEG = True
-DEFAULT_TARGET_SAMPLE_RATE = 16000
-DEFAULT_FFMPEG_VOLUME = "1.5"
-DEFAULT_FFMPEG_HIGH_PASS = "300"
-DEFAULT_FFMPEG_TREBLE = "3"
-DEFAULT_FFMPEG_LOUDNORM = False
-DEFAULT_FFMPEG_EXCITER = "0"
-DEFAULT_FFMPEG_DEESSER = "0"
+# ─── Piper ────────────────────────────────────────────────
+PIPER_BINARY = os.environ.get("PIPER_BINARY", "piper")
+VOICES_DIR = os.path.join(PROJECT_DIR, os.environ.get("PIPER_VOICES_DIR", "voices/piper"))
+VOICE = os.environ.get("PIPER_VOICE", "fr_FR-siwis-medium")
+SPEAKER = os.environ.get("PIPER_SPEAKER", "0")
+LENGTH_SCALE = os.environ.get("PIPER_LENGTH_SCALE", "1.5")
+NOISE_SCALE = os.environ.get("PIPER_NOISE_SCALE", "0.667")
+NOISE_W_SCALE = os.environ.get("PIPER_NOISE_W_SCALE", "0.333")
+PIPER_VOLUME = os.environ.get("PIPER_VOLUME", "1")
+SENTENCE_SILENCE = os.environ.get("PIPER_SENTENCE_SILENCE", "0.2")
 
-# Load from environment (allows override on server)
-PIPER_BINARY = os.environ.get("PIPER_BINARY", DEFAULT_PIPER_BINARY)
-VOICES_FOLDER = os.environ.get("PIPER_VOICES_FOLDER", DEFAULT_VOICES_FOLDER)
-VOICE = os.environ.get("PIPER_DEFAULT_VOICE", DEFAULT_VOICE)
-SPEAKER = os.environ.get("PIPER_SPEAKER", DEFAULT_SPEAKER)
-LENGTH_SCALE = os.environ.get("PIPER_LENGTH_SCALE", DEFAULT_LENGTH_SCALE)
-NOISE_SCALE = os.environ.get("PIPER_NOISE_SCALE", DEFAULT_NOISE_SCALE)
-NOISE_W_SCALE = os.environ.get("PIPER_NOISE_W_SCALE", DEFAULT_NOISE_W_SCALE)
-VOLUME = os.environ.get("PIPER_VOLUME", DEFAULT_VOLUME)
-SENTENCE_SILENCE = os.environ.get("PIPER_SENTENCE_SILENCE", DEFAULT_SENTENCE_SILENCE)
-
-# Phoneme settings
-ESPEAK_BINARY = os.environ.get("ESPEAK_BINARY", DEFAULT_ESPEAK_BINARY)
+# Phonemes (espeak) — uniquement pour Piper
 USE_PHONEMES = os.environ.get("PIPER_USE_PHONEMES", "false").lower() == "true"
-ESPEAK_VOICE = os.environ.get("ESPEAK_VOICE", DEFAULT_ESPEAK_VOICE)
+ESPEAK_BINARY = os.environ.get("ESPEAK_BINARY", "/usr/bin/espeak-ng")
+ESPEAK_VOICE = os.environ.get("ESPEAK_VOICE", "fr")
 
-# Coqui TTS settings (utilise si --coqui flag)
-COQUI_MODEL = os.environ.get("COQUI_MODEL", DEFAULT_COQUI_MODEL)
-COQUI_SPEAKER = os.environ.get("COQUI_SPEAKER", DEFAULT_COQUI_SPEAKER)
+# ─── Coqui (uniquement si TTS_ENGINE=coqui) ───────────────
+COQUI_MODEL = os.environ.get("COQUI_MODEL", "vits")
+COQUI_VENV = os.path.join(PROJECT_DIR, os.environ.get("COQUI_VENV", "venvs/coqui"))
+COQUI_PYTHON = os.path.join(COQUI_VENV, "bin/python3")
+COQUI_CLI = os.path.join(PROJECT_DIR, "coqui_cli.py")
 
-# FFmpeg settings
-FFMPEG_BINARY = os.environ.get("FFMPEG_BINARY", DEFAULT_FFMPEG_BINARY)
-USE_FFMPEG = os.environ.get("PIPER_USE_FFMPEG", "true").lower() == "true"
-USE_FFMPEG_FILTERS = True  # Can be disabled via --no-filters flag
-TARGET_SAMPLE_RATE = int(
-    os.environ.get("PIPER_TARGET_SAMPLE_RATE", DEFAULT_TARGET_SAMPLE_RATE)
-)
-FFMPEG_VOLUME = os.environ.get("FFMPEG_VOLUME", DEFAULT_FFMPEG_VOLUME)
-FFMPEG_HIGH_PASS = os.environ.get("FFMPEG_HIGH_PASS", DEFAULT_FFMPEG_HIGH_PASS)
-FFMPEG_TREBLE = os.environ.get("FFMPEG_TREBLE", DEFAULT_FFMPEG_TREBLE)
-FFMPEG_LOUDNORM = os.environ.get("FFMPEG_LOUDNORM", "false").lower() == "true"
-FFMPEG_EXCITER = os.environ.get("FFMPEG_EXCITER", DEFAULT_FFMPEG_EXCITER)
-FFMPEG_DEESSER = os.environ.get("FFMPEG_DEESSER", DEFAULT_FFMPEG_DEESSER)
-
+# ─── Audio ────────────────────────────────────────────────
+FFMPEG_BINARY = os.environ.get("FFMPEG_BINARY", "/usr/bin/ffmpeg")
+USE_FFMPEG = os.environ.get("USE_FFMPEG", "true").lower() == "true"
+USE_FFMPEG_FILTERS = True
+TARGET_SAMPLE_RATE = int(os.environ.get("TARGET_SAMPLE_RATE", "16000"))
+FFMPEG_VOLUME = os.environ.get("FFMPEG_VOLUME", "1.5")
+FFMPEG_HIGH_PASS = os.environ.get("FFMPEG_HIGH_PASS", "300")
+FFMPEG_TREBLE = os.environ.get("FFMPEG_TREBLE", "3")
 # Configure logger
 logging.basicConfig(
     level=logging.INFO, format="[TTS-Proxy] %(asctime)s - %(levelname)s - %(message)s"
@@ -360,7 +335,7 @@ class TTSHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Missing 't' parameter")
             return
 
-        logger.info(f"Processing TTS: '{text}' voice={'coqui' if MODE_COQUI else 'piper'}")
+        logger.info(f"Processing TTS: '{text}' engine={TTS_ENGINE}")
 
         try:
             # Small delay to ensure Nabaztag is ready to receive
@@ -370,10 +345,7 @@ class TTSHandler(BaseHTTPRequestHandler):
             if MODE_COQUI:
                 # Coqui pipeline : subprocess coqui_cli.py
                 # Note: les phonemes espeak ne s'appliquent pas a Coqui
-                coqui_script = os.path.join(os.path.dirname(__file__), "coqui_cli.py")
-                tts_cmd = [sys.executable, coqui_script, "--model", COQUI_MODEL]
-                if COQUI_MODEL == "xtts" and COQUI_SPEAKER:
-                    tts_cmd += ["--speaker", COQUI_SPEAKER]
+                tts_cmd = [COQUI_PYTHON, COQUI_CLI, "--model", COQUI_MODEL]
                 tts_input = text
                 logger.info(f"Coqui: {' '.join(tts_cmd)}")
             else:
@@ -384,13 +356,13 @@ class TTSHandler(BaseHTTPRequestHandler):
                     logger.info(f"Phonemes: '{text}'")
                     tts_input = text_to_phonemes(text)
                 tts_cmd = [
-                    PIPER_BINARY, "-m", voice,
-                    "--data-dir", VOICES_FOLDER,
+                    PIPER_BINARY, "-m", VOICE,
+                    "--data-dir", VOICES_DIR,
                     "-s", SPEAKER,
                     "--length-scale", LENGTH_SCALE,
                     "--noise-scale", NOISE_SCALE,
                     "--noise-w-scale", NOISE_W_SCALE,
-                    "--volume", VOLUME,
+                    "--volume", PIPER_VOLUME,
                     "--sentence-silence", SENTENCE_SILENCE,
                     "--output_file", "-",
                 ]
@@ -541,73 +513,40 @@ class TTSHandler(BaseHTTPRequestHandler):
 def main():
     """Main entry point for the TTS proxy server."""
     parser = argparse.ArgumentParser(
-        description="Piper TTS Proxy for Nabaztag v2 - Direct Streaming"
+        description="Nabaztag TTS Proxy - Piper or Coqui (configured via .env)"
     )
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind")
-    parser.add_argument("--port", type=int, default=6790, help="Port (default: 6790)")
-    parser.add_argument(
-        "--ffmpeg", action="store_true", help="Enable FFmpeg processing (default)"
-    )
+    parser.add_argument("--port", type=int, default=TTS_PORT, help=f"Port (default: {TTS_PORT})")
     parser.add_argument(
         "--no-ffmpeg",
         action="store_true",
-        help="Disable FFmpeg processing (direct Piper output)",
+        help="Disable FFmpeg processing",
     )
     parser.add_argument(
         "--no-filters",
         action="store_true",
         help="Disable FFmpeg audio filters (keep resampling only)",
     )
-    parser.add_argument(
-        "--phonemes",
-        action="store_true",
-        help="Enable phoneme conversion via espeak-ng (IPA format for Piper)",
-    )
-    parser.add_argument(
-        "--coqui",
-        action="store_true",
-        help="Use Coqui TTS instead of Piper (modele et speaker depuis .env)",
-    )
     args = parser.parse_args()
 
-    # CLI flags override environment variable
     global USE_FFMPEG
     global USE_FFMPEG_FILTERS
-    global USE_PHONEMES
-    global MODE_COQUI
     if args.no_ffmpeg:
         USE_FFMPEG = False
-    elif args.ffmpeg:
-        USE_FFMPEG = True
     USE_FFMPEG_FILTERS = not args.no_filters
-    USE_PHONEMES = args.phonemes
-    MODE_COQUI = args.coqui
 
-    server = HTTPServer((args.host, args.port), TTSHandler)
+    port = args.port or TTS_PORT
+    server = HTTPServer((args.host, port), TTSHandler)
 
-    engine = "Coqui" if MODE_COQUI else "Piper"
-    print(f"[TTS] {engine} TTS Proxy started on http://{args.host}:{args.port}")
+    print(f"[TTS] {TTS_ENGINE.upper()} Proxy started on http://{args.host}:{port}")
     if MODE_COQUI:
-        print(f"[TTS] Coqui model: {COQUI_MODEL}")
-        if COQUI_MODEL == "xtts":
-            print(f"[TTS] Coqui speaker: {COQUI_SPEAKER}")
+        print(f"[TTS] Model: {COQUI_MODEL}")
+        print(f"[TTS] Python: {COQUI_PYTHON}")
     else:
-        print(f"[TTS] Piper voice: {VOICE}")
+        print(f"[TTS] Voice: {VOICE}")
         print(f"[TTS] Piper binary: {PIPER_BINARY}")
-    print(
-        f"[TTS] Piper params: length={LENGTH_SCALE}, noise={NOISE_SCALE}, "
-        f"noise_w={NOISE_W_SCALE}, volume={VOLUME}, silence={SENTENCE_SILENCE}"
-    )
-    print(f"[TTS] FFmpeg enabled: {USE_FFMPEG}")
-    if USE_FFMPEG:
-        print(f"[TTS] FFmpeg filters: {USE_FFMPEG_FILTERS}")
-        print(
-            f"[TTS] FFmpeg params: volume={FFMPEG_VOLUME}, highpass={FFMPEG_HIGH_PASS}Hz, "
-            f"treble={FFMPEG_TREBLE}dB, sample_rate={TARGET_SAMPLE_RATE}Hz"
-        )
-        print(f"[TTS] FFmpeg binary: {FFMPEG_BINARY}")
-    print(f"[TTS] Phonemes enabled: {USE_PHONEMES}")
-    print("[TTS] Press Ctrl+C to stop")
+        print(f"[TTS] Phonemes: {USE_PHONEMES}")
+    print(f"[TTS] FFmpeg: {USE_FFMPEG}")
 
     try:
         server.serve_forever()
