@@ -65,18 +65,19 @@ echo ""
 echo "4/8 Voix Piper..."
 VOICE_ONNX="$PROJECT_DIR/voices/piper/$PIPER_VOICE.onnx"
 VOICE_JSON="$PROJECT_DIR/voices/piper/$PIPER_VOICE.onnx.json"
-VOICE_PATH="fr/fr_FR/siwis/medium"
+PIPER_VOICE_PATH="${PIPER_VOICE_PATH:-fr/fr_FR/siwis/medium}"
 
 if [ ! -f "$VOICE_ONNX" ]; then
     echo "   Telechargement $PIPER_VOICE..."
-    run wget -q "$PIPER_VOICE_URL/$VOICE_PATH/$PIPER_VOICE.onnx" -O "$VOICE_ONNX"
-    run wget -q "$PIPER_VOICE_URL/$VOICE_PATH/$PIPER_VOICE.onnx.json" -O "$VOICE_JSON"
+    run wget -q "$PIPER_VOICE_URL/$PIPER_VOICE_PATH/$PIPER_VOICE.onnx" -O "$VOICE_ONNX"
+    run wget -q "$PIPER_VOICE_URL/$PIPER_VOICE_PATH/$PIPER_VOICE.onnx.json" -O "$VOICE_JSON"
     echo "   OK"
 else
     echo "   Voix deja presente"
 fi
 
 echo "   Écouter des échantillons: https://rhasspy.github.io/piper-samples/"
+echo "   Changer de voix : editer PIPER_VOICE et PIPER_VOICE_PATH dans .env"
 
 # ─── 5. Coqui (si configuré) ───────────────────────────────
 echo ""
