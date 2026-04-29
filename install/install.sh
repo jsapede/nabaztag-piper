@@ -144,7 +144,7 @@ run apt-get install -y -qq $DEPS
 # ─── 4. Piper ────────────────────────────────────────────────
 echo ""
 echo "4/10 Installation Piper..."
-run pip install -q piper-tts
+run uv pip install --system -q piper-tts
 
 # ─── 5. Voix Piper ───────────────────────────────────────────
 echo ""
