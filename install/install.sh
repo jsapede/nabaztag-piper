@@ -171,6 +171,7 @@ for pkg in $DEPS; do
 done
 
 # ─── 4. Piper ────────────────────────────────────────────────
+run systemctl stop nabaztag-tts 2>/dev/null || true
 if [ "$TTS_ENGINE" != "coqui" ]; then
 echo ""
 echo "4/10 Installation Piper..."
@@ -225,6 +226,7 @@ else
 fi
 
 # ─── 7. Compilation firmware ─────────────────────────────────
+run systemctl stop nabaztag-webserver 2>/dev/null || true
 echo ""
 echo "7/10 Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
 _compile_firmware
