@@ -162,14 +162,23 @@ export PATH="$HOME/.local/bin:$PATH"
 which uv >/dev/null 2>&1 || (echo "ERREUR: uv non installe"; exit 1)
 
 DEPS="espeak-ng ffmpeg python3-pip build-essential make"
-run apt-get update -qq
-run apt-get install -y -qq $DEPS
+for pkg in $DEPS; do
+    if dpkg -s "$pkg" >/dev/null 2>&1; then
+        echo "   $pkg present"
+    else
+        run apt-get install -y -qq "$pkg"
+    fi
+done
 
 # ─── 4. Piper ────────────────────────────────────────────────
 if [ "$TTS_ENGINE" != "coqui" ]; then
 echo ""
 echo "4/10 Installation Piper..."
-run uv pip install --system -q piper-tts
+if which piper >/dev/null 2>&1; then
+    echo "   Piper deja installe"
+else
+    run uv pip install --system -q piper-tts
+fi
 
 # ─── 5. Voix Piper ───────────────────────────────────────────
 echo ""
@@ -199,13 +208,17 @@ if [ "$TTS_ENGINE" = "coqui" ]; then
         run uv venv --python 3.13 "$COQUI_VENV"
     fi
     source "$COQUI_VENV/bin/activate"
-    run uv pip install -q torch torchaudio torchcodec --torch-backend=cpu
-    run uv pip install -q coqui-tts soundfile
-    echo "   Modele VITS francais..."
-    run python3 -c "from TTS.api import TTS; TTS('tts_models/fr/css10/vits')"
-    AUTOREG=$(find "$COQUI_VENV/lib" -path "*/TTS/tts/layers/tortoise/autoregressive.py" 2>/dev/null | head -1)
-    if [ -n "$AUTOREG" ] && [ -f "$AUTOREG" ]; then
-        grep -q "isin_mps_friendly" "$AUTOREG" && run sed -i 's/from transformers.pytorch_utils import isin_mps_friendly as isin/import torch; isin = torch.isin/' "$AUTOREG" || true
+    if "$COQUI_VENV/bin/python3" -c "import TTS" 2>/dev/null && [ -z "$CHANGED" ]; then
+        echo "   Coqui deja installe"
+    else
+        run uv pip install -q torch torchaudio torchcodec --torch-backend=cpu
+        run uv pip install -q coqui-tts soundfile
+        echo "   Modele VITS francais..."
+        run python3 -c "from TTS.api import TTS; TTS('tts_models/fr/css10/vits')"
+        AUTOREG=$(find "$COQUI_VENV/lib" -path "*/TTS/tts/layers/tortoise/autoregressive.py" 2>/dev/null | head -1)
+        if [ -n "$AUTOREG" ] && [ -f "$AUTOREG" ]; then
+            grep -q "isin_mps_friendly" "$AUTOREG" && run sed -i 's/from transformers.pytorch_utils import isin_mps_friendly as isin/import torch; isin = torch.isin/' "$AUTOREG" || true
+        fi
     fi
 else
     echo "6/10 Coqui ignore (TTS_ENGINE=$TTS_ENGINE)"
