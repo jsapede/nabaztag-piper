@@ -1,3 +1,9 @@
+# =========================
+# Nabaztag - Configuration Setup
+# =========================
+# Carte Lovelace pour les parametres /setup
+# Le bouton "Appliquer" appelle script.nabaztag_apply_setup
+
 type: vertical-stack
 cards:
   - type: markdown

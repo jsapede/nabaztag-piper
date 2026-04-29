@@ -1,3 +1,9 @@
+# =========================
+# Nabaztag - Dashboard principal
+# =========================
+# Utilise les 2 REST commands nabaztag_api + nabaztag_autocontrol
+# Sensors REST: /status (etat) + /autostatus (flags firmware)
+
 type: vertical-stack
 cards:
   # ========== CONTRÔLE PRINCIPAL ==========
