@@ -79,11 +79,3 @@ fun forth_str_join f=
     let forth_list_to_str list.list "" -> val in
     forth_push f [str:val];
     nil;;
-
-/**
- * Push a string value onto the stack
- */
-fun forth_push_str f x=
-    let x -> val in
-    forth_push f [str:val];
-    nil;;

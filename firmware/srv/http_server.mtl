@@ -435,41 +435,20 @@ fun http_get_autocontrol sock args=
         nil -> code in
     forth_interpreter_ex code nil nil nil (fixarg2 #_http_autocontrol_cb sock);;
 
-/**
-<<<<<<< Updated upstream
- * Auto-status callback: reads 4 Forth variables from stack via forth_interpreter_ex
-=======
- * Auto-status callback: reads 4 Forth variables from stack
- * Forth code: "autoclock-enabled @ autohalftime-enabled @ autosurprise-enabled @ autotaichi-enabled @"
- * Stack after: [taichi, surprise, halftime, clock] (top-to-bottom)
->>>>>>> Stashed changes
- */
-fun _http_autostatus_cb f sock=
-    let hd f.stack -> taichi_val in
-    let hd tl f.stack -> surprise_val in
-    let hd tl tl f.stack -> halftime_val in
-    let hd tl tl tl f.stack -> clock_val in
-    let strcatlist "{\"clock\":" :: forth_word_fmt clock_val :: 
-        ",\"halftime\":" :: forth_word_fmt halftime_val ::
-        ",\"surprise\":" :: forth_word_fmt surprise_val ::
-        ",\"taichi\":" :: forth_word_fmt taichi_val ::
-        "}" :: nil -> json in
-    http_send_content_and_close sock "application/json" json;;
+// /autostatus removed: MTL compiler cannot read Forth variables directly.
+// Use /forth with "autoclock-enabled @ . cr autohalftime-enabled @ ." instead.
 
 /**
-<<<<<<< Updated upstream
- * Auto-status: GET current auto-control flags as JSON
- * Uses Forth interpreter (MTL cannot read Forth variables directly)
-=======
- * Auto-status: Get current status of automatic features
- * Returns JSON: {"clock":1,"halftime":1,"surprise":1,"taichi":1}
- * Uses forth_interpreter_ex (MTL cannot read Forth variables directly)
->>>>>>> Stashed changes
+ * Format a list of words to a string
  */
-fun http_get_autostatus sock args=
-    forth_interpreter_ex 
-        "autoclock-enabled @ autohalftime-enabled @ autosurprise-enabled @ autotaichi-enabled @"
-        nil nil nil (fixarg2 #_http_autostatus_cb sock);;
+fun _http_forth_stack_json list=
+    let nil -> t in (
+        for l=list; l!=nil; tl l do (
+            set t = (forth_word_fmt (hd l)) :: t;
+            if (nil != tl l) then set t = "," :: t
+        );
+        strcatlist t
+    );;
 
 /**
  * Handle HTTP callback for Forth interpreter. Return the output as JSON.
@@ -653,8 +632,7 @@ fun http_server_process_request req sock=
         else if !strcmp path "/setup" then http_get_setup sock args // setup parameters
         else if !strcmp path "/forth" then http_post_forth sock args // forth command, c=code
         else if !strcmp path "/openapi.yaml" then http_get_openapi_yaml sock args // openapi spec
-        else if !strcmp path "/autocontrol" then http_get_autocontrol sock args // auto control: c=clock h=halftime s=surprise t=taichi
-        else if !strcmp path "/autostatus" then http_get_autostatus sock args // get auto control flags JSON
+        else if !strcmp path "/autocontrol" then http_get_autocontrol sock args // auto control: clock/halftime/surprise/taichi
         else if !strcmp path "/" then http_get_index sock args // index page
         else http_not_found sock args;
         0

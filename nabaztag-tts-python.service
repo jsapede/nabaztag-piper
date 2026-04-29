@@ -1,0 +1,17 @@
+[Unit]
+Description=Nabaztag Python TTS Server - Handles French accents
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/New_Serverless_v3
+ExecStart=/usr/bin/python3 /opt/New_Serverless_v3/tts_server.py --host 0.0.0.0 --port 6790 --log-level INFO
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nabaztag-tts-python
+
+[Install]
+WantedBy=multi-user.target

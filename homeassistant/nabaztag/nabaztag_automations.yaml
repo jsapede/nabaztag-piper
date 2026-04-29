@@ -3,20 +3,17 @@
 # =========================
 #
 # Architecture:
-# - Nabaztag Life: actions aleatoires (nabaztag_life.yaml)
-# - Reconnexion: /setup + restore LEDs au demarrage HA ou reconnexion Nabaztag
-#
-# Tous les appels REST utilisent les 2 commands generiques:
-# - rest_command.nabaztag_api (endpoint + query)
-# - rest_command.nabaztag_autocontrol (c/h/s/t)
+# - Nabaztag Life: actions aléatoires (nabaztag_life.yaml)
+# - Reconnexion: /setup + restore LEDs au démarrage HA ou reconnexion Nabaztag
 
 automation:
 
   # ========== RECONNEXION - SETUP + RESTORE LEDs ==========
+  # Déclenché quand HA démarre OU Nabaztag se reconnecte
 
   - id: nabaztag_reconnexion
     alias: "Nabaztag - Reconnexion"
-    description: "Envoie /setup et restaure LEDs enabled au demarrage HA ou reconnexion"
+    description: "Envoie /setup et restaure LEDs enabled au démarrage HA ou reconnexion"
     mode: single
     trigger:
       - trigger: state
@@ -29,27 +26,31 @@ automation:
         entity_id: binary_sensor.ping_nabaztag
         state: "on"
     action:
-      - action: rest_command.nabaztag_api
-        data:
-          endpoint: setup
-          query: "j={{ state_attr('zone.home', 'latitude') | round(3) }}&k={{ state_attr('zone.home', 'longitude') | round(3) }}&l={{ states('input_select.nabaztag_language') }}&c={{ {'Europe/Paris': 'PAR', 'Europe/London': 'LON', 'America/New_York': 'NYC', 'Asia/Tokyo': 'TYO'}[states('input_select.nabaztag_timezone_city')]|default('PAR') }}&d={{ 1 if is_state('input_boolean.nabaztag_daylight_saving', 'on') else 0 }}&w={{ states('input_number.nabaztag_wake_hour') | int }}&b={{ states('input_number.nabaztag_sleep_hour') | int }}&t={{ states('input_number.nabaztag_taichi_freq') | int }}"
+      - action: rest_command.nabaztag_setup
       - action: script.nabaztag_restore_leds
-      - action: rest_command.nabaztag_autocontrol
+      - action: rest_command.nabaztag_autocontrol_clock
         data:
           clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_halftime
+        data:
           halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_surprise
+        data:
           surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_taichi
+        data:
           taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
 
   # ========== GESTION LEDs PAR INTERRUPTEUR ==========
+  # Quand utilisateur toggle un switch (weather/traffic/pollution/nose)
 
   - id: nabaztag_led_toggle
     alias: "Nabaztag - Toggle LED"
-    description: "Enable/disable LED specifique selon input_boolean"
+    description: "Enable/disable LED spécifique selon input_boolean"
     mode: single
     trigger:
       - trigger: state
-        entity_id:
+        entity_id: 
           - input_boolean.nabaztag_weather_enabled
           - input_boolean.nabaztag_traffic_enabled
           - input_boolean.nabaztag_pollution_enabled
@@ -109,11 +110,12 @@ automation:
             sequence:
               - action: script.nabaztag_toggle_nose
 
-  # ========== MISE A JOUR TRAFIC WAZE ==========
+  # ========== MISE À JOUR TRAFIC WAZE ==========
+  # Envoie traffic au Nabaztag quand sensor Waze change
 
   - id: nabaztag_traffic_update
     alias: "Nabaztag - Update Traffic"
-    description: "Envoie traffic au Nabaztag base sur sensor Waze"
+    description: "Envoie traffic au Nabaztag basé sur sensor Waze"
     mode: single
     trigger:
       - trigger: state
@@ -142,14 +144,12 @@ automation:
           entity_id: input_number.nabaztag_traffic
         data:
           value: "{{ traffic_level }}"
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_traffic
         data:
-          endpoint: traffic
-          query: "v={{ traffic_level }}"
+          traffic: "{{ traffic_level }}"
 
   # ========== FIRMWARE AUTO CONTROL TOGGLE ==========
-  # Un seul appel nabaztag_autocontrol avec les 4 flags
-  # Les parametres non modifies sont re-envoyes (harmless)
+  # Quand utilisateur toggle un switch firmware (clock/halftime/surprise/taichi)
 
   - id: nabaztag_firmware_toggle
     alias: "Nabaztag - Toggle Firmware"
@@ -167,9 +167,68 @@ automation:
         entity_id: binary_sensor.ping_nabaztag
         state: "on"
     action:
-      - action: rest_command.nabaztag_autocontrol
-        data:
-          clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
-          halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
-          surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
-          taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_clock
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_clock
+                data:
+                  clock: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_clock
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_clock
+                data:
+                  clock: "0"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_halftime
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_halftime
+                data:
+                  halftime: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_halftime
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_halftime
+                data:
+                  halftime: "0"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_surprise
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_surprise
+                data:
+                  surprise: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_surprise
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_surprise
+                data:
+                  surprise: "0"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_taichi
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_taichi
+                data:
+                  taichi: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_taichi
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_taichi
+                data:
+                  taichi: "0"

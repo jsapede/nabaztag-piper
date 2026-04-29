@@ -1,60 +1,126 @@
 # =========================
 # Nabaztag - REST Commands
 # =========================
-#
-# 2 commands suffisent pour tous les endpoints firmware
-#
-# ┌──────────────────────────────────────────────────────────────────────┐
-# │ nabaztag_api — Endpoints supportés (GET)                            │
-# ├────────────┬────────────────────────────────┬───────────────────────┤
-# │ endpoint   │ query                          │ description           │
-# ├────────────┼────────────────────────────────┼───────────────────────┤
-# │ say        │ t=texte (urlencode)            │ Parler (TTS Piper)    │
-# │ left       │ p=0..16&d=0                    │ Oreille gauche        │
-# │ right      │ p=0..16&d=0                    │ Oreille droite        │
-# │ nose       │ v=0..4                         │ LED Nez               │
-# │ weather    │ v=0..5                         │ LED Météo             │
-# │ traffic    │ v=0..6                         │ LED Trafic            │
-# │ pollution  │ v=0..10                        │ LED Pollution         │
-# │ stock      │ v=0..6                         │ LED Stock             │
-# │ mail       │ v=0..6                         │ LED Mail              │
-# │ service4   │ v=0..6                         │ LED Service 4         │
-# │ service5   │ v=0..6                         │ LED Service 5         │
-# │ clear      │ (aucun)                        │ Reset toutes LEDs     │
-# │ setup      │ j=&k=&l=&c=&d=&w=&b=&t=        │ Config complète       │
-# │ communication│ (aucun)                      │ Son communication     │
-# │ ack        │ (aucun)                        │ Son ack               │
-# │ ministop   │ (aucun)                        │ Son ministop          │
-# │ surprise   │ (aucun)                        │ Son surprise          │
-# │ taichi     │ (aucun)                        │ Mouvement taichi      │
-# │ play       │ u=url (urlencode)              │ Jouer audio URL       │
-# │ sleep      │ (aucun)                        │ Mise en veille        │
-# │ wakeup     │ (aucun)                        │ Réveil                │
-# │ stop       │ (aucun)                        │ Stop tout             │
-# │ reboot     │ (aucun)                        │ Redémarrage           │
-# │ update-time│ (aucun)                        │ Sync NTP              │
-# └────────────┴────────────────────────────────┴───────────────────────┘
 
 rest_command:
+  # ========== BASIC CONTROL ==========
 
-  nabaztag_api:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/{{ endpoint }}{% if query %}?{{ query }}{% endif %}"
+  nabaztag_stop:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/stop"
     method: get
     timeout: 30
 
-  # ┌──────────────────────────────────────────────────────────────────┐
-  # │ nabaztag_autocontrol — 4 flags firmware en 1 appel              │
-  # ├──────────┬─────┬────────────────────────────────────────────────┤
-  # │ Flag     │ clé │ valeurs                                       │
-  # ├──────────┼─────┼───────────────────────────────────────────────┤
-  # │ Horloge  │  c  │ 0=off / 1=on (defaut firmware: 1)            │
-  # │ Demi-h   │  h  │ 0=off / 1=on (defaut firmware: 1)            │
-  # │ Surprise │  s  │ 0=off / 1=on (defaut firmware: 1)            │
-  # │ Taichi   │  t  │ 0=off / 1=on (defaut firmware: 1)            │
-  # └──────────┴─────┴───────────────────────────────────────────────┘
-  # Tous les parametres sont optionnels (| default('') = ignore par le firmware)
+  nabaztag_reboot:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/reboot"
+    method: get
+    timeout: 60
 
-  nabaztag_autocontrol:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/autocontrol?c={{ clock | default('') }}&h={{ halftime | default('') }}&s={{ surprise | default('') }}&t={{ taichi | default('') }}"
+  # ========== TEXT TO SPEECH ==========
+
+  nabaztag_say:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/say?t={{ message | urlencode }}"
+    method: get
+    timeout: 30
+
+  # ========== EARS ==========
+
+  nabaztag_left_ear:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/left?p={{ position }}&d=0"
+    method: get
+    timeout: 10
+
+  nabaztag_right_ear:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/right?p={{ position }}&d=0"
+    method: get
+    timeout: 10
+
+  # ========== NOSE ==========
+
+  nabaztag_nose:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/nose?v={{ state }}"
+    method: get
+    timeout: 10
+
+  # ========== INFO LEDs ==========
+
+  nabaztag_weather:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/weather?v={{ weather }}"
+    method: get
+    timeout: 10
+
+  nabaztag_traffic:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/traffic?v={{ traffic }}"
+    method: get
+    timeout: 10
+
+  nabaztag_pollution:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/pollution?v={{ pollution }}"
+    method: get
+    timeout: 10
+
+  # ========== SETUP ==========
+
+  nabaztag_setup:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/setup?j={{ state_attr('zone.home', 'latitude') | round(3) }}&k={{ state_attr('zone.home', 'longitude') | round(3) }}&l={{ states('input_select.nabaztag_language') }}&c={{ {'Europe/Paris': 'PAR', 'Europe/London': 'LON', 'America/New_York': 'NYC', 'Asia/Tokyo': 'TYO'}[states('input_select.nabaztag_timezone_city')]|default('PAR') }}&d={{ 1 if is_state('input_boolean.nabaztag_daylight_saving', 'on') else 0 }}&w={{ states('input_number.nabaztag_wake_hour') | int }}&b={{ states('input_number.nabaztag_sleep_hour') | int }}&t={{ states('input_number.nabaztag_taichi_freq') | int }}"
+    method: get
+    timeout: 30
+
+  # ========== CLEAR ==========
+
+  nabaztag_clear:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/clear"
+    method: get
+    timeout: 10
+
+  # ========== PLAY AUDIO ==========
+
+  nabaztag_play:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/play?u={{ url }}"
+    method: get
+    timeout: 60
+
+  nabaztag_mp3:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/mp3?v={{ url }}"
+    method: get
+    timeout: 60
+
+  # ========== STATUS ==========
+
+  nabaztag_status:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/status"
+    method: get
+    timeout: 10
+
+  # ========== NABAZTAG LIFE ==========
+
+  nabaztag_communication:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/communication"
+    method: get
+    timeout: 10
+
+  nabaztag_surprise:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/surprise"
+    method: get
+    timeout: 10
+
+  # ========== FIRMWARE AUTO CONTROL ==========
+
+  nabaztag_autocontrol_clock:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ clock }}%20autoclock-enabled%20%21"
+    method: get
+    timeout: 10
+
+  nabaztag_autocontrol_halftime:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ halftime }}%20autohalftime-enabled%20%21"
+    method: get
+    timeout: 10
+
+  nabaztag_autocontrol_surprise:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ surprise }}%20autosurprise-enabled%20%21"
+    method: get
+    timeout: 10
+
+  nabaztag_autocontrol_taichi:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ taichi }}%20autotaichi-enabled%20%21"
     method: get
     timeout: 10

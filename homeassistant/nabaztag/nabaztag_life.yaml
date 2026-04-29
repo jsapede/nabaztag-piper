@@ -2,17 +2,15 @@
 # NABAZTAG LIFE
 # Scripts et automatisations pour un Nabaztag vivant
 # ==========================================
-#
-# Tous les appels REST utilisent rest_command.nabaztag_api
 
 # ==========================================
 # SCRIPTS NABAZTAG LIFE
 # ==========================================
 
 script:
-  # Action aleatoire
+  # Action aléatoire
   nabaztag_random_action:
-    alias: "Nabaztag - Action aleatoire"
+    alias: "Nabaztag - Action aléatoire"
     sequence:
       - variables:
           action_type: "{{ range(1, 11) | random }}"
@@ -72,28 +70,27 @@ script:
   nabaztag_tell_joke:
     alias: "Nabaztag - Raconter une blague"
     sequence:
-      - action: rest_command.nabaztag_api
-        data: { endpoint: communication }
+      - action: rest_command.nabaztag_communication
       - delay: "00:00:01"
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: >
-            t={% set jokes = [
-              "Pourquoi les plongeurs plongent-ils toujours en arriere ? Parce que sinon ils tombent dans le bateau !",
+          message: >
+            {% set jokes = [
+              "Pourquoi les plongeurs plongent-ils toujours en arrière et jamais en avant ? Parce que sinon ils tombent dans le bateau !",
               "Que dit un escargot quand il croise une limace ? Regarde un nudiste !",
               "Qu'est-ce qui est jaune et qui attend ? Jonathan !",
               "Pourquoi les poissons n'aiment pas jouer au tennis ? Parce qu'ils ont peur du filet !",
-              "Comment appelle-t-on un chat tomber dans un pot de peinture le jour de Noel ? Un chat-mallow !",
+              "Comment appelle-t-on un chat tomber dans un pot de peinture le jour de Noël ? Un chat-mallow !",
               "Que dit un informaticien quand il se noie ? F1 F1 !",
               "Comment fait-on pour allumer un barbecue breton ? On utilise des breizh !",
               "Qu'est-ce qui est transparent et qui sent la carotte ? Un pet de lapin !",
               "Pourquoi Mickey Mouse ? Parce que Mario Bros !"
-            ] %}{{ jokes | random | urlencode }}
+            ] %}
+            {{ jokes | random }}
 
-  # Annoncer la meteo (LED + oreilles + TTS)
+  # Annoncer la météo
   nabaztag_announce_weather:
-    alias: "Nabaztag - Annoncer la meteo"
+    alias: "Nabaztag - Annoncer la météo"
     sequence:
       - variables:
           weather_value: "{{ states('input_number.nabaztag_weather') | int }}"
@@ -106,122 +103,102 @@ script:
             {% elif weather_value == 5 %}5
             {% else %}4
             {% endif %}
-          weather_txt: >
-            {% set msgs = {
+      - action: rest_command.nabaztag_weather
+        data:
+          weather: "{{ weather_value }}"
+      - action: rest_command.nabaztag_left_ear
+        data:
+          position: "{{ ear_position }}"
+      - action: rest_command.nabaztag_right_ear
+        data:
+          position: "{{ ear_position }}"
+      - delay: "00:00:02"
+      - action: rest_command.nabaztag_say
+        data:
+          message: >
+            {% set weather_msgs = {
               0: "Le ciel est dégagé, il fait beau !",
               1: "Le temps est partiellement nuageux.",
               2: "Il y a du brouillard, la visibilité est réduite.",
               3: "Il pleut actuellement, prévoyez un parapluie.",
               4: "Il neige dehors, attention aux routes glissantes.",
               5: "Attention, il y a de l'orage !"
-            } %}{{ msgs.get(weather_value, "Meteo inconnue") }}
-      - action: rest_command.nabaztag_api
-        data:
-          endpoint: weather
-          query: "v={{ weather_value }}"
-      - action: rest_command.nabaztag_api
-        data:
-          endpoint: left
-          query: "p={{ ear_position }}&d=0"
-      - action: rest_command.nabaztag_api
-        data:
-          endpoint: right
-          query: "p={{ ear_position }}&d=0"
-      - delay: "00:00:02"
-      - action: rest_command.nabaztag_api
-        data:
-          endpoint: say
-          query: "t={{ weather_txt | urlencode }}"
+            } %}
+            {{ weather_msgs.get(weather_value, "Météo inconnue") }}
 
   # Annoncer l'heure
   nabaztag_announce_time:
     alias: "Nabaztag - Annoncer l'heure"
     sequence:
-      - action: rest_command.nabaztag_api
-        data: { endpoint: ack }
+      - action: rest_command.nabaztag_ack
       - delay: "00:00:01"
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: "t=Il est {{ now().strftime('%H heures %M') | urlencode }}"
+          message: "Il est {{ now().strftime('%H heures %M') }}"
 
-  # Etirement
+  # Étirement
   nabaztag_stretch:
-    alias: "Nabaztag - S'etirer"
+    alias: "Nabaztag - S'étirer"
     sequence:
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: "t={{ ['Allez un petit etirement !', 'Il est temps de se degourdir !', 'Un peu d exercice !'] | random | urlencode }}"
+          message: "{{ ['Allez un petit étirement !', 'Il est temps de se dégourdir !', 'Un peu d\\'exercice !'] | random }}"
       - delay: "00:00:05"
-      - action: rest_command.nabaztag_api
-        data: { endpoint: taichi }
+      - action: rest_command.nabaztag_taichi
 
-  # Baillement
+  # Bâillement
   nabaztag_yawn:
-    alias: "Nabaztag - Baillement"
+    alias: "Nabaztag - Bâiller"
     sequence:
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: "t={{ ['Haaaaa petit baillement !', 'Je suis un peu fatigue', 'Hooooo excusez-moi'] | random | urlencode }}"
-      - action: rest_command.nabaztag_api
+          message: "{{ ['Haaaaa petit bâillement !', 'Je suis un peu fatigué', 'Hooooo excusez-moi'] | random }}"
+      - action: rest_command.nabaztag_left_ear
         data:
-          endpoint: left
-          query: "p=0&d=0"
-      - action: rest_command.nabaztag_api
+          position: 0
+      - action: rest_command.nabaztag_right_ear
         data:
-          endpoint: right
-          query: "p=0&d=0"
+          position: 0
       - delay: "00:00:02"
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_left_ear
         data:
-          endpoint: left
-          query: "p=16&d=0"
-      - action: rest_command.nabaztag_api
+          position: 16
+      - action: rest_command.nabaztag_right_ear
         data:
-          endpoint: right
-          query: "p=16&d=0"
+          position: 16
       - delay: "00:00:01"
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_left_ear
         data:
-          endpoint: left
-          query: "p=8&d=0"
-      - action: rest_command.nabaztag_api
+          position: 8
+      - action: rest_command.nabaztag_right_ear
         data:
-          endpoint: right
-          query: "p=8&d=0"
+          position: 8
 
   # Danse des oreilles
   nabaztag_ear_dance:
     alias: "Nabaztag - Danse des oreilles"
     sequence:
-      - action: rest_command.nabaztag_api
-        data: { endpoint: communication }
+      - action: rest_command.nabaztag_communication
       - repeat:
           count: 3
           sequence:
-            - action: rest_command.nabaztag_api
+            - action: rest_command.nabaztag_left_ear
               data:
-                endpoint: left
-                query: "p={{ range(0, 11) | random }}&d=0"
-            - action: rest_command.nabaztag_api
+                position: "{{ range(0, 11) | random }}"
+            - action: rest_command.nabaztag_right_ear
               data:
-                endpoint: right
-                query: "p={{ range(0, 11) | random }}&d=0"
+                position: "{{ range(0, 11) | random }}"
             - delay: "00:00:00.5"
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_left_ear
         data:
-          endpoint: left
-          query: "p=8&d=0"
-      - action: rest_command.nabaztag_api
+          position: 8
+      - action: rest_command.nabaztag_right_ear
         data:
-          endpoint: right
-          query: "p=8&d=0"
+          position: 8
 
-  # Son aleatoire
+  # Son aléatoire
   nabaztag_random_sound:
-    alias: "Nabaztag - Son aleatoire"
+    alias: "Nabaztag - Son aléatoire"
     sequence:
       - variables:
           sound_choice: "{{ range(1, 4) | random }}"
@@ -230,39 +207,33 @@ script:
               - condition: template
                 value_template: "{{ sound_choice == 1 }}"
             sequence:
-              - action: rest_command.nabaztag_api
-                data: { endpoint: communication }
+              - action: rest_command.nabaztag_communication
           - conditions:
               - condition: template
                 value_template: "{{ sound_choice == 2 }}"
             sequence:
-              - action: rest_command.nabaztag_api
-                data: { endpoint: ack }
+              - action: rest_command.nabaztag_ack
           - conditions:
               - condition: template
                 value_template: "{{ sound_choice == 3 }}"
             sequence:
-              - action: rest_command.nabaztag_api
-                data: { endpoint: ministop }
+              - action: rest_command.nabaztag_ministop
 
-  # Danse complete
+  # Danse complète
   nabaztag_dance:
     alias: "Nabaztag - Danse"
     sequence:
-      - action: rest_command.nabaztag_api
-        data: { endpoint: taichi }
+      - action: rest_command.nabaztag_taichi
       - delay: "00:00:02"
       - repeat:
           count: 3
           sequence:
-            - action: rest_command.nabaztag_api
+            - action: rest_command.nabaztag_left_ear
               data:
-                endpoint: left
-                query: "p={{ range(0, 11) | random }}&d=0"
-            - action: rest_command.nabaztag_api
+                position: "{{ range(0, 11) | random }}"
+            - action: rest_command.nabaztag_right_ear
               data:
-                endpoint: right
-                query: "p={{ range(0, 11) | random }}&d=0"
+                position: "{{ range(0, 11) | random }}"
             - delay: "00:00:00.5"
 
   # Action surprise
@@ -273,30 +244,28 @@ script:
         target:
           entity_id: script.nabaztag_dance
       - delay: "00:00:05"
-      - action: rest_command.nabaztag_api
-        data: { endpoint: surprise }
+      - action: rest_command.nabaztag_surprise
 
   # ========== SPEECH SCRIPTS ==========
 
-  # Dire la meteo
+  # Dire la météo
   nabaztag_say_weather:
-    alias: "Nabaztag - Dire la meteo"
+    alias: "Nabaztag - Dire la météo"
     sequence:
       - variables:
           weather_value: "{{ states('input_number.nabaztag_weather') | int }}"
-          weather_txt: >
-            {% set msgs = {
+      - action: rest_command.nabaztag_say
+        data:
+          message: >
+            {% set weather_msgs = {
               0: "Le ciel est dégagé, il fait beau !",
               1: "Le temps est partiellement nuageux.",
               2: "Il y a du brouillard, la visibilité est réduite.",
               3: "Il pleut actuellement, prévoyez un parapluie.",
               4: "Il neige dehors, attention aux routes glissantes.",
               5: "Attention, il y a de l'orage !"
-            } %}{{ msgs.get(weather_value, "Meteo inconnue") }}
-      - action: rest_command.nabaztag_api
-        data:
-          endpoint: say
-          query: "t={{ weather_txt | urlencode }}"
+            } %}
+            {{ weather_msgs.get(weather_value, "Météo inconnue") }}
 
   # Dire le trafic
   nabaztag_say_traffic:
@@ -304,20 +273,19 @@ script:
     sequence:
       - variables:
           traffic_value: "{{ states('input_number.nabaztag_traffic') | int }}"
-          traffic_txt: >
-            {% set msgs = {
-              0: "Circulation fluide partout, pas de problème.",
-              1: "Circulation legerement dense, tout va bien.",
-              2: "Le trafic est modere, quelques ralentissements.",
-              3: "La circulation est dense, prevoyez un peu de retard.",
-              4: "Des embouteillages sont signales sur votre trajet.",
-              5: "Le trafic est tres charge, evitez si possible.",
-              6: "Bouchon important, restez chez vous si vous pouvez !"
-            } %}{{ msgs.get(traffic_value, "Trafic inconnu") }}
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: "t={{ traffic_txt | urlencode }}"
+          message: >
+            {% set traffic_msgs = {
+              0: "Circulation fluide partout, pas de problème.",
+              1: "Circulation légèrement dense, tout va bien.",
+              2: "Le trafic est modéré, quelques ralentissements.",
+              3: "La circulation est dense, prévoyez un peu de retard.",
+              4: "Des embouteillages sont signalés sur votre trajet.",
+              5: "Le trafic est très chargé, évitez si possible.",
+              6: "Bouchon important, restez chez vous si vous pouvez !"
+            } %}
+            {{ traffic_msgs.get(traffic_value, "Trafic inconnu") }}
 
   # Dire la pollution
   nabaztag_say_pollution:
@@ -325,32 +293,32 @@ script:
     sequence:
       - variables:
           pollution_value: "{{ states('input_number.nabaztag_pollution') | int }}"
-          pollution_txt: >
-            {% set msgs = {
-              0: "L'air est excellent, respirer a plein poumons !",
-              1: "La qualite de l'air est tres bonne.",
-              2: "Air de bonne qualite, pas d'inquietude.",
-              3: "Qualite de l'air acceptable, OK pour les activites.",
-              4: "Air mediocre, les sensibles doivent limiter les efforts.",
-              5: "Mauvaise qualite de l'air, portez un masque dehors.",
-              6: "Tres mauvaise qualite de l'air, restez a l'interieur.",
-              7: "Qualite de l'air tres degradee, evitez les sorties.",
-              8: "Alerte pollution elevee, restez prudent.",
-              9: "Pollution severe, restez autant que possible a l'interieur.",
-              10: "Alerte maximum pollution, dangereux de sortir !"
-            } %}{{ msgs.get(pollution_value, "Pollution inconnue") }}
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: "t={{ pollution_txt | urlencode }}"
+          message: >
+            {% set pollution_msgs = {
+              0: "L'air est excellent, respirer à plein poumons !",
+              1: "La qualité de l'air est très bonne.",
+              2: "Air de bonne qualité, pas d'inquiétude.",
+              3: "Qualité de l'air acceptable, OK pour les activités.",
+              4: "Air mediocre, les sensibles doivent limiter les efforts.",
+              5: "Mauvaise qualité de l'air, portez un masque dehors.",
+              6: "Très mauvaise qualité de l'air, restez à l'intérieur.",
+              7: "Qualité de l'air très degradée, évitez les sorties.",
+              8: "Alerte pollution élevée, restez prudent.",
+              9: "Pollution severe, restez autant que possible à l'intérieur.",
+              10: "Alerte maximum pollution, dangereux de sortir !"
+            } %}
+            {{ pollution_msgs.get(pollution_value, "Pollution inconnue") }}
 
 # ==========================================
 # AUTOMATIONS NABAZTAG LIFE
 # ==========================================
 
 automation:
+  # Génère 2 heures d'actions aléatoires chaque heure
   - id: nabaztag_generate_action_times
-    alias: "Nabaztag - Generer heures actions"
+    alias: "Nabaztag - Générer heures actions"
     mode: single
     trigger:
       - trigger: time_pattern
@@ -362,8 +330,9 @@ automation:
     action:
       - action: script.nabaztag_generate_random_action_times
 
+  # Actions aléatoires aux 2 heures définies
   - id: nabaztag_random_actions_time_1
-    alias: "Nabaztag - Action aleatoire 1"
+    alias: "Nabaztag - Action aléatoire 1"
     mode: single
     trigger:
       - trigger: time
@@ -378,7 +347,7 @@ automation:
       - action: script.nabaztag_random_action
 
   - id: nabaztag_random_actions_time_2
-    alias: "Nabaztag - Action aleatoire 2"
+    alias: "Nabaztag - Action aléatoire 2"
     mode: single
     trigger:
       - trigger: time
@@ -392,6 +361,7 @@ automation:
     action:
       - action: script.nabaztag_random_action
 
+  # Actions aux heures pleines
   - id: nabaztag_hourly_action
     alias: "Nabaztag - Action horaire"
     mode: single
@@ -407,8 +377,9 @@ automation:
       - delay: "00:00:05"
       - action: script.nabaztag_random_action
 
+  # Pause déjeuner (12h30)
   - id: nabaztag_lunch_break
-    alias: "Nabaztag - Pause dejeuner"
+    alias: "Nabaztag - Pause déjeuner"
     trigger:
       - trigger: time
         at: "12:30:00"
@@ -417,13 +388,13 @@ automation:
         entity_id: input_boolean.nabaztaglife
         state: "on"
     action:
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: "t=C'est l'heure du dejeuner ! Bon appetit a tous !"
+          message: "C'est l'heure du déjeuner ! Bon appétit à tous !"
 
+  # Retour de pause déjeuner (13h30)
   - id: nabaztag_back_from_lunch
-    alias: "Nabaztag - Retour dejeuner"
+    alias: "Nabaztag - Retour déjeuner"
     trigger:
       - trigger: time
         at: "13:30:00"
@@ -432,8 +403,7 @@ automation:
         entity_id: input_boolean.nabaztaglife
         state: "on"
     action:
-      - action: rest_command.nabaztag_api
+      - action: rest_command.nabaztag_say
         data:
-          endpoint: say
-          query: "t=J'espere que vous avez bien mange ! On reprend !"
+          message: "J'espère que vous avez bien mangé ! On reprend !"
       - action: script.nabaztag_stretch

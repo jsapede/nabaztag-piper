@@ -12,11 +12,12 @@ fun forth_push f x=
     nil;;
 
 /**
- * Push a string value onto the stack (via list.mtl)
+ * Push a string value onto the stack
  */
+fun forth_push_str f x=
+    forth_push f [ str:x ];
+    0;;
 
-/**
- * Get an element from the stack at a given position without removing it
 /**
  * Pop a value from the stack
  */
@@ -25,12 +26,7 @@ fun forth_pop f=
     else let hd f.stack -> head in (
         set f.stack = tl f.stack;
         head
-    )    ;;
-
-/**
- * Push a string value onto the stack
- * Implementation dans list.mtl (apres int:n dans forth_depth pour le parseur)
- */
+    );;
 
 /**
  * Get an element from the stack at a given position without removing it
@@ -122,6 +118,15 @@ fun forth_rot f=
     set f.stack = b :: a :: c :: f.stack;
     nil;;
 
+/**
+ * PICK ( n ... ni - n ... ni ni )
+ * Copy nth item to top of stack
+ */
+fun forth_pick f=
+    let forth_pop f -> n in
+    let forth_stack_at f n.int -> v in
+    forth_push f v;;
+
 // fun forth_roll f= // TODO
 
 /**
@@ -145,14 +150,6 @@ fun forth_tuck f=
     nil;;
 
 /**
- * DEPTH ( -- count )
- * Count number of items on stack
- */
-fun forth_depth f=
-    let listlen f.stack -> l in
-    forth_push f [int:l];;
-
-/**
  * ?DUP ( x -- 0 | x x )
  * Duplicate top of stack if not zero
  */
@@ -161,6 +158,14 @@ fun forth_qdup f=
     else
         let hd f.stack -> v in
         if v.int!=0 then forth_push f v;;
+
+/**
+ * DEPTH ( -- count )
+ * Count number of items on stack
+ */
+fun forth_depth f=
+    let listlen f.stack -> l in
+    forth_push f [int:l];;
 
 /**
  * >R ( x -- ) ( R: -- x )
@@ -177,16 +182,6 @@ fun forth_to_r f=
 fun forth_r_from f=
     if f.rstack==nil then nil
     else forth_push f (forth_rpop f);;
-
-/**
- * PICK ( n ... ni - n ... ni ni )
- * Copy nth item to top of stack
- */
-fun forth_pick f=
-    let forth_pop f -> n in
-    let listnth f.stack n.int -> v in
-    forth_push f v;
-    nil;;
 
 /**
  * R@ ( -- x ) ( R: x -- x )

@@ -1,0 +1,14 @@
+[Unit]
+Description=Nabaztag TTS Stream Proxy (Piper)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/configs/nabserver/piper_tts_stream_proxy.py
+WorkingDirectory=/opt/configs/nabserver
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

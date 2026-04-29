@@ -1,138 +1,72 @@
 # Changelog - Nabaztag Serverless TTS
 
-## 2026-04-29 - Compilation firmware toujours + serveur web automatique
+## 2026-04-18 - Auto-Control + Bug Fixes NTP
 
-BUILD_FIRMWARE et ENABLE_WEB_SERVER supprimes du .env. Le firmware est
-toujours compile, le serveur web est toujours installe et demarre des
-que le fichier bc.jsp est present dans le dossier firmware/vl/.
+### Auto-control
 
-### Changements
+4 drapeaux pour controler les comportements automatiques:
 
-| Fichier | Changement |
-|---------|-----------|
-| `.env` | Suppression BUILD_FIRMWARE, ENABLE_WEB_SERVER |
-| `.env.example` | Idem |
-| `install/install.sh` | Compilation toujours, serveur web avec check bc.jsp |
-| `README.md` | Suppression mentions BUILD_FIRMWARE/ENABLE_WEB_SERVER |
+- **autoclock-enabled**: Annonces horaires (heure pile)
+- **autohalftime-enabled**: Annonces demi-heures
+- **autosurprise-enabled**: Sons surprise
+- **autotaichi-enabled**: Mouvements taichi
+
+### Bug Fix NTP critique
+
+**Fichier**: `firmware/net/ntp.mtl`
+
+**Probleme**: Le code original soustrayait l'uptime du timestamp NTP.
+
+**Avant**:
+```mtl
+set time_high = (strgetword msg 40) - (now >> 16);
+```
+
+**Apres**:
+```mtl
+set time_high = strgetword msg 40;
+```
+
+### Bug Fix HTTP
+
+**Fichier**: `firmware/srv/http_server.mtl`
+
+- Double point-virgule manquant
+- Parametre `list` -> `wlist`
+
+### Endpoints /autocontrol et /autostatus
+
+Supprimes du firmware. Utiliser `/forth` a la place.
 
 ---
 
-## 2026-04-29 - IP TTS auto-détectée + divers correctifs
+## 2024-04-15 - Architecture TTS Complete
 
-### IP TTS obligatoire dans .env
+### Piper TTS
 
-`TTS_SERVER_IP` doit être renseigné dans `.env`. Par défaut (`XXX.XXX.XXX.XXX`),
-`install.sh` détecte l'IP de la machine hôte et demande confirmation avant
-de compiler le firmware. La substitution est automatique dans `vl/config.forth`.
+- Proxy Python avec Piper et FFmpeg
+- Filtres audio: highpass, treble, volume
+- Header WAV manuel
+- Support phonemes espeak-ng
 
-Changement d'IP : modifier `.env` et relancer `install.sh` → recompilation.
+### Firmware modifies
 
-### Fichiers modifiés
-
-| Fichier | Changement |
-|---------|-----------|
-| `.env` | Ajout `TTS_SERVER_IP=XXX.XXX.XXX.XXX` |
-| `.env.example` | Idem + commentaires |
-| `install/install.sh` | Détection IP + confirmation + sed avant compilation |
-| `vl/config.forth` | IP remplacée par placeholder + commentaire |
-| `README.md` | Note sur l'obligation IP TTS |
-
----
-
-## 2026-04-29 - Version finale multi-TTS
-
-### Architecture générale
-
-Le proxy TTS (`piper_tts_stream.py`) supporte deux moteurs, configurés via `.env` :
-
-```
-TTS_ENGINE=piper  →  subprocess Piper → FFmpeg → WAV 16kHz → Nabaztag
-TTS_ENGINE=coqui  →  subprocess Coqui → FFmpeg → WAV 16kHz → Nabaztag
-                              (pipeline FFmpeg strictement identique)
-```
-
-Le projet utilise un dossier global (`GLOBAL_DIR` dans .env) séparé du repo source :
-
-```
-📂 Repo GitHub (cloné)
-└── install/
-    ├── install.sh              ← --dry-run, --uninstall, réinstall auto
-    ├── piper_tts_stream.py     ← Proxy TTS (lit TTS_ENGINE du .env)
-    ├── coqui_cli.py             ← CLI Coqui (stdin → WAV)
-    └── .env.example
-
-📂 GLOBAL_DIR (exécution)
-├── .env                        ← Configuration unique
-├── piper_tts_stream.py
-├── coqui_cli.py
-├── .venv/                      ← Venv Coqui
-├── voices/piper/               ← Modèles .onnx Piper
-└── firmware/vl/                ← Firmware compilé servi par le web
-```
-
-### Installateur unifié (`install/install.sh`)
-
-| Option | Description |
-|--------|-------------|
-| `./install.sh` | Installation complète |
-| `./install.sh --dry-run` | Simulation seule |
-| `./install.sh --uninstall` | Désinstallation complète |
-
-Étapes automatiques (10) :
-1. Création du dossier global + sous-dossiers
-2. Copie des fichiers du proxy
-3. Installation des dépendances système (espeak-ng, ffmpeg, build-essential, make)
-4. Installation Piper (`pip install piper-tts`)
-5. Téléchargement de la voix Piper depuis HuggingFace
-6. Installation Coqui (si TTS_ENGINE=coqui) : venv, PyTorch CPU, téléchargement VITS
-7. Compilation du firmware si BUILD_FIRMWARE=true
-8. Installation static-web-server pour servir le firmware
-9. Service systemd nabaztag-tts
-10. Service systemd nabaztag-webserver
-
-### Serveur web firmware
-
-- Utilise [static-web-server](https://static-web-server.net) (binaire Rust, 4MB)
-- Sert les fichiers du firmware compilé sur le port configuré
-- Permet au Nabaztag de télécharger son microcode au démarrage
-
-### Nouveaux fichiers
-
-| Fichier | Rôle |
-|---------|------|
-| `install/install.sh` | Installateur unifié avec --dry-run et --uninstall |
-| `install/piper_tts_stream.py` | Proxy TTS (configuration via .env, plus de flags) |
-| `install/coqui_cli.py` | Wrapper CLI Coqui (stdin → WAV, subprocess) |
-| `install/.env.example` | Template de configuration |
-
-### Fichiers supprimés
-
-| Fichier | Remplacé par |
+| Fichier | Modification |
 |---------|-------------|
-| `install_coqui.sh` | `install/install.sh` |
-| `piper-tts.service` | `nabaztag-tts.service` (généré par install.sh) |
-| `systemd/*.service` | Obsolètes |
-| Flags `--coqui`, `--phonemes` | Variables `.env` (TTS_ENGINE, PIPER_USE_PHONEMES) |
+| `vl/hooks.forth` | Redirection say vers proxy Piper |
+| `vl/config.forth` | Authentification |
+| `firmware/audio/audiolib.mtl` | Buffers: 64KB/512KB |
+| `firmware/utils/url.mtl` | url_encode/url_decode |
+| `firmware/utils/config.mtl` | Francais par defaut |
+| `firmware/protos/ntp_protos.mtl` | NTP IP fixe |
+| `scripts/preproc.pl` | Timezone Europe/Paris |
 
-### Variables .env simplifiées
+---
 
-```bash
-GLOBAL_DIR=/opt/nabaztag-piper
-TTS_ENGINE=piper                    # piper | coqui
-TTS_PORT=6790
-PIPER_VOICE_PATH=fr/fr_FR/siwis/medium
-BUILD_FIRMWARE=true                 # compiler le firmware
-ENABLE_WEB_SERVER=true              # servir le firmware
-WEB_SERVER_PORT=80
-```
+## Versions
 
-### Évolution des fonctionnalités
-
-| Date | Changement |
-|------|-----------|
-| 2026-04-29 | **Multi-TTS** : Coqui VITS, installateur unifié, --uninstall, static-web-server |
-| 2026-04-29 | Refactoring REST commands (20→2) + autostatus + sensors |
-| 2026-04-29 | Service générique, TTS IP externalisée |
-| 2026-04-18 | Auto-control firmware, bug fixes NTP/HTTP, compilation 0 erreur |
-| 2024-04-15 | Architecture Piper TTS complète |
+| Version | Date | Description |
+|---------|------|-------------|
+| 2026-04-18 | Auto-control + Bug NTP + Bug HTTP |
+| 2024-04-15 | Architecture TTS complete |
 | 2024-04-14 | Version initiale Piper TTS |

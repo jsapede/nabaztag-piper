@@ -1,15 +1,4 @@
 \ Configuration variables for Serverless Nabaztag
-\
-\ BEFORE RECOMPILATION:
-\  1. Changer TTS-SERVER$ ci-dessous si le TTS est sur une autre machine
-\  2. Changer language$ si besoin (fr/en/es/de/it)
-
-\ TTS Server address (changez ici avant de recompiler)
-\ Modifie automatiquement par install.sh via TTS_SERVER_IP et TTS_PORT dans .env
-" http://XXX.XXX.XXX.XXX:6790/say?t=" constant TTS-SERVER$
-
-\ Language (fr = default)
-" fr" constant LANGUAGE$
 
 \ Authentication (disabled for open access)
 \ "nabaztag" username !
