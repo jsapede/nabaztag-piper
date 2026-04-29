@@ -115,7 +115,13 @@ fi
 # ─── 3. Dépendances système ──────────────────────────────────
 echo ""
 echo "3/10 Dépendances systeme..."
-DEPS="espeak-ng ffmpeg python3-pip uv"
+# Check uv
+which uv >/dev/null 2>&1 && echo "   uv present" || (curl -LsSf https://astral.sh/uv/install.sh | sh)
+# Refresh PATH after uv install
+export PATH="$HOME/.local/bin:$PATH"
+which uv >/dev/null 2>&1 || (echo "ERREUR: uv non installe"; exit 1)
+
+DEPS="espeak-ng ffmpeg python3-pip"
 [ "$BUILD_FIRMWARE" = "true" ] && DEPS="$DEPS build-essential make"
 run apt-get update -qq
 run apt-get install -y -qq $DEPS
@@ -153,9 +159,9 @@ if [ "$TTS_ENGINE" = "coqui" ]; then
     run uv pip install -q coqui-tts soundfile
     echo "   Modele VITS francais..."
     run python3 -c "from TTS.api import TTS; TTS('tts_models/fr/css10/vits')"
-    AUTOREG="$COQUI_VENV/lib/python3.13/site-packages/TTS/tts/layers/tortoise/autoregressive.py"
-    if [ -f "$AUTOREG" ]; then
-        run sed -i 's/from transformers.pytorch_utils import isin_mps_friendly as isin/import torch; isin = torch.isin/' "$AUTOREG"
+    AUTOREG=$(find "$COQUI_VENV/lib" -path "*/TTS/tts/layers/tortoise/autoregressive.py" 2>/dev/null | head -1)
+    if [ -n "$AUTOREG" ] && [ -f "$AUTOREG" ]; then
+        grep -q "isin_mps_friendly" "$AUTOREG" && run sed -i 's/from transformers.pytorch_utils import isin_mps_friendly as isin/import torch; isin = torch.isin/' "$AUTOREG" || true
     fi
 else
     echo "6/10 Coqui ignore (TTS_ENGINE=$TTS_ENGINE)"
@@ -166,6 +172,7 @@ echo ""
 if [ "$BUILD_FIRMWARE" = "true" ]; then
     echo "7/10 Compilation du firmware..."
     [ -n "$CHANGED" ] && run make -C "$SOURCE_DIR" clean 2>/dev/null || true
+    run make -C "$SOURCE_DIR" compiler 2>&1
     run make -C "$SOURCE_DIR" firmware 2>&1
     run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/"
     echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
@@ -180,7 +187,8 @@ if [ "$ENABLE_WEB_SERVER" = "true" ]; then
     if [ ! -f "$SWS_BIN" ] || [ -n "$CHANGED" ]; then
         SWS_URL="https://github.com/static-web-server/static-web-server/releases/download/$SWS_VERSION/static-web-server-$SWS_VERSION-x86_64-unknown-linux-gnu.tar.gz"
         run wget -q "$SWS_URL" -O /tmp/sws.tar.gz
-        run tar xzf /tmp/sws.tar.gz -C /usr/local/bin/ static-web-server
+        SWS_DIR=$(tar tzf /tmp/sws.tar.gz | head -1 | cut -d/ -f1)
+        run tar xzf /tmp/sws.tar.gz -C /usr/local/bin/ --strip-components=1 "$SWS_DIR/static-web-server"
         run chmod +x "$SWS_BIN"
         run rm -f /tmp/sws.tar.gz
     fi
