@@ -156,7 +156,7 @@ Puis dans `configuration.yaml` :
 ```yaml
 homeassistant:
   packages:
-    nabaztag: !include_dir_named nabaztag
+    !include_dir_named nabaztag
 ```
 
 ```bash
