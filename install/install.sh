@@ -142,6 +142,7 @@ run apt-get update -qq
 run apt-get install -y -qq $DEPS
 
 # ─── 4. Piper ────────────────────────────────────────────────
+if [ "$TTS_ENGINE" != "coqui" ]; then
 echo ""
 echo "4/10 Installation Piper..."
 run uv pip install --system -q piper-tts
@@ -161,6 +162,10 @@ else
     echo "   Voix deja presente"
 fi
 echo "   Samples: https://rhasspy.github.io/piper-samples/"
+else
+echo "4/10 Piper ignore (TTS_ENGINE=$TTS_ENGINE)"
+echo "5/10 Voix Piper ignore (TTS_ENGINE=$TTS_ENGINE)"
+fi
 
 # ─── 6. Coqui ────────────────────────────────────────────────
 echo ""

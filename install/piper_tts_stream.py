@@ -184,9 +184,35 @@ import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
 
-# ==============================================================================
+# ═══════════════════════════════════════════════════════════
+# Charge .env depuis le dossier du script (GLOBAL_DIR)
+# ═══════════════════════════════════════════════════════════
+
+def _load_env():
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(env_path):
+        return
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            elif value.startswith("'") and value.endswith("'"):
+                value = value[1:-1]
+            if " #" in value:
+                value = value.split(" #")[0].strip()
+            os.environ.setdefault(key, value)
+
+_load_env()
+
+# ═══════════════════════════════════════════════════════════
 # CONFIGURATION (depuis .env)
-# ==============================================================================
+# ═══════════════════════════════════════════════════════════
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
