@@ -1,0 +1,48 @@
+# =========================
+# Nabaztag - REST Sensors
+# =========================
+
+sensor:
+
+  # ========== FULL STATUS ==========
+  # Récupère l'état complet du Nabaztag depuis /status
+
+  - platform: rest
+    name: "Nabaztag Status"
+    unique_id: nabaztag_status
+    resource_template: "http://{{ states('input_text.nabaztag_ip_address') }}/status"
+    method: GET
+    value_template: >
+      {% if value_json.sleep_state is defined and value_json.sleep_state == 1 %}
+        asleep
+      {% else %}
+        awake
+      {% endif %}
+    json_attributes:
+      - language
+      - wake_up
+      - go_to_bed
+      - taichi_freq
+      - sleep_state
+      - streaming_state
+      - rev
+    scan_interval: 120
+    timeout: 10
+
+  # ========== FIRMWARE AUTO STATUS ==========
+  # Récupère l'état réel des 4 flags firmware depuis /autostatus
+  # Permet de vérifier la syncro avec les input_boolean HA
+
+  - platform: rest
+    name: "Nabaztag Firmware Auto Status"
+    unique_id: nabaztag_firmware_autostatus
+    resource_template: "http://{{ states('input_text.nabaztag_ip_address') }}/autostatus"
+    method: GET
+    value_template: "OK"
+    json_attributes:
+      - clock
+      - halftime
+      - surprise
+      - taichi
+    scan_interval: 60
+    timeout: 10
