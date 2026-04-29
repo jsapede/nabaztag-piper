@@ -1,0 +1,19 @@
+[Unit]
+Description=Nabaztag TTS Proxy (Piper)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/configs/nabserver
+ExecStart=/usr/bin/python3 /opt/configs/nabserver/piper_tts_proxy.py
+Restart=on-failure
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nabaztag-proxy
+
+[Install]
+WantedBy=multi-user.target

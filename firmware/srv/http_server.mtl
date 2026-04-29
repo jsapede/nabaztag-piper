@@ -404,15 +404,15 @@ fun http_get_setup sock args=
     config_set_go_to_bed http_arg_int args 'b';       // set go to bed time
     config_set_taichi_freq http_arg_int args 't';     // set taichi frequency
     config_save;
-    forth_interpreter WORD_UPDATE_WEATHER;
+forth_interpreter WORD_UPDATE_WEATHER;
     http_send_header_and_close HTTP_204 nil sock;;
 
-/**
+ /**
  * Format a list of words to a string
  */
-fun _http_forth_stack_json list=
+ fun _http_forth_stack_json wlist=
     let nil -> t in (
-        for l=list; l!=nil; tl l do (
+        for l=wlist; l!=nil; tl l do (
             set t = (forth_word_fmt (hd l)) :: t;
             if (nil != tl l) then set t = "," :: t
         );

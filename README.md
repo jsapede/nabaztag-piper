@@ -1,176 +1,364 @@
-ServerlessNabaztag
-==================
+# Nabaztag Serverless - TTS Local avec Piper
 
-ServerlessNabaztag is a firmware allowing control of the Nabaztag/tag directly via the web, without an external server (a web server is needed only for downloading the firmware and resources).
+## Préambule important
 
-With this firmware, you can connect at http://\<YOURNABAZTAGIP\>/ and completely control your rabbit with a very simple web interface, as shown in the following screenshot:
+### IP utilisées (à adapter)
 
-![](/imgs/screenshot.png "Screenshot")
+Les adresses IP utilisées dans ce projet sont des **exemples** et doivent être ajustées à votre configuration réseau:
 
-The OpenAPI specification is available at http://\<YOURNABAZTAGIP\>/openapi.json and
-the Swagger UI at http://andreax79.github.io/ServerlessNabaztag/vl/api/
+- `192.168.0.42` - Adresse IP du serveur TTS (où tourne le proxy Python Piper)
+- `192.168.0.58` - Adresse IP du Nabaztag (optionnel, pour info)
 
-All the commands can be called with a single HTTP request from an external program/script, example:
+**⚠️IMPORTANT: L'IP du serveur Python doit être changée dans `vl/hooks.forth` avant de recompiler le firmware!**
+
+Voir la section "Guide de modification du firmware" pour plus de détails.
+
+---
+
+## Architecture
 
 ```
-$ curl http://nabaztag/wakeup
+┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
+│   Nabaztag v2   │       │   Serveur TTS    │       │     Piper      │
+│  192.168.0.58   │──────▶│  192.168.0.42    │──────▶│  TTS neuronal   │
+│                 │  HTTP │    :6790         │       │   (22kHz WAV)  │
+│  say "texte"    │       │                  │       │                 │
+└─────────────────┘       └────────┬─────────┘       └─────────────────┘
+                                    │
+                            ┌───────▼─────────┐
+                            │     FFmpeg     │
+                            │  16kHz + filtres│
+                            │  + header WAV  │
+                            └─────────────────┘
 ```
 
-In [examples/check_mail.py](examples/check_mail.py), there is a script that turns on the nose when you have unread email.
+---
 
-Configure the rabbit 
---------------------
+## Présentation
 
-* Unplug the rabbit, press the button on its head and hold it while you replug your rabbit. When all the lights are blue, you can release the button
-* On your computer, connect to the WiFi network created by your rabbit (the name should be Nabaztag\<XX\>)
-* Go to the configuration page at the following address: http://192.168.0.1
-* At the bottom of the page, in General Info, change "Violet Platform" to andreax79.github.io/ServerlessNabaztag/vl (without http://)
-* Click on Update settings and wait for the rabbit to reboot
-* You can now connect to the IP of your rabbit, configure and control it. (Note: if your rabbit IP is assigned with DHCP, you have to discover the IP address. Usually you can check the assigned IP from some page on your router)
+Ce projet remplace le système TTS Google Translate du Nabaztag par un moteur de synthèse vocale local utilisant **Piper** (TTS neuronal) avec traitement audio **FFmpeg**.
 
-Install on your web server (HTTP only)
---------------------------------------
+L'objectif est d'obtenir une voix française naturelle et de qualité sans dépendance externe, avec un démarrage rapide du Nabaztag.
 
-* Copy all the content from the [vl](vl) folder on this repository to your web server in a folder named "vl". This folder contains all the resources needed by the firmware (mp3 files, Forth files, choreographies, HTML, CSS, etc.)
-* Unplug the rabbit, press the button on its head and hold it while you replug your rabbit. When all the lights are blue, you can release the button
-* On your computer, connect to the WiFi network created by your rabbit (the name should be Nabaztag\<XX\>)
-* Go to the configuration page at the following address: http://192.168.0.1
-* At the bottom of the page, in General Info, change "Violet Platform" to the URL of the vl directory (without http://, example: 192.168.0.1/vl)
-* Click on Update settings and wait for the rabbit to reboot
-* You can now connect to the IP of your rabbit, configure and control it. (Note: if your rabbit IP is assigned with DHCP, you have to discover the IP address. Usually you can check the assigned IP from some page on your router)
+Ce dépôt (`nab-piper/`) contient les **fichiers sources modifiés** par rapport au firmware d'origine `andreax79/ServerlessNabaztag`.
 
-Firmware features
------------------
+---
 
-* Control the rabbit via HTTP API
-* Configure via Web interface
-* Simple password protection for Web and Telnet access
-* Built-in Forth interpreter accessible from the Web interface and via Telnet
-* Fetch the current time from NTP and play the corresponding sound every hour
-* Fetch weather and air quality from [open-meteo](https://open-meteo.com)
-* Autonomously wake up and go to sleep
-* Override the LEDs with custom colors and change the breathing LED color
-* Customize LEDs animation patterns
-* Respond to ICMP pings
+## Fichiers modifiés par rapport au firmware d'origine
 
-Forth Interpreter
-----------------
+### Firmware (MTL)
 
-The firmware includes a built-in Forth interpreter that allows you to interactively control and program your Nabaztag.
-The interpreter provides a powerful scripting environment with access to all rabbit functions.
+| Fichier | Modification |
+|---------|-------------|
+| `firmware/net/ntp.mtl` | **Bug fix critique**: Correction du calcul NTP (soustraction incorrecte de l'uptime) |
+| `firmware/srv/http_server.mtl` | Bug fixes: double point-virgule manquant, paramètre `list` → `wlist` |
+| `firmware/protos/ntp_protos.mtl` | Serveur NTP à IP fixe (`216.239.35.12`) |
+| `firmware/audio/audiolib.mtl` | Buffers: 64KB start, 512KB max |
+| `firmware/utils/config.mtl` | Langue française par défaut si non configurée |
+| `firmware/utils/url.mtl` | Fonctions `url_encode`/`url_decode` |
 
-### Accessing the Interpreter
+### Forth (vl/)
 
-You can access the Forth interpreter in two ways:
+| Fichier | Modification |
+|---------|-------------|
+| `vl/config.forth` | 4 variables auto-control + authentification |
+| `vl/hooks.forth` | Vérification drapeaux clock/halftime + say redirigé vers Piper |
+| `vl/crontab.forth` | Vérification drapeaux surprise/taichi |
+| `vl/words.txt` | Liste des mots Forth |
 
-* **Web Interface**: Available at http://\<YOURNABAZTAGIP\>/
-* **Telnet**: Connect to your Nabaztag via Telnet on port 22
-  ```
-  $ telnet 192.168.79.15
-  Trying 192.168.79.15...
-  Connected to 192.168.79.15.
-  Escape character is '^]'.
-  
-  *** ServerlessNabaztag ***
-  $Rev: 2025-12-20T07:44:49$
-  
-  Welcome to the interactive Forth system.
-  
-  Type 'words' to see available words.
-  Type 'quit'  to exit the interpreter.
-  
-  [0] > taichi
-  [0] >
-  ```
+---
 
-### Available Words
+## Fonctionnalités
 
-The complete list of available Forth words is documented in [vl/words.txt](vl/words.txt).
-The interpreter supports standard Forth operations plus Nabaztag-specific commands for controlling ears, playing sounds, and more.
+### Proxy TTS (`piper_tts_stream.py`)
 
-### Simple Examples
+- **Synthèse vocale**: Piper avec voix française (fr_FR-siwis-medium)
+- **Resampling**: Conversion 22kHz → 16kHz (compatible Nabaztag)
+- **Filtres audio FFmpeg**:
+  - `highpass=f=300` - Supprime les basses fréquences
+  - `treble=g+3` - Amplifie les aigus pour la clarté vocale
+  - `volume=1.5` - Augmente le volume global
+- **Phonèmes optionnels**: Conversion texte → phonèmes IPA via espeak-ng
+- **Header WAV manuel**: Résout les problèmes de streaming FFmpeg
 
-Here are some basic commands to get you started:
+### Options CLI
 
-```forth
-\ Move the left ear forward to position 10
-left-ear forward 10 move-ear
+```bash
+# Défaut: Piper + FFmpeg + filtres
+python piper_tts_stream.py
 
-\ Move the right ear backward to position 5
-right-ear backward 5 move-ear
+# Avec phonèmes (meilleure prononciation)
+python piper_tts_stream.py --phonemes
 
-\ Play a MIDI note (middle C)
-60 play-midi
+# Piper seul (pas de transcoding)
+python piper_tts_stream.py --no-ffmpeg
 
-\ Display current ear positions
-ears . .
-
-\ Wake up the rabbit
-wake-up
-
-\ Put the rabbit to sleep
-sleep
-
-\ Display current time
-daytime
-
-\ Say something (text-to-speech)
-"Hello World" say
-
-\ Override the left LED to red color
-"#ff0000" led-left !
+# FFmpeg resampling seulement (pas de filtres)
+python piper_tts_stream.py --no-filters
 ```
 
-### Configuration
+### Variables d'environnement
 
-You can configure the telnet login credentials and other settings by editing the [vl/config.forth](vl/config.forth) file.
-This file contains configuration variables for the username and password.
+Voir le fichier `.env` pour toutes les options configurables.
 
-Most of the Nabaztag's functionality can be customized by editing the Forth files in the [vl](vl) folder:
+---
 
-* [vl/init.forth](vl/init.forth) - Initialization script
-* [vl/config.forth](vl/config.forth) - Configuration settings
-* [vl/consts.forth](vl/consts.forth) - Constant definitions
-* [vl/crontab.forth](vl/crontab.forth) - Scheduled tasks
-* [vl/hooks.forth](vl/hooks.forth) - Event handlers (clicks, RFID, etc.)
-* [vl/telnet.forth](vl/telnet.forth) - Telnet server
-* [vl/weather.forth](vl/weather.forth) - Weather and air quality
+## Guide de modification du firmware
 
-Development
------------
+Ce guide explique comment modifier le firmware d'origine et le recompiler avec les changements de ce projet.
 
-Please install the following dependencies:
-```
-$ sudo apt-get install gcc-multilib g++-multilib
+### Prérequis
+
+```bash
+# Installer les dépendances de compilation
+apt install build-essential git
+
+# Le serveur Python Piper doit tourner sur une machine accessible par le Nabaztag
+# Voir la section "Installation du proxy TTS"
 ```
 
-Build the compiler and the simulator:
-```
-$ make compiler
+### Étapes
+
+#### 1. Cloner le dépôt d'origine
+
+```bash
+git clone https://github.com/andreax79/ServerlessNabaztag.git ServerlessNabaztag
+cd ServerlessNabaztag
 ```
 
-Build the firmware
-```
-$ make firmware
+#### 2. ⚠️ CHANGER l'IP du serveur Python (IMPORTANT!)
+
+Avant de copier les fichiers, vous DEVEZ modifier l'adresse IP du serveur Python dans `vl/hooks.forth`:
+
+```bash
+# Éditer vl/hooks.forth et changer ligne 43:
+# Ancienne ligne:
+nil "http://192.168.0.42:6790/say?t=" :: r> :: str-join
+
+# Nouvelle ligne (adapter l'IP à votre configuration):
+nil "http://192.168.1.100:6790/say?t=" :: r> :: str-join
 ```
 
-Start a local web server on port 80 (you need root for this):
-```
-$ sudo python3 -m http.server 80
+Cette IP doit être celle où le serveur Python Piper va tourner (accessible par le Nabaztag).
+
+#### 3. Copier les fichiers modifiés
+
+```bash
+#Copier tous les fichiers modifiés depuis nab-piper/
+cp ../nab-piper/vl/config.forth vl/
+cp ../nab-piper/vl/hooks.forth vl/
+cp ../nab-piper/vl/crontab.forth vl/
+cp ../nab-piper/vl/words.txt vl/
+
+cp ../nab-piper/firmware/audio/audiolib.mtl firmware/audio/
+cp ../nab-piper/firmware/utils/url.mtl firmware/utils/
+cp ../nab-piper/firmware/utils/config.mtl firmware/utils/
+cp ../nab-piper/firmware/protos/ntp_protos.mtl firmware/protos/
+cp ../nab-piper/firmware/net/ntp.mtl firmware/net/
+cp ../nab-piper/firmware/srv/http_server.mtl firmware/srv/
 ```
 
-or start local web server on port 8000 and redirect port 80 to 8000 (you need root for the iptables command):
-```
-$ sudo iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8000
-$ python3 -m http.server
+#### 4. Compiler le firmware
+
+```bash
+# Compiler le compilateur
+make compiler
+
+# Compiler le firmware
+make firmware
 ```
 
-### Links
+Le fichier `vl/bc.jsp` est généré (bytecode du firmware).
 
-* [Nabaztag Firmware with WPA2 support](https://github.com/RedoXyde/nabgcc/tree/wpa2)
-* [Milligram, A minimalist CSS framework](https://milligram.io)
-* [open-meteo, Free Weather Forecast API for non-commercial use ](https://github.com/open-meteo/open-meteo)
-* [pynab](https://github.com/nabaztag2018/pynab)
-* [Vim syntax highlighting for the Metal language](https://github.com/andreax79/vim-metal-syntax)
-* [Metal language support in Atom](https://github.com/rngtng/language-metal)
-* [Nabaztag Controller](https://nabaztag.com/controller)
+#### 5. Préparer le serveur web
+
+Le Nabaztag télécharge son firmware au démarrage depuis un serveur web statique.
+
+```bash
+#Servir le dossier vl/ sur le port 80
+cd vl/
+python3 -m http.server 80
+```
+
+#### 6. Démarrer le serveur Python Piper
+
+```bash
+#Sur une machine accessible par le Nabaztag (même IP que dans hooks.forth)
+python3 piper_tts_stream.py
+```
+
+#### 7. Démarrer le Nabaztag
+
+Au démarrage, le Nabaztag demande `vl/bc.jsp` depuis:
+- Son URL de configuration (paramètre `u=` dans `/config/` ou via DHCP)
+- Ou `http://default/vl/bc.jsp` en fallback
+
+Le nouveau firmware est téléchargé et démarré automatiquement.
+
+---
+
+## Installation du proxy TTS
+
+### Prérequis serveur
+
+```bash
+# Debian/Ubuntu
+apt install ffmpeg espeak-ng python3-pip
+
+# Installer Piper (voir https://github.com/OHF-Voice/piper1-gpl)
+# Voix disponibles: fr_FR-siwis-medium, fr_FR-tom-medium
+```
+
+### Déploiement
+
+```bash
+# Copier les fichiers du proxy
+cp piper_tts_stream.py /opt/nabaztag/
+cp .env /opt/nabaztag/
+
+# Installer le service systemd
+cp piper-tts.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable piper-tts
+systemctl start piper-tts
+```
+
+---
+
+## Contrôle des automatismes du Nabaztag
+
+Le firmware modifié inclut 4 drapeaux pour contrôler les comportements automatiques:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `autoclock-enabled` | Annonces horaires (heure pile) | 1 (ON) |
+| `autohalftime-enabled` | Annonces demi-heures | 1 (ON) |
+| `autosurprise-enabled` | Sons surprise | 1 (ON) |
+| `autotaichi-enabled` | Mouvements taichi | 1 (ON) |
+
+### Contrôle depuis Home Assistant
+
+Le Nabaztag peut être contrôlé via l'endpoint `/forth` depuis Home Assistant:
+
+```bash
+# Désactiver les automatiques
+curl "http://nabaztag.local/forth?c=0%20autoclock-enabled%20%21"
+
+# Activer les automatiques
+curl "http://nabaztag.local/forth?c=1%20autoclock-enabled%20%21"
+```
+
+Le Nabaztag expose également 4 input_booleans dans Home Assistant pour un contrôle graphique:
+- `input_boolean.firmware_clock`
+- `input_boolean.firmware_halftime`
+- `input_boolean.firmware_surprise`
+- `input_boolean.firmware_taichi`
+
+---
+
+## Dépannage
+
+### Le Nabaztag ne parle pas
+
+```bash
+# Vérifier que le service est actif
+systemctl status piper-tts
+
+# Tester manuellement
+curl "http://192.168.0.42:6790/say?t=bonjour" -o test.wav
+file test.wav  # Devrait être: RIFF WAVE audio
+```
+
+### L'horloge a du retard ou avance
+
+Ce problème a été corrigé dans la version actuelle du firmware. Si vous observez des dérives:
+- Le serveur NTP peut être saturé ou victime de bloqueurs
+- Le serveur `216.239.35.12` (Google) est fiable mais peut être bloqué par certains firewalls
+
+### Le Nabaztag ne démarre pas avec le nouveau firmware
+
+- Vérifier que le serveur web sert bien `vl/bc.jsp`
+- Vérifier les logs: `journalctl -u piper-tts -f`
+
+---
+
+## Détails techniques
+
+### Bug NTP corrigé (firmware/net/ntp.mtl)
+
+Le code original soustrayait l'uptime (`now`) du timestamp NTP:
+
+```mtl
+// AVANT (buggé)
+let time -> now in (
+    set time_high = (strgetword msg 40) - (now >> 16);
+    set time_low = (strgetword msg 42) - (now % 65536)
+);
+```
+
+Cette erreur causait une dérive progressive: au reboot, `now` ≈ 0, mais au fil du temps, la soustraction augmentait, donc l'heure announced arrivait de plus en plus tôt.
+
+```mtl
+// APRÈS (corrigé)
+set time_high = strgetword msg 40;
+set time_low = strgetword msg 42;
+```
+
+### Buffers audio (firmware/audio/audiolib.mtl)
+
+| Constante | Valeur originale | Valeur modifiée |
+|----------|----------------|----------------|
+| `WAV_BUFFER_STARTSIZE` | 80000 | 64000 |
+| `WAV_BUFFER_MAXSIZE` | 400000 | 512000 |
+
+- **Start**: 64KB permet un démarrage plus rapide (~0.5s)
+- **Max**: 512KB améliore la stabilité WiFi
+
+### Commandes FFmpeg utilisées
+
+```bash
+ffmpeg -f wav -i - \
+    -af highpass=f=300,treble=g=3,volume=1.5 \
+    -ar 16000 -ac 1 -acodec pcm_s16le \
+    -f s16le -
+```
+
+---
+
+## Structure du projet
+
+```
+/opt/
+├── ServerlessNabaztag/        # Dépôt cloné depuis github
+│   ├── vl/                    # Fichiers Forth
+│   ├── firmware/              # Code source MTL
+│   ├── compiler/            # Compilateur
+│   └── scripts/             # Scripts de compilation
+│
+└── nab-piper/               # Nos modifications (ce dépôt)
+    ├── vl/
+    │   ├── hooks.forth        # Fonction say redirigée vers TTS
+    │   ├── config.forth     # Auto-control + auth
+    │   ├── crontab.forth   # Vérification drapeaux
+    │   └── words.txt      # Mots Forth
+    ├── firmware/
+    │   ├── audio/audiolib.mtl
+    │   ├── net/ntp.mtl
+    │   ├── protos/ntp_protos.mtl
+    │   ├── srv/http_server.mtl
+    │   └── utils/
+    ├── scripts/
+    ├── piper_tts_stream.py    # Proxy TTS
+    ├── .env
+    ├── piper-tts.service
+    ├── README.md
+    └── CHANGELOG.md
+```
+
+---
+
+## Licence
+
+Ce projet est basé sur [andreax79/ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag).
+
+Piper est sous licence GPL - voir [OHF-Voice/piper1-gpl](https://github.com/OHF-Voice/piper1-gpl).

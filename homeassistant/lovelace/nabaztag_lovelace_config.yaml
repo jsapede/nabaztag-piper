@@ -1,0 +1,63 @@
+type: vertical-stack
+cards:
+  - type: markdown
+    content: |
+      # ⚙️ **Configuration Setup Nabaztag**
+      ---
+      Utiliser le bouton ci-dessous pour envoyer la configuration au Nabaztag.
+      Les paramètres sont récupérés depuis les entités de configuration.
+
+  - type: entities
+    title: 📍 Localisation & Langue
+    show_header_toggle: false
+    entities:
+      - entity: input_select.nabaztag_language
+        name: Langue (l)
+        icon: mdi:translate
+      - entity: input_select.nabaztag_timezone_city
+        name: Ville/Timezone (c)
+        icon: mdi:city
+
+  - type: entities
+    title: 🕐 Configuration Horaires
+    show_header_toggle: false
+    entities:
+      - entity: input_boolean.nabaztag_daylight_saving
+        name: Heure d'été (d)
+        icon: mdi:weather-sunny
+      - entity: input_number.nabaztag_wake_hour
+        name: Heure de réveil (w)
+        icon: mdi:alarm
+      - entity: input_number.nabaztag_sleep_hour
+        name: Heure de coucher (b)
+        icon: mdi:sleep
+      - entity: input_number.nabaztag_taichi_freq
+        name: Fréquence Taichi (t)
+        icon: mdi:yoga
+
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: 📤 Appliquer Configuration Setup
+        icon: mdi:upload
+        tap_action:
+          action: call-service
+          service: script.nabaztag_apply_setup
+
+  - type: markdown
+    content: |
+      ### 🔗 **URL générée pour /setup:**
+
+      ```
+      /setup?j={{ state_attr('zone.home', 'latitude') | round(3) }}&k={{ state_attr('zone.home', 'longitude') | round(3) }}&l={{ states('input_select.nabaztag_language') }}&c={{ {'Europe/Paris': 'PAR', 'Europe/London': 'LON', 'America/New_York': 'NYC', 'Asia/Tokyo': 'TYO'}[states('input_select.nabaztag_timezone_city')]|default('PAR') }}&d={{ 1 if is_state('input_boolean.nabaztag_daylight_saving', 'on') else 0 }}&w={{ states('input_number.nabaztag_wake_hour') | int }}&b={{ states('input_number.nabaztag_sleep_hour') | int }}&t={{ states('input_number.nabaztag_taichi_freq') | int }}
+      ```
+
+      ### 📋 **Paramètres:**
+      - **j** = Latitude de zone.home
+      - **k** = Longitude de zone.home
+      - **l** = Langue sélectionnée
+      - **c** = Code ville/timezone
+      - **d** = Heure d'été (0/1)
+      - **w** = Heure de réveil
+      - **b** = Heure de coucher
+      - **t** = Fréquence Taichi

@@ -100,7 +100,7 @@ fun config_get_proxy_port =
 // Get Language
 fun config_get_lang =
     let _config_get CONF_LANGUAGE 2 -> val in
-    if val == nil then "" else val;;
+    if val == nil || val == "" then "fr" else val;;
 
 // Get City code
 fun config_get_city_code =

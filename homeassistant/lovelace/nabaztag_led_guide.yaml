@@ -1,0 +1,62 @@
+type: markdown
+title: 💡 Nabaztag - Guide des LEDs
+content: |
+  ## Signification des LEDs du Nabaztag
+  
+  ### 🌤️ Météo (LEDs du ventre - 3 LEDs)
+  
+  | LEDs | Signification |
+  |------|---------------|
+  | ⬤ ⬤ ⬤ (jaune) | ☀️ **Soleil** |
+  | ⬤ ○ ⬤ (bleu-jaune-bleu) | ⛅ **Nuage** |
+  | ⬤ (clignotement alterné) | 💧 **Pluie** |
+  | ⬤ (clignotement simultané) | 🌫️ **Brouillard** |
+  | ⬤ (position changeante) | ⛈️ **Orage** |
+  | ○ ⬤ ○ (centre clignote) | 🌨️ **Neige** |
+  
+  ### 🚗 Trafic (LEDs du ventre)
+  
+  | LEDs | Signification |
+  |------|---------------|
+  | ○ ○ ○ | 🟢 **Libre** |
+  | ⬤ ○ ○ | 🟡 **Correct** |
+  | ⬤ ⬤ ○ | 🟠 **Modéré** |
+  | ⬤ ⬤ ⬤ | 🟡 **Normal** |
+  | ⬤ ○ ⬤ | 🔴 **Dense** |
+  | ○ ⬤ ⬤ | 🔴🔴 **Congestionné** |
+  | ⬤ ⬤ | 🚨 **Extrême** |
+  
+  ### 💨 Pollution (LEDs du ventre)
+  
+  | Vitesse clignotement | Signification |
+  |---------------------|---------------|
+  | Lent | 🟢 **Bon** (0-3) |
+  | Moyen | 🟡 **Moyen** (4-6) |
+  | Rapide | 🔴 **Mauvais** (7-10) |
+  
+  ### 👃 Nez (LED du nez)
+  
+  | État | Signification |
+  |------|---------------|
+  | Éteint | ⬤ Noir |
+  | Allumé fixe | ⬤ Orange |
+  | 1 clignotement | ✉️ 1 message en attente |
+  | 2 clignotements | ⚠️ Urgent |
+  | 3 clignotements | 🚨 Panic |
+  | Clignote violet | 📧 Emails |
+  | Clignote rouge | ⬇️ Réception données |
+  
+  ---
+  
+  ### 🎵 Sons disponibles
+  
+  - **Ack** : Son de confirmation
+  - **Abort** : Son d'annulation
+  - **Communication** : Son de communication
+  - **Ministop** : Son stop
+  
+  ### 🎭 Oreilles (positions 0-16)
+  
+  - 0 : Rabattues vers l'arrière
+  - 8 : Debout droites
+  - 16 : Rabattues vers l'avant

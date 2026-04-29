@@ -1,0 +1,234 @@
+# =========================
+# Nabaztag - Automatisations
+# =========================
+#
+# Architecture:
+# - Nabaztag Life: actions aléatoires (nabaztag_life.yaml)
+# - Reconnexion: /setup + restore LEDs au démarrage HA ou reconnexion Nabaztag
+
+automation:
+
+  # ========== RECONNEXION - SETUP + RESTORE LEDs ==========
+  # Déclenché quand HA démarre OU Nabaztag se reconnecte
+
+  - id: nabaztag_reconnexion
+    alias: "Nabaztag - Reconnexion"
+    description: "Envoie /setup et restaure LEDs enabled au démarrage HA ou reconnexion"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: binary_sensor.ping_nabaztag
+        to: "on"
+      - trigger: homeassistant
+        event: start
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - action: rest_command.nabaztag_setup
+      - action: script.nabaztag_restore_leds
+      - action: rest_command.nabaztag_autocontrol_clock
+        data:
+          clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_halftime
+        data:
+          halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_surprise
+        data:
+          surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
+      - action: rest_command.nabaztag_autocontrol_taichi
+        data:
+          taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+
+  # ========== GESTION LEDs PAR INTERRUPTEUR ==========
+  # Quand utilisateur toggle un switch (weather/traffic/pollution/nose)
+
+  - id: nabaztag_led_toggle
+    alias: "Nabaztag - Toggle LED"
+    description: "Enable/disable LED spécifique selon input_boolean"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: 
+          - input_boolean.nabaztag_weather_enabled
+          - input_boolean.nabaztag_traffic_enabled
+          - input_boolean.nabaztag_pollution_enabled
+          - input_boolean.nabaztag_nose_enabled
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_weather_enabled
+                state: "on"
+            sequence:
+              - action: script.nabaztag_toggle_weather
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_weather_enabled
+                state: "off"
+            sequence:
+              - action: script.nabaztag_toggle_weather
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_traffic_enabled
+                state: "on"
+            sequence:
+              - action: script.nabaztag_toggle_traffic
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_traffic_enabled
+                state: "off"
+            sequence:
+              - action: script.nabaztag_toggle_traffic
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_pollution_enabled
+                state: "on"
+            sequence:
+              - action: script.nabaztag_toggle_pollution
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_pollution_enabled
+                state: "off"
+            sequence:
+              - action: script.nabaztag_toggle_pollution
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_nose_enabled
+                state: "on"
+            sequence:
+              - action: script.nabaztag_toggle_nose
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_nose_enabled
+                state: "off"
+            sequence:
+              - action: script.nabaztag_toggle_nose
+
+  # ========== MISE À JOUR TRAFIC WAZE ==========
+  # Envoie traffic au Nabaztag quand sensor Waze change
+
+  - id: nabaztag_traffic_update
+    alias: "Nabaztag - Update Traffic"
+    description: "Envoie traffic au Nabaztag basé sur sensor Waze"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: sensor.waze_trajet_domicile_travail
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.nabaztag_traffic_enabled
+        state: "on"
+    action:
+      - variables:
+          duration: "{{ trigger.to_state.state | float(0) }}"
+          traffic_level: >
+            {% if duration < 20 %}0
+            {% elif duration < 25 %}1
+            {% elif duration < 30 %}2
+            {% elif duration < 35 %}3
+            {% elif duration < 45 %}4
+            {% elif duration < 60 %}5
+            {% else %}6
+            {% endif %}
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.nabaztag_traffic
+        data:
+          value: "{{ traffic_level }}"
+      - action: rest_command.nabaztag_traffic
+        data:
+          traffic: "{{ traffic_level }}"
+
+  # ========== FIRMWARE AUTO CONTROL TOGGLE ==========
+  # Quand utilisateur toggle un switch firmware (clock/halftime/surprise/taichi)
+
+  - id: nabaztag_firmware_toggle
+    alias: "Nabaztag - Toggle Firmware"
+    description: "Enable/disable auto-control firmware (clock/halftime/surprise/taichi)"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id:
+          - input_boolean.nabaztag_firmware_clock
+          - input_boolean.nabaztag_firmware_halftime
+          - input_boolean.nabaztag_firmware_surprise
+          - input_boolean.nabaztag_firmware_taichi
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_clock
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_clock
+                data:
+                  clock: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_clock
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_clock
+                data:
+                  clock: "0"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_halftime
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_halftime
+                data:
+                  halftime: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_halftime
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_halftime
+                data:
+                  halftime: "0"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_surprise
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_surprise
+                data:
+                  surprise: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_surprise
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_surprise
+                data:
+                  surprise: "0"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_taichi
+                state: "on"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_taichi
+                data:
+                  taichi: "1"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.nabaztag_firmware_taichi
+                state: "off"
+            sequence:
+              - action: rest_command.nabaztag_autocontrol_taichi
+                data:
+                  taichi: "0"

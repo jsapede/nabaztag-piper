@@ -4,7 +4,7 @@ variable surprise-next-time  \ Next surprise time
 variable taichi-next-time  \ Next taichi time
 
 : surprise ( -- )  \ Surprise
-sleeping? invert if  \ if not sleeping
+sleeping? invert autosurprise-enabled @ and if  \ if not sleeping AND surprise enabled
 nil server-url @ :: "/config/surprise/" :: language @ :: "/" :: 299 random 1 + :: ".mp3" :: str-join  \ url
 play-url
 then ;
@@ -19,7 +19,7 @@ surprise-next-time ! ;
 surprise-next-time @ uptime < ;
 
 : taichi  ( -- )  \ Do Tai Chi exercise
-sleeping? invert if  \ if not sleeping
+sleeping? invert autotaichi-enabled @ and if  \ if not sleeping AND taichi enabled
 nil server-url @ :: "/config/chor/taichi.chor" :: str-join
 http-get
 drop \ drop header

@@ -11,5 +11,8 @@ Thumbs.db
 nominal.mtl
 deploy.sh
 foo.bin
-bootcode.bin
 .env
+__pycache__/
+.ruff_cache/
+.serena/
+output.wav

@@ -19,14 +19,14 @@ http-post
 drop drop ;
 
 : on-time ( -- )  \ Hour hook
-sleeping? invert if  \ if not sleeping
+sleeping? invert autoclock-enabled @ and if  \ if not sleeping AND clock enabled
 nil server-url @ :: "/config/clock/" :: language @ :: "/" :: get-hour :: "/" :: 6 random 1 + :: ".mp3" :: str-join  \ url
 play-url
 then ;
 
 : on-halftime ( -- )  \ Half-hour hook
-sleeping? invert if  \ if not sleeping
-nil server-url @ :: "/config/clockall/" :: language @ :: "/" :: 12 random 1 + :: ".mp3" :: str-join  \ url
+sleeping? invert autohalftime-enabled @ and if  \ if not sleeping AND halftime enabled
+nil server-url @ :: "/config/clockall/" :: language @ :: "/" :: "hg0" :: 12 random 1 + :: ".mp3" :: str-join  \ url
 play-url
 then ;
 
@@ -40,6 +40,6 @@ drop drop ;
 : say ( text --  )  \ Text to speech
 sleeping? invert if  \ if not sleeping
 url-encode >r
-nil "http://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=32&client=tw-ob&tl=" :: language @ :: "&q=" :: r> :: str-join \ url
+nil "http://192.168.0.42:6790/say?t=" :: r> :: str-join \ url
 play-url
 then ;

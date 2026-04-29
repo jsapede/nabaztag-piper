@@ -1,0 +1,58 @@
+type: vertical-stack
+cards:
+  # ========== CONTRÔLE PRINCIPAL ==========
+  - type: entities
+    title: 🎭 Nabaztag - Contrôle principal
+    entities:
+      - entity: input_boolean.nabaztaglife
+        name: Animations vivantes (HA)
+      - entity: input_boolean.nabaztag_weather_enabled
+        name: LED Météo
+      - entity: input_boolean.nabaztag_traffic_enabled
+        name: LED Trafic
+      - entity: input_boolean.nabaztag_pollution_enabled
+        name: LED Qualité air
+      - entity: input_boolean.nabaztag_nose_enabled
+        name: LED Nez
+
+  # ========== FIRMWARE AUTO CONTROL ==========
+  - type: entities
+    title: 🤖 Automatismes firmware
+    entities:
+      - entity: input_boolean.nabaztag_firmware_clock
+        name: Horloge (heur)
+      - entity: input_boolean.nabaztag_firmware_halftime
+        name: Demi-heure
+      - entity: input_boolean.nabaztag_firmware_surprise
+        name: Surprise
+      - entity: input_boolean.nabaztag_firmware_taichi
+        name: Taichi
+
+  # ========== CONFIGURATION ==========
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: ⚙️ Appliquer Setup
+        icon: mdi:cog
+        tap_action:
+          action: call-service
+          service: script.nabaztag_apply_setup
+
+  # ========== MESSAGE ==========
+  - type: horizontal-stack
+    cards:
+      - type: entity
+        entity: input_text.nabaztag_message
+      - type: button
+        icon: mdi:send
+        tap_action:
+          action: call-service
+          service: script.nabaztag_talk
+
+  # ========== RESET ==========
+  - type: button
+    name: ↺ Reset LEDs
+    icon: mdi:led-off
+    tap_action:
+      action: call-service
+      service: script.nabaztag_restore_leds

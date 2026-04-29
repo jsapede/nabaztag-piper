@@ -3,7 +3,8 @@
 use strict;
 use Time::Piece;
 
-my $datetime = gmtime->datetime;
+$ENV{TZ} = 'Europe/Paris';
+my $datetime = localtime->datetime;
 
 my %defines;
 my %includedFiles;
