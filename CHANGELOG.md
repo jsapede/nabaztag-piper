@@ -24,7 +24,7 @@
 | Fichier | Original (`andreax79`) | Notre Repo | Impact |
 |---------|----------------------|-------------|--------|
 | `vl/config.forth` | Pas de `TTS-SERVER$` (IP codée en dur dans `hooks.forth`) | `"http://192.168.0.35:6790/say?t=" constant TTS-SERVER$` (ligne 7, placeholder) | ✅ **IP TTS externalisée** : utilise une constante Forth, remplacée par `sed` via `install.sh` |
-| `vl/hooks.forth` (ligne 29) | `"/config/clockall/" :: language @ :: "/" :: 12 random 1 + :: ".mp3"` | `"/config/clockall/" :: language @ :: "/" :: "hg0" :: 12 random 1 + :: ".mp3"` | ✅ **Chemin MP3 modifié** : ajout du segment `"hg0"` → URLs générées: `/config/clockall/fr/hg0/5.mp3` (sous-répertoire) |
+| `vl/hooks.forth` (ligne 29) | `"/config/clockall/" :: language @ :: "/" :: 12 random 1 + :: ".mp3"` | `"/config/clockall/" :: language @ :: "/" :: 11 random 1 + :: ".mp3"` | ✅ **MP3 simplifiés** : 11 fichiers partout (`1.mp3`→`11.mp3`). Fichiers génériques (pas liés à l'heure). Suppression préfixe `HG`/`hg`. Sauvegarde dans `_removed/` (HG12,HG18,HG161,HG162). Firmware → `/config/clockall/fr/5.mp3` |
 | `vl/hooks.forth` (ligne 43) | `nil "http://translate.google.com/translate_tts?ie=UTF-8&..." :: language @ :: "&q=" :: r> :: str-join` | `nil TTS-SERVER$ :: r> :: str-join` | ✅ **Suppression Google Translate** : utilise notre proxy TTS (Piper/Coqui) via `TTS-SERVER$` |
 | `firmware/srv/http_server.mtl` (ligne 253) | `forth_push_str f text;` | `forth_say_push f text;` | ✅ **Nouvelle fonction `forth_say_push`** dans `nabaztag.mtl` (gère mieux l'encodage pour le proxy) |
 | `firmware/forth/nabaztag.mtl` | Pas de fonction `forth_say_push` | `fun forth_say_push f text=` (ligne 148) | ✅ **Ajout de la fonction dédiée** pour passer le texte au moteur TTS |

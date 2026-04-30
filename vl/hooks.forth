@@ -26,7 +26,7 @@ then ;
 
 : on-halftime ( -- )  \ Half-hour hook
 sleeping? invert autohalftime-enabled @ and if  \ if not sleeping AND halftime enabled
-nil server-url @ :: "/config/clockall/" :: language @ :: "/" :: "hg0" :: 12 random 1 + :: ".mp3" :: str-join  \ url
+nil server-url @ :: "/config/clockall/" :: language @ :: "/" :: 11 random 1 + :: ".mp3" :: str-join  \ url
 play-url
 then ;
 
