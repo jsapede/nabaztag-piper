@@ -178,4 +178,6 @@ Le dossier `homeassistant/lovelace/` contient trois fichiers YAML à importer co
 
 Pour importer une carte : ouvrir le tableau de bord HA → cliquer sur l'icône crayon → **Ajouter carte** → passer en **éditeur YAML** → coller le contenu du fichier.
 
+> **Dépendance telnet** : les sensors rapides (1s) et les switches firmware non-optimistes nécessitent `netcat-openbsd` sur la machine HA (`apt install netcat-openbsd`). Le sensor interroge le telnet du lapin (`nc -q 0 <IP> 23`) pour lire l'état réel des flags firmware et du sommeil, sans passer par HTTP.
+
 Une documentation détaillée de l'intégration HA (entités, commandes REST, scripts, automatisations, guide des sons) est disponible dans [`homeassistant/docs/`](homeassistant/docs/INDEX.md).

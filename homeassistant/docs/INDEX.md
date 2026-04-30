@@ -52,7 +52,9 @@ Oreilles (gauche/droite avec position 0-16), nez (5 états), stop, reboot.
 Le lapin parle via `GET /say?t=<texte>`. Le message est transmis au serveur TTS local qui génère un WAV 16kHz via Piper (ou Coqui) et le retourne directement au lapin.
 
 ### Automatismes firmware (nouveau dans `nab-piper`)
-4 flags (`autoclock`, `autohalftime`, `autosurprise`, `autotaichi`) contrôlables depuis HA via l'endpoint `/autocontrol?c=1&h=0&s=1&t=1`. Chaque flag est lié à un `input_boolean` HA qui le synchronise en temps réel.
+4 flags (`autoclock`, `autohalftime`, `autosurprise`, `autotaichi`) contrôlables depuis HA via l'endpoint `/autocontrol?c=1&h=0&s=1&t=1`. Les **template switches** (`switch.nabaztag_firmware_*`) lisent l'état réel du firmware via telnet (toutes les 1s) — plus de mode optimiste : le switch affiche ce que le lapin a vraiment en mémoire.
+
+> **Dépendance** : nécessite `netcat-openbsd` sur la machine HA (`apt install netcat-openbsd`).
 
 ### Nabaztag Life
 Script qui pioche aléatoirement parmi 10 actions (blague, météo, trafic, étirement, danse des oreilles, bâillement, etc.) pour rendre le lapin réactif et vivant.
