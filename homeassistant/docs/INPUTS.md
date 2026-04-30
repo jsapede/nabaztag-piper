@@ -352,58 +352,29 @@ Ce fichier documente tous les inputs (entrées) utilisés par l'intégration Nab
 
 ---
 
-## Input Booleans — Flags Firmware (nouveau dans `nab-piper`)
+## Switches Firmware (template switches depuis `nab-piper`)
 
-Ces 4 switches contrôlent les automatismes internes du firmware via l'endpoint `/autocontrol`. Chaque bascule est synchronisée en temps réel.
+Les 4 flags firmware (`autoclock`, `autohalftime`, `autosurprise`, `autotaichi`) sont désormais des **template switches HA** qui lisent **l'état réel du firmware** via le **sensor telnet** (interrogé toutes les 1s). Plus de mode optimiste : le switch affiche ce que le lapin a vraiment en mémoire, pas ce qu'on lui a demandé.
 
-### nabaztag_firmware_clock
+Les switches sont définis dans `nabaztag_sensors.yaml` :
 
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Horloge (heure pile) |
-| Type | input_boolean |
-| Valeur initiale | On |
+| Switch HA | Variable Forth | Endpoint |
+|-----------|---------------|----------|
+| `switch.nabaztag_firmware_clock` | `_autoclock_enabled` | `/forth?c=1%20autoclock-enabled%20!` |
+| `switch.nabaztag_firmware_halftime` | `_autohalftime_enabled` | `/forth?c=1%20autohalftime-enabled%20!` |
+| `switch.nabaztag_firmware_surprise` | `_autosurprise_enabled` | `/forth?c=1%20autosurprise-enabled%20!` |
+| `switch.nabaztag_firmware_taichi` | `_autotaichi_enabled` | `/forth?c=1%20autotaichi-enabled%20!` |
 
-**Influence**: Active/désactive les annonces horaires. Quand On, le firmware joue une annonce à chaque heure pile.
+**Principe de fonctionnement :**
+1. Le `command_line` sensor `sensor.nabaztag_fast_status` interroge le telnet du lapin toutes les 1s :
+   ```
+   printf "sleep_is_sleeping . cr _autoclock_enabled @ . cr ..." | nc -q 0 <IP> 23
+   ```
+2. Les template switches lisent les attributs de ce sensor pour afficher l'état réel
+3. Quand l'utilisateur toggle un switch, la commande `/forth` est envoyée au lapin, et le telnet confirme le changement < 1s plus tard
+4. Le sensor HTTP `/status` passe en `scan_interval: 300` (5 min) — uniquement pour les données de configuration (langue, fuseau, version)
 
----
-
-### nabaztag_firmware_halftime
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Demi-heure |
-| Type | input_boolean |
-| Valeur initiale | On |
-
-**Influence**: Active/désactive les annonces de demi-heure.
-
----
-
-### nabaztag_firmware_surprise
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Surprise |
-| Type | input_boolean |
-| Valeur initiale | On |
-
-**Influence**: Active/désactive les sons surprise aléatoires déclenchés par le firmware.
-
----
-
-### nabaztag_firmware_taichi
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Taichi |
-| Type | input_boolean |
-| Valeur initiale | On |
-
-**Influence**: Active/désactive les mouvements Taichi automatiques.
-
----
-
+**Prérequis :** `netcat-openbsd` (`nc`) sur la machine Home Assistant.
 ## Dépannage
 
 ### Problème: Le lapin ne répond pas
