@@ -127,9 +127,10 @@ Un **capteur REST** interroge régulièrement `/status` pour remonter l'état co
 
 Le package HA crée plusieurs familles d'entités pour interagir avec le lapin :
 
-- **4 switches firmware** (`input_boolean`) : `nabaztag_firmware_clock`, `nabaztag_firmware_halftime`, `nabaztag_firmware_surprise`, `nabaztag_firmware_taichi` — chaque bascule est synchronisée en temps réel avec le firmware via l'endpoint `/autocontrol`
+- **4 switches firmware non-optimistes** (`switch.nabaztag_firmware_*`) : horloge, demi-heure, surprise, taichi — des **template switches** qui lisent **l'état réel du firmware** via telnet (toutes les 1s) au lieu de supposer que la commande a fonctionné. Le toggle envoie la commande au lapin via `/forth` et le telnet confirme le changement en moins d'une seconde.
+- **Sensor telnet** (`sensor.nabaztag_fast_status`) : interroge le telnet du lapin toutes les 1s pour `sleep_state` et les 4 flags firmware. Permet à HA de réagir instantanément à un changement d'état sans attendre le polling HTTP.
 - **Entités de configuration** : l'adresse IP du lapin, la langue, le fuseau horaire, la position des oreilles, le message à dire
-- **Capteur REST** : interroge `/status` toutes les 2 minutes et expose l'état complet (sommeil, flags, langue, version firmware)
+- **Capteur REST** : interroge `/status` toutes les 5 minutes pour les données qui changent rarement (langue, version, fuseau)
 - **Switches LEDs** : 4 `input_boolean` pour activer/désactiver les animations météo, trafic, pollution et nez
 
 Des **scripts** automatisent les actions courantes : restaurer toutes les LEDs après une reconnexion, activer/désactiver une animation, et un script **Nabaztag Life** qui pioche aléatoirement parmi 10 actions (raconter une blague, annoncer la météo, donner l'heure, danser des oreilles, faire un bâillement, etc.).
@@ -165,6 +166,8 @@ homeassistant:
 Recharger la configuration HA (`ha_reload_core(target="all")`), puis renseigner l'adresse IP du lapin dans l'entité `input_text.nabaztag_ip_address`.
 
 Les 6 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
+
+> **Dépendance** : les sensors `command_line` (telnet) nécessitent `netcat-openbsd` → `apt install netcat-openbsd`
 
 ### Lovelace — Tableau de bord et guide des LEDs
 
