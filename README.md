@@ -184,3 +184,13 @@ Pour importer une carte : ouvrir le tableau de bord HA → cliquer sur l'icône 
 > **Dépendance telnet** : les sensors rapides (1s) et les switches firmware non-optimistes nécessitent `netcat-openbsd` sur la machine HA (`apt install netcat-openbsd`). Le sensor interroge le telnet du lapin (`nc -q 0 <IP> 23`) pour lire l'état réel des flags firmware et du sommeil, sans passer par HTTP.
 
 Une documentation détaillée de l'intégration HA (entités, commandes REST, scripts, automatisations, guide des sons) est disponible dans [`homeassistant/docs/`](homeassistant/docs/INDEX.md).
+
+---
+
+## Licence
+
+Ce projet est distribué sous **GNU General Public License v3.0** — voir [LICENSE](LICENSE).
+
+Les dépendances tierces (Piper, espeak-ng, FFmpeg, Coqui, modèles de voix) ont leurs propres licences — voir [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md).
+
+Ce projet est un fork de [ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag) par `andreax79`.
