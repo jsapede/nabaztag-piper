@@ -138,3 +138,30 @@ Les **automatisations** assurent le lien automatique entre HA et le lapin :
 - **Reconnexion** : au démarrage de HA ou au retour du lapin, envoie la configuration (`/setup`), restaure les LEDs et synchronise les flags firmware
 - **Toggle LEDs** : quand l'utilisateur active/désactive une LED dans HA, le script approprié est déclenché
 - **Nabaztag Life** : déclenche le script d'action aléatoire périodiquement pour rendre le lapin vivant
+
+### Installation du package HA
+
+Le package se trouve dans `homeassistant/nabaztag/`. Il suffit de copier ce dossier dans le répertoire `config/` de Home Assistant :
+
+```
+config/
+├── configuration.yaml
+└── nabaztag/
+    ├── nabaztag_inputs.yaml       # Entités (text, select, number, boolean)
+    ├── nabaztag_commands.yaml      # Commandes REST
+    ├── nabaztag_sensors.yaml       # Capteur /status
+    ├── nabaztag_scripts.yaml       # Scripts
+    ├── nabaztag_automations.yaml   # Automatisations
+    └── nabaztag_life.yaml          # Actions vivantes aléatoires
+```
+
+Puis ajouter dans `configuration.yaml` :
+
+```yaml
+homeassistant:
+  packages: !include_dir_named nabaztag
+```
+
+Recharger la configuration HA (`ha_reload_core(target="all")`), puis renseigner l'adresse IP du lapin dans l'entité `input_text.nabaztag_ip_address`.
+
+Les 6 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
