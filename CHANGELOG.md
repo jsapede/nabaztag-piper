@@ -27,7 +27,6 @@
 | `vl/hooks.forth` (ligne 29) | `"/config/clockall/" :: language @ :: "/" :: 12 random 1 + :: ".mp3"` | `"/config/clockall/" :: language @ :: "/" :: 11 random 1 + :: ".mp3"` | ✅ **Standardisation MP3 clockall** : 11 fichiers (`1.mp3`→`11.mp3`), génériques (pas liés à l'heure). Suppression préfixe `HG`/`hg`. Sauvegarde dans `_removed/` |
 | `vl/hooks.forth` (ligne 23) | `"/config/clock/" :: language @ :: "/" :: get-hour :: "/" :: 6 random 1 + :: ".mp3"` | Inchangé | ✅ **Standardisation clock** : toutes les heures 0-23 ont exactement 6 fichiers MP3 (`fr`, `es`, `uk`, `it`, `de`). Les heures vides (de/0-9) ont été copiées depuis hour 10. Fichiers >6 supprimés et sauvegardés dans `_removed/` |
 | `vl/crontab.forth` (ligne 8) | `"/config/surprise/" :: language @ :: "/" :: 299 random 1 + :: ".mp3"` | `"/config/surprise/" :: language @ :: "/" :: 289 random 1 + :: ".mp3"` | ✅ **Standardisation surprise** : 290 fichiers partout (`fr`, `es`, `uk`, `de`, `it`). Certaines langues avaient <290 fichiers (duplication), d'autres >290 (suppression sauvegardée dans `_removed/`) |
-
 | `vl/hooks.forth` (ligne 43) | `nil "http://translate.google.com/translate_tts?ie=UTF-8&..." :: language @ :: "&q=" :: r> :: str-join` | `nil TTS-SERVER$ :: r> :: str-join` | ✅ **Suppression Google Translate** : utilise notre proxy TTS (Piper/Coqui) via `TTS-SERVER$` |
 | `firmware/srv/http_server.mtl` (ligne 253) | `forth_push_str f text;` | `forth_say_push f text;` | ✅ **Nouvelle fonction `forth_say_push`** dans `nabaztag.mtl` (gère mieux l'encodage pour le proxy) |
 | `firmware/forth/nabaztag.mtl` | Pas de fonction `forth_say_push` | `fun forth_say_push f text=` (ligne 148) | ✅ **Ajout de la fonction dédiée** pour passer le texte au moteur TTS |
@@ -92,8 +91,8 @@
 
 ### 10. HTTP Server (`http_server.mtl`)
 
-| Élément | Original (`andreax79`) | Notre Repo | Impact |
-|----------|----------------------|-------------|--------|
+| Fichier | Original (`andreax79`) | Notre Repo | Impact |
+|---------|----------------------|-------------|--------|
 | `/status` JSON (lignes 147-169 vs 147-173) | Pas de champs `autoclock_enabled`, etc. | Ajout de `"autoclock_enabled": _autoclock_enabled,` (et 3 autres) | ✅ **Status complet** : l'API renvoie maintenant l'état des 4 flags auto-control |
 | `/autocontrol` endpoint | N'existe pas | `http_get_autocontrol` (lignes 428-443) | ✅ **Nouvelle API** : permet d'activer/désactiver les fonctionnalités via HTTP (utilise `forth_interpreter_ex` car MTL ne peut pas écrire de variables Forth) |
 | `/setup` (ligne 397-408 vs 401-415) | `config_set_taichi_freq` seulement | Ajout de `http_arg_str args 'u'` → `config_set_server_url` (pour mode SERVERLESS) | ✅ **URL du serveur** configurable via HTTP (pour mode sans XMPP) |
