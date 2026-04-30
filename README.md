@@ -110,3 +110,31 @@ http://<IP_SERVEUR>:80/vl/
 ```
 
 Le lapin télécharge son firmware (`bc.jsp`) à chaque démarrage et accède à toutes ses ressources (MP3, animations, configuration) depuis ce serveur.
+
+---
+
+## Home Assistant — Piloter le lapin par commandes REST
+
+L'intégration repose sur un **package HA** (`homeassistant/nabaztag/`) qui expose tout le nécessaire pour contrôler le Nabaztag depuis Home Assistant. Le principe est simple : HA envoie des requêtes HTTP directement au **serveur HTTP embarqué du lapin** (port 80), sans intermédiaire.
+
+Des **commandes REST paramétrables** (`rest_command`) permettent d'actionner toutes les fonctions du lapin : faire parler (`/say?t=...`), bouger les oreilles, changer la couleur du nez, afficher une animation météo, redémarrer, etc.
+
+Le point central est l'endpoint **`/autocontrol`** qui permet d'activer ou désactiver à distance les fonctionnalités internes du firmware — les annonces horaires, les surprises, le taichi. Chacune est pilotée par un **switch HA** (`input_boolean`) qui met à jour le flag correspondant dans le firmware en temps réel, sans avoir à redémarrer le lapin.
+
+Un **capteur REST** interroge régulièrement `/status` pour remonter l'état complet du lapin (sommeil, langue, configuration, flags actifs) et le rendre disponible dans HA pour les automatisations et les tableaux de bord.
+
+### Scripts, automatisations et entités
+
+Le package HA crée plusieurs familles d'entités pour interagir avec le lapin :
+
+- **4 switches firmware** (`input_boolean`) : `nabaztag_firmware_clock`, `nabaztag_firmware_halftime`, `nabaztag_firmware_surprise`, `nabaztag_firmware_taichi` — chaque bascule est synchronisée en temps réel avec le firmware via l'endpoint `/autocontrol`
+- **Entités de configuration** : l'adresse IP du lapin, la langue, le fuseau horaire, la position des oreilles, le message à dire
+- **Capteur REST** : interroge `/status` toutes les 2 minutes et expose l'état complet (sommeil, flags, langue, version firmware)
+- **Switches LEDs** : 4 `input_boolean` pour activer/désactiver les animations météo, trafic, pollution et nez
+
+Des **scripts** automatisent les actions courantes : restaurer toutes les LEDs après une reconnexion, activer/désactiver une animation, et un script **Nabaztag Life** qui pioche aléatoirement parmi 10 actions (raconter une blague, annoncer la météo, donner l'heure, danser des oreilles, faire un bâillement, etc.).
+
+Les **automatisations** assurent le lien automatique entre HA et le lapin :
+- **Reconnexion** : au démarrage de HA ou au retour du lapin, envoie la configuration (`/setup`), restaure les LEDs et synchronise les flags firmware
+- **Toggle LEDs** : quand l'utilisateur active/désactive une LED dans HA, le script approprié est déclenché
+- **Nabaztag Life** : déclenche le script d'action aléatoire périodiquement pour rendre le lapin vivant
