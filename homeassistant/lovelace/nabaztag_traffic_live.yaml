@@ -1,49 +1,18 @@
-type: horizontal-stack
-cards:
-  - type: custom:mushroom-template-card
-    entity: input_number.nabaztag_traffic
-    icon: mdi:circle-medium
-    card_mod:
-      style:
-        mushroom-shape-icon$: |
-          @keyframes sn {
-            0%, 15% { opacity: 1; filter: brightness(1.4); }
-            20%, 100% { opacity: 0.06; filter: brightness(0.3); }
-          }
-          .shape {
-            --shape-color: #0c0;
-            --shape-animation: sn 0.6s ease-in-out infinite;
-            animation-delay: 0s;
-          }
-
-  - type: custom:mushroom-template-card
-    entity: input_number.nabaztag_traffic
-    icon: mdi:circle-medium
-    card_mod:
-      style:
-        mushroom-shape-icon$: |
-          @keyframes sn {
-            0%, 15% { opacity: 1; filter: brightness(1.4); }
-            20%, 100% { opacity: 0.06; filter: brightness(0.3); }
-          }
-          .shape {
-            --shape-color: #0c0;
-            --shape-animation: sn 0.6s ease-in-out infinite;
-            animation-delay: 0.2s;
-          }
-
-  - type: custom:mushroom-template-card
-    entity: input_number.nabaztag_traffic
-    icon: mdi:circle-medium
-    card_mod:
-      style:
-        mushroom-shape-icon$: |
-          @keyframes sn {
-            0%, 15% { opacity: 1; filter: brightness(1.4); }
-            20%, 100% { opacity: 0.06; filter: brightness(0.3); }
-          }
-          .shape {
-            --shape-color: #fc0;
-            --shape-animation: sn 0.6s ease-in-out infinite;
-            animation-delay: 0.4s;
-          }
+type: markdown
+card_mod:
+  style: |
+    @keyframes sn {
+      0%, 15% { opacity: 1; transform: scale(1); }
+      20%, 100% { opacity: 0.05; transform: scale(0.6); }
+    }
+content: >
+  <div style="text-align:center;padding:12px 0">
+    <div style="display:flex;justify-content:center;gap:8px">
+      <div style="width:36px;height:36px;border-radius:50%;background:#0c0;
+                  animation:sn 0.6s ease-in-out infinite;animation-delay:0s"></div>
+      <div style="width:36px;height:36px;border-radius:50%;background:#0c0;
+                  animation:sn 0.6s ease-in-out infinite;animation-delay:0.2s"></div>
+      <div style="width:36px;height:36px;border-radius:50%;background:#fc0;
+                  animation:sn 0.6s ease-in-out infinite;animation-delay:0.4s"></div>
+    </div>
+  </div>
