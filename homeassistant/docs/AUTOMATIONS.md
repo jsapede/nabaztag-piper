@@ -15,8 +15,6 @@ Ce fichier documente toutes les automatisations (automations) du système Nabazt
 ### Dépendances
 
 ```
-input_number.nabaztag_wake_hour → nabaztag_sync_wake_time → input_datetime.nabaztag_wake_trigger → nabaztag_auto_wakeup
-input_number.nabaztag_sleep_hour → nabaztag_sync_sleep_trigger → input_datetime.nabaztag_sleep_trigger → nabaztag_auto_sleep
 sensor.waze_trajet_domicile_travail → nabaztag_update_traffic_from_waze → input_number.nabaztag_traffic
 device_tracker.nmap_nabaztag → nabaztag_online → rest_command.nabaztag_setup
 ```
@@ -25,121 +23,7 @@ device_tracker.nmap_nabaztag → nabaztag_online → rest_command.nabaztag_setup
 
 Toutes les automations liées au "Nabaztag Life" vérifient que `input_boolean.nabaztaglife = on` avant de s'exécuter.
 
----
-
-## Automations de réveil
-
-### nabaztag_auto_wakeup
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_auto_wakeup |
-| Alias | Nabaztag - Réveil automatique |
-| Mode | **restart** (recommandé) |
-
-**Note**: Le mode `restart` évite qu'une exécution bloque les suivantes. Si le réveil est déjà en cours et qu'une nouvelle heure arrives, l'exécution redémarre.
-
-**Trigger**:
-```yaml
-- trigger: time
-  at: input_datetime.nabaztag_wake_trigger
-```
-
-**Conditions**:
-- `input_boolean.nabaztaglife = on`
-
-**Actions**:
-1. Exécute `script.nabaztag_wake_up`
-   - Envoie `/wakeup`
-   - Active `input_boolean.nabaztaglife`
-   - Déclenche Taichi255
-   - Positionne oreilles à 8
-   - Dit "Bonjour ! Je me réveille pour une nouvelle journée !"
-
-**Influence**: Réveille le Nabaztag à l'heure configurée chaque jour.
-
----
-
-### nabaztag_sync_wake_time
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_sync_wake_time |
-| Alias | Nabaztag - Sync heure réveil |
-| Mode | **restart** |
-
-**Note**: Mode restart pour éviter de louper une sync si l'heure change pendant l'exécution.
-
-**Trigger**:
-```yaml
-- trigger: time_pattern
-  minutes: "0"
-```
-
-**Actions**:
-1. Lit `input_number.nabaztag_wake_hour`
-2. Met à jour `input_datetime.nabaztag_wake_trigger` avec le format `HH:00:00`
-
-**Influence**: Synchronise l'heure de réveil chaque heure pour que le trigger `nabaztag_auto_wakeup` fonctionne.
-
----
-
-## Automations d'endormissement
-
-### nabaztag_auto_sleep
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_auto_sleep |
-| Alias | Nabaztag - Endormissement automatique |
-| Mode | **restart** (recommandé) |
-
-**Note**: Le mode `restart` évite qu'une exécution bloque les suivantes.
-
-**Trigger**:
-```yaml
-- trigger: time
-  at: input_datetime.nabaztag_sleep_trigger
-```
-
-**Conditions**:
-- `input_boolean.nabaztaglife = on`
-
-**Actions**:
-1. Exécute `script.nabaztag_go_to_sleep`
-   - Dit "Bonne soirée ! Je vais me reposer maintenant."
-   - Active Taichi niveau 100
-   - Positionne oreilles à 0
-   - Éteint le nez
-   - Envoie `/sleep`
-   - Désactive `input_boolean.nabaztaglife`
-
-**Influence**: Endort le Nabaztag à l'heure configurée chaque jour.
-
----
-
-### nabaztag_sync_sleep_trigger
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_sync_sleep_trigger |
-| Alias | Nabaztag - Sync heure coucher |
-| Mode | **restart** |
-
-**Note**: Mode restart pour éviter de louper une sync si l'utilisateur change l'heure pendant l'exécution.
-
-**Trigger**:
-```yaml
-- trigger: state
-  entity_id: input_number.nabaztag_sleep_hour
-```
-
-**Actions**:
-1. Exécute `script.nabaztag_sync_sleep_time`
-   - Lit `input_number.nabaztag_sleep_hour`
-   - Met à jour `input_datetime.nabaztag_sleep_trigger`
-
-**Influence**: Met à jour le trigger d'endormissement quand l'utilisateur change l'heure de coucher.
+> Le **réveil et le coucher** sont gérés nativement par le firmware via les variables `wake-up-at` et `go-to-bed-at` configurées dans `/setup`. Les heures de réveil et coucher sont paramétrables depuis HA via `input_number.nabaztag_wake_hour` et `input_number.nabaztag_sleep_hour`, envoyées au firmware lors du `/setup` (automatisé au démarrage ou via le bouton Lovelace). Aucune automation HA supplémentaire n'est nécessaire.
 
 ---
 
@@ -231,12 +115,11 @@ Toutes les automations liées au "Nabaztag Life" vérifient que `input_boolean.n
 **Conditions**: Aucune
 
 **Actions**:
-1. Exécute `script.nabaztag_sync_sleep_time`
-2. Exécute `script.nabaztag_sync_wake_time`
-3. Envoie `/setup`
-4. Exécute `script.nabaztag_reset_leds`
-5. Delay 2 secondes
-6. Pour chaque LED enabled = on, exécute le script correspondant
+1. Envoie `/setup` avec les paramètres HA actuels
+2. Exécute `script.nabaztag_restore_leds`
+3. Envoie `/autocontrol` avec l'état des flags firmware
+4. Delay 2 secondes
+5. Pour chaque LED enabled = on, exécute le script correspondant
 
 **Influence**: Au démarrage de Home Assistant, restaure la configuration complète du Nabaztag.
 
@@ -296,13 +179,6 @@ Toutes les automations liées au "Nabaztag Life" vérifient que `input_boolean.n
 ---
 
 ## Dépannage
-
-### Problème: Le réveil ne se déclenche pas
-
-1. Vérifier que `input_boolean.nabaztaglife = on`
-2. Vérifier `input_number.nabaztag_wake_hour` (valeur entre 0-23)
-3. Vérifier `input_datetime.nabaztag_wake_trigger` (mis à jour chaque heure)
-4. Consulter les traces de `nabaztag_auto_wakeup`
 
 ### Problème: Les LEDs ne se rallument pas après extinction
 

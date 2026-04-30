@@ -34,7 +34,7 @@ GET http://<IP>/wakeup
 
 **Timeout**: 30 secondes
 
-**Utilisation**: Script `nabaztag_wake_up`
+**Utilisation**: Commande manuelle depuis HA ou script personnel
 
 ---
 
@@ -48,7 +48,7 @@ GET http://<IP>/sleep
 
 **Timeout**: 30 secondes
 
-**Utilisation**: Script `nabaztag_go_to_sleep`
+**Utilisation**: Commande manuelle depuis HA ou script personnel
 
 ---
 

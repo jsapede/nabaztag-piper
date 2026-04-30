@@ -203,9 +203,7 @@ Ce fichier documente tous les inputs (entrées) utilisés par l'intégration Nab
 | Step | 1 |
 | Valeur initiale | 7 |
 
-**Influence**: Heure de réveil automatique. Sync vers `input_datetime.nabaztag_wake_trigger` chaque heure via `nabaztag_sync_wake_time`.
-
-**Condition**: Déclenchement uniquement si `nabaztaglife = on`
+**Influence**: Heure de réveil envoyée au firmware via `/setup`. Le firmware gère le réveil automatique. Pas d'automation HA nécessaire.
 
 ---
 
@@ -220,9 +218,7 @@ Ce fichier documente tous les inputs (entrées) utilisés par l'intégration Nab
 | Step | 1 |
 | Valeur initiale | 23 |
 
-**Influence**: Heure d'endormissement automatique. Sync vers `input_datetime.nabaztag_sleep_trigger` via `nabaztag_sync_sleep_trigger`.
-
-**Condition**: Déclenchement uniquement si `nabaztaglife = on`
+**Influence**: Heure de coucher envoyée au firmware via `/setup`. Le firmware gère l'endormissement automatique. Pas d'automation HA nécessaire.
 
 ---
 
@@ -330,31 +326,7 @@ Ce fichier documente tous les inputs (entrées) utilisés par l'intégration Nab
 
 ---
 
-## Input DateTime (Déclencheurs)
-
-### nabaztag_wake_trigger
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Heure déclencheur réveil (auto) |
-| Type | input_datetime |
-| Option | has_time: true |
-
-**Influence**: Déclenche l'automation `nabaztag_auto_wakeup` à l'heure définie. Sync depuis `input_number.nabaztag_wake_hour`.
-
----
-
-### nabaztag_sleep_trigger
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Heure déclencheur coucher |
-| Type | input_datetime |
-| Option | has_time: true |
-
-**Influence**: Déclenche l'automation `nabaztag_auto_sleep` à l'heure définie. Sync depuis `input_number.nabaztag_sleep_hour`.
-
----
+## Input DateTime (Déclencheurs Nabaztag Life)
 
 ### nabaztag_random_action_time_1
 

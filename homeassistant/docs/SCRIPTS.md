@@ -334,53 +334,6 @@ Ces scripts vérifient que le boolean correspondant est `on` avant d'exécuter l
 
 ---
 
-### nabaztag_wake_up
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_wake_up |
-| Alias | Nabaztag - Réveil |
-
-**Description**: Fait réveiller le Nabaztag: son, LED, oreilles, annonce.
-
-**Sequence**:
-1. `/wakeup`
-2. Delay 2 secondes
-3. Active `input_boolean.nabaztaglife`
-4. `/taichi?v=255`
-5. Delay 3 secondes
-6. Oreilles gauche et droite à position 8
-7. Delay 1 seconde
-8. Dit "Bonjour ! Je me réveille pour une nouvelle journée !"
-
-**Influence**: Utilisé par l'automation de réveil automatique.
-
----
-
-### nabaztag_go_to_sleep
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_go_to_sleep |
-| Alias | Nabaztag - Endormissement |
-
-**Description**: Fait dormir le Nabaztag: annonce, réduire LEDs, oreilles vers le bas, désactive nabaztaglife.
-
-**Sequence**:
-1. Dit "Bonne soirée ! Je vais me reposer maintenant."
-2. Delay 3 secondes
-3. `/taichi?v=100`
-4. Delay 2 secondes
-5. Oreilles gauche et droite à position 0
-6. Nez à 0 (éteint)
-7. Delay 2 secondes
-8. `/sleep`
-9. Désactive `input_boolean.nabaztaglife`
-
-**Influence**: Utilisé par l'automation d'endormissement automatique.
-
----
-
 ### nabaztag_random_surprise
 
 | Propriété | Valeur |
@@ -393,38 +346,6 @@ Ces scripts vérifient que le boolean correspondant est `on` avant d'exécuter l
 **Sequence**:
 1. Génère un nombre aléatoire entre 1 et 305
 2. Envoie `/surprise?v=<nombre>`
-
----
-
-## Scripts de synchronisation
-
-### nabaztag_sync_sleep_time
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_sync_sleep_time |
-| Alias | Nabaztag - Synchroniser heure coucher |
-
-**Description**: Synchronise `input_number.nabaztag_sleep_hour` vers `input_datetime.nabaztag_sleep_trigger`.
-
-**Sequence**:
-1. Lit `input_number.nabaztag_sleep_hour`
-2. Met à jour `input_datetime.nabaztag_sleep_trigger` avec le format `HH:00:00`
-
----
-
-### nabaztag_sync_wake_time
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_sync_wake_time |
-| Alias | Nabaztag - Synchroniser heure réveil |
-
-**Description**: Synchronise `input_number.nabaztag_wake_hour` vers `input_datetime.nabaztag_wake_trigger`.
-
-**Sequence**:
-1. Lit `input_number.nabaztag_wake_hour`
-2. Met à jour `input_datetime.nabaztag_wake_trigger` avec le format `HH:00:00`
 
 ---
 
