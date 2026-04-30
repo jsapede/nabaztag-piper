@@ -122,15 +122,21 @@ echo "════════════════════════�
 
 _compile_firmware() {
     [ -n "$CHANGED" ] && (run make -C "$SOURCE_DIR" clean 2>/dev/null) || true
+    # Injecter l'IP du TTS dans config.forth
     run sed -i "s|XXX\.XXX\.XXX\.XXX:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|;s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
         "$SOURCE_DIR/vl/config.forth" 2>/dev/null || true
-    run make -C "$SOURCE_DIR" compiler 2>&1 || echo "   Compilateur deja present ou absent (pre-compiled utilise)"
+    # Injecter le timestamp date+heure dans url.mtl et main.mtl (format: YYYYMMDDHHMM)
+    REVISION_STAMP=$(date +%Y%m%d%H%M)
+    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$SOURCE_DIR/firmware/utils/url.mtl" 2>/dev/null || true
+    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$SOURCE_DIR/firmware/main.mtl" 2>/dev/null || true
+    echo "   Revision firmware: $REVISION_STAMP"
+    run make -C "$SOURCE_DIR" compiler 2>&1 || echo "   Compilateur déjà présent ou absent (pre-compiled utilisé)"
     run make -C "$SOURCE_DIR" firmware 2>&1 || true
     run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
     if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
         echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
     else
-        echo "   AVERTISSEMENT: firmware non compile - utiliser un binaire pre-compile"
+        echo "   AVERTISSEMENT: firmware non compilé - utiliser un binaire pre-compilé"
     fi
 }
 

@@ -1,5 +1,5 @@
 const URL_HARDWARE = "4";;
-const URL_BYTECODE_REVISION = "21029";;
+const URL_BYTECODE_REVISION = "202604300755";;
 
 var url_ping_server;;
 var url_broadcast;;
