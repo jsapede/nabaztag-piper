@@ -36,4 +36,77 @@ Le choix de **Piper** comme moteur principal n'est pas anodin : sa latence très
 
 ---
 
-*La suite de cette documentation couvre l'installation, la configuration réseau, l'intégration Home Assistant, la compilation du firmware et le dépannage.*
+## Architecture
+
+Le projet met en jeu **trois acteurs** communiquant par HTTP :
+
+```
+┌──────────────────┐     commandes      ┌───────────────────┐
+│  Home Assistant  │───── REST ────────▶│   Nabaztag v2     │
+│  (automatismes)  │                    │  (serveur HTTP    │
+└──────────────────┘                    │   embarqué)       │
+                                        └────────┬──────────┘
+                                                 │
+                    ┌────────────────────────────┼─────────────────┐
+                    │  firmware, *.forth, MP3,   │                 │
+                    │  animations, config        │  /say?t=...     │
+                    │                            │  (synthèse)     │
+                    ▼                            ▼                 ▼
+          ┌──────────────────┐         ┌──────────────────┐
+          │  Serveur web      │         │  Serveur TTS     │
+          │  (port 80)        │         │  (port 6790)     │
+          │                   │         │                  │
+          │  vl/bc.jsp        │         │  piper_tts_stream │
+          │  config/*.mp3     │         │  / Piper / Coqui │
+          │  *.forth          │         └──────────────────┘
+          │  animations.json  │
+          └──────────────────┘
+```
+
+**Deux serveurs distincts tournent donc sur la machine hôte :**
+
+- **Le serveur web statique** (port 80) : sert au lapin **tous ses fichiers de fonctionnement** — le firmware (`vl/bc.jsp`) qu'il télécharge à chaque démarrage, les fichiers de configuration Forth (`config.forth`, `hooks.forth`), les MP3 des annonces horaires et surprises (`config/clock/`, `config/clockall/`, `config/surprise/`), les données d'animations et les pages d'administration. C'est par cette adresse que le lapin se configure et trouve toutes ses ressources.
+
+- **Le serveur Python TTS** (port 6790) : dédié à la **synthèse vocale**. Quand le lapin doit parler, il envoie une requête `GET /say?t=<texte>` à ce serveur qui génère le flux audio via Piper (ou Coqui) et le retourne directement sous forme de WAV 16kHz.
+
+**Home Assistant** dialogue quant à lui directement avec le **serveur HTTP embarqué du lapin** (port 80 du lapin) via les endpoints `/forth`, `/autocontrol`, `/status` pour piloter les automatismes et lire les capteurs — sans passer par aucun intermédiaire.
+
+---
+
+## Installation
+
+```bash
+# 1. Cloner le dépôt
+git clone https://github.com/jsapede/nabaztag-piper
+cd nabaztag-piper/install
+
+# 2. Copier et éditer la configuration
+cp .env.example .env
+nano .env
+```
+
+Variables essentielles à renseigner :
+
+| Variable | Rôle | Exemple |
+|----------|------|---------|
+| `TTS_SERVER_IP` | IP du serveur où tourne Piper | `192.168.1.100` |
+| `TTS_ENGINE` | Moteur TTS | `piper` (défaut) ou `coqui` |
+| `PIPER_VOICE_PATH` | Voix Piper | `fr/fr_FR/siwis/medium` |
+| `PIPER_USE_PHONEMES` | Activation des phonèmes espeak-ng | `true` |
+
+```bash
+# 3. Lancer l'installateur
+./install.sh
+```
+
+Le script installe les dépendances (Piper, FFmpeg, espeak-ng), télécharge le modèle de voix, compile le firmware avec l'IP du serveur TTS, et configure les deux services systemd (`nabaztag-tts` pour la synthèse vocale, `nabaztag-webserver` pour le serveur de fichiers statiques).
+
+#### 4. Pointer le lapin vers le serveur
+
+Dans l'interface de connexion du lapin, configurer l'adresse du serveur web statique :
+
+```
+http://<IP_SERVEUR>:80/vl/
+```
+
+Le lapin télécharge son firmware (`bc.jsp`) à chaque démarrage et accède à toutes ses ressources (MP3, animations, configuration) depuis ce serveur.
