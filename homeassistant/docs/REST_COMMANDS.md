@@ -1,6 +1,6 @@
 # Documentation Nabaztag - REST Commands
 
-Ce fichier documente toutes les commandes REST utilisées pour communiquer avec le Nabaztag via l'API HTTP du firmware ServerlessNabaztag.
+Ce fichier documente toutes les commandes REST utilisées pour communiquer avec le Nabaztag via l'API HTTP de son firmware embarqué (projet **`nab-piper`**).
 
 ## Fichier de configuration
 
@@ -65,7 +65,7 @@ GET http://<IP>/say?t=<message_encoded>
 
 **Description**: Fait parler le Nabaztag avec un message TTS.
 
-Le Nabaztag gère le TTS lui-même - vous n'avez pas à vous soucier de l'IP du serveur vocal. HA envoie juste le texte, le lapin s'occupe du reste.
+Le lapin transmet le texte à son serveur TTS local (Piper, port 6790) qui génère le WAV et le retourne directement. Le serveur TTS est configuré dans le `.env` du projet `nab-piper` et tourne sur la machine hôte.
 
 **Timeout**: 30 secondes
 
@@ -309,11 +309,9 @@ GET http://<IP>/surprise?v=<moods>
 |-----------|------|-------------|
 | v | int | Numéro de mood/animation (1-305) |
 
-**Description**: Joue une animation/mood aléatoire ou spécifique.
+**Description**: Joue une animation/surprise aléatoire via le firmware (parmi 290 sons disponibles).
 
 **Timeout**: 10 secondes
-
-**Valeurs**: 1-305 (différentes animations: sons, mouvements, lumières)
 
 **Utilisation**: Script `nabaztag_surprise_action`, `nabaztag_random_surprise`
 
@@ -354,7 +352,7 @@ GET http://<IP>/taichi?v=<level>
 ### setup
 
 ```http
-GET http://<IP>/setup?j=<lat>&k=<lng>&l=<lang>&c=<city>&d=<dst>&w=<wake>&b=<sleep>
+GET http://<IP>/setup?j=<lat>&k=<lng>&l=<lang>&c=<city>&d=<dst>&w=<wake>&b=<sleep>&u=<server_url>
 ```
 
 **Paramètres**:
@@ -367,17 +365,70 @@ GET http://<IP>/setup?j=<lat>&k=<lng>&l=<lang>&c=<city>&d=<dst>&w=<wake>&b=<slee
 | d | int | Heure d'été (0=non, 1=oui) |
 | w | int | Heure de réveil (0-23) |
 | b | int | Heure de coucher (0-23) |
+| u | string | URL du serveur de ressources (mode serverless) |
 
-**Description**: Envoie la configuration complète au Nabaztag (position, langue, timezone, heures).
+**Description**: Envoie la configuration complète au Nabaztag (position, langue, timezone, heures, URL serveur).
 
 **Timeout**: 30 secondes
 
 **Exemple**:
 ```
-GET http://192.168.0.58/setup?j=48.856&k=2.352&l=fr&c=PAR&d=1&w=7&b=23
+GET http://192.168.0.58/setup?j=48.856&k=2.352&l=fr&c=PAR&d=1&w=7&b=23&u=http://192.168.1.100:80/vl/
 ```
 
 **Utilisation**: Automations `nabaztag_online`, `nabaztag_sync_all_at_startup`, script `nabaztag_apply_setup`
+
+---
+
+### autocontrol (nouveau dans `nab-piper`)
+
+```http
+GET http://<IP>/autocontrol?c=<clock>&h=<halftime>&s=<surprise>&t=<taichi>
+```
+
+**Paramètres**:
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| c | int | Flag horloge (0=désactivé, 1=activé) |
+| h | int | Flag demi-heure |
+| s | int | Flag surprise |
+| t | int | Flag taichi |
+
+**Description**: Active ou désactive les automatismes internes du firmware en temps réel, sans redémarrage. Chaque flag correspond à un `input_boolean` dans HA, synchronisé automatiquement.
+
+**Timeout**: 10 secondes
+
+**Exemple**:
+```
+GET http://192.168.0.58/autocontrol?c=1&h=0&s=1&t=1
+```
+
+**Utilisation**: Automation `nabaztag_reconnexion`, switches firmware
+
+---
+
+### forth (nouveau dans `nab-piper`)
+
+```http
+GET http://<IP>/forth?c=<code_forth_encoded>
+```
+
+**Paramètres**:
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| c | string | Code Forth à exécuter (URL-encoded) |
+
+**Description**: Exécute du code Forth directement sur le firmware, permettant de modifier n'importe quelle variable interne (flags, langue, configuration...).
+
+**Timeout**: 10 secondes
+
+**Exemple**:
+```
+# Activer l'horloge
+GET http://192.168.0.58/forth?c=1%20autoclock-enabled%20!
+```
+
+**Utilisation**: Switches firmware (synchro via `/forth` et `/autocontrol`)
 
 ---
 
@@ -403,10 +454,6 @@ GET http://192.168.0.58/setup?j=48.856&k=2.352&l=fr&c=PAR&d=1&w=7&b=23
 
 ### Problème: Erreur 401 (Unauthorized)
 
-Si vous avez des erreurs 401 dans les logs:
-
-1. **Cause**: Le Nabaztag nécessite une authentification HTTP Basic
-2. **Solution**: Désactiver l'authentification dans le firmware
-   - Dans le fichier `config.forth`, commenter les lignes `username` et `md5-password`
-   - Recompiler le firmware et reflasher le Nabaztag
-3. **Référence**: [ServerlessNabaztag GitHub](https://github.com/andreax79/ServerlessNabaztag)
+Si l'authentification HTTP est activée dans le firmware, chaque requête doit inclure les credentials. Pour désactiver :
+- Modifier `config.forth` et commenter les lignes `username` et `md5-password`
+- Recompiler le firmware

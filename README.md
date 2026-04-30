@@ -177,3 +177,5 @@ Le dossier `homeassistant/lovelace/` contient trois fichiers YAML à importer co
 **`nabaztag_led_guide.yaml`** — un pense-bête visuel qui explique la signification des couleurs des LEDs (soleil, pluie, orage, trafic, pollution, nez).
 
 Pour importer une carte : ouvrir le tableau de bord HA → cliquer sur l'icône crayon → **Ajouter carte** → passer en **éditeur YAML** → coller le contenu du fichier.
+
+Une documentation détaillée de l'intégration HA (entités, commandes REST, scripts, automatisations, guide des sons) est disponible dans [`homeassistant/docs/`](homeassistant/docs/INDEX.md).

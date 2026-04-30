@@ -1,186 +1,143 @@
-# Documentation Nabaztag - Index
+# Documentation Nabaztag — Index
 
-Bienvenue dans la documentation complète de l'intégration Nabaztag pour Home Assistant.
+Bienvenue dans la documentation de l'intégration Nabaztag pour Home Assistant, dans le cadre du projet **`nab-piper`** (fork de [ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag) avec TTS local, firmware étendu et intégration HA complète).
 
 ---
 
 ## Vue d'ensemble
 
-Ce projet permet de contrôler un Nabaztag (lapin connecté) via Home Assistant en utilisant le firmware [ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag).
+L'intégration permet de contrôler un Nabaztag depuis Home Assistant via l'API REST embarquée du lapin. Le projet `nab-piper` y ajoute :
 
-### Fonctionnalités
+- **Synthèse vocale locale** : Piper/Coqui au lieu de Google Translate
+- **4 flags firmware** (`/autocontrol`) : activer/désactiver les automatismes du lapin
+- **Package HA complet** : inputs, commandes REST, scripts, automatisations, Lovelace
+- **Nabaztag Life** : actions aléatoires pour rendre le lapin vivant
 
-- **Contrôle LEDs**: Météo, trafic, pollution, nez (affichage visuel)
-- **Contrôle physique**: Oreilles (gauche/droite), parler, sons
-- **Nabaztag Life**: Actions vivantes aléatoires (blagues, annonces, étirements)
-- **Automatisations**: Réveil/coucher automatiques, pause déjeuner
-- **Intégration Waze**: Mise à jour automatique du trafic basée sur le temps de trajet
-- **Le Nabaztag qui parle**: Synthèse vocale via TTS intégré
+### Architecture
+
+```
+┌──────────────────┐     commandes      ┌───────────────────┐
+│  Home Assistant  │───── REST ────────▶│   Nabaztag v2     │
+│  (automatismes)  │                    │  (serveur HTTP    │
+└──────────────────┘                    │   embarqué)       │
+                                        └────────┬──────────┘
+                     ┌────────────────────────────┼─────────────────┐
+                     │  firmware, *.forth, MP3,   │                 │
+                     │  animations, config        │  /say?t=...     │
+                     ▼                            ▼                 ▼
+           ┌──────────────────┐         ┌──────────────────┐
+           │  Serveur web      │         │  Serveur TTS     │
+           │  (port 80)        │         │  (port 6790)     │
+           │  vl/bc.jsp        │         │  piper/Coqui    │
+           │  config/*.mp3     │         └──────────────────┘
+           │  animations.json  │
+           └──────────────────┘
+```
+
+- **Home Assistant** dialogue directement avec le serveur HTTP du lapin
+- **Le lapin** télécharge ses ressources (firmware, MP3, animations) depuis le serveur web statique
+- **Le lapin** appelle le serveur TTS pour la synthèse vocale
+
+---
+
+## Fonctionnalités
+
+### Contrôle LEDs
+Météo, trafic, pollution, nez — chaque service a son `input_boolean` d'activation et son `input_number` pour la valeur, le tout visible dans le tableau de bord Lovelace.
+
+### Contrôle physique
+Oreilles (gauche/droite avec position 0-16), nez (5 états), stop, reboot.
+
+### Synthèse vocale (TTS)
+Le lapin parle via `GET /say?t=<texte>`. Le message est transmis au serveur TTS local qui génère un WAV 16kHz via Piper (ou Coqui) et le retourne directement au lapin.
+
+### Automatismes firmware (nouveau dans `nab-piper`)
+4 flags (`autoclock`, `autohalftime`, `autosurprise`, `autotaichi`) contrôlables depuis HA via l'endpoint `/autocontrol?c=1&h=0&s=1&t=1`. Chaque flag est lié à un `input_boolean` HA qui le synchronise en temps réel.
+
+### Nabaztag Life
+Script qui pioche aléatoirement parmi 10 actions (blague, météo, trafic, étirement, danse des oreilles, bâillement, etc.) pour rendre le lapin réactif et vivant.
+
+### Automatisations
+- Reconnexion automatique au démarrage HA ou au retour du lapin
+- Synchronisation des flags firmware
+- Gestion des LEDs par interrupteur
 
 ---
 
 ## Structure des fichiers
 
 ```
-nabaztag-home-assistant-2025/
-├── nabaztag/
-│   ├── nabaztag_inputs.yaml       # Inputs (sliders, booleans, selects)
-│   ├── nabaztag_commands.yaml      # REST commands (API Nabaztag)
-│   ├── nabaztag_scripts.yaml       # Scripts (actions unitaires)
-│   ├── nabaztag_automations.yaml   # Automations (déclencheurs)
-│   └── nabaztag_life.yaml          # Nabaztag Life (actions vivantes)
-├── lovelace/
-│   └── nabaztag_lovelace.yaml      # Interface utilisateur
-├── docs/
-│   ├── INDEX.md                    # Ce fichier
-│   ├── INPUTS.md                   # Documentation des inputs
-│   ├── REST_COMMANDS.md            # Documentation des REST commands
-│   ├── SCRIPTS.md                  # Documentation des scripts
-│   ├── AUTOMATIONS.md              # Documentation des automations
-│   └── NABAZTAG_LIFE.md           # Documentation Nabaztag Life
-└── README.md                       # Guide d'installation
+config/
+├── configuration.yaml               ← Ajouter : !include_dir_named nabaztag
+└── nabaztag/
+    ├── nabaztag_inputs.yaml         # Entités (text, select, number, boolean)
+    ├── nabaztag_commands.yaml       # Commandes REST
+    ├── nabaztag_sensors.yaml        # Capteur /status
+    ├── nabaztag_scripts.yaml        # Scripts
+    ├── nabaztag_automations.yaml    # Automatisations
+    └── nabaztag_life.yaml           # Actions vivantes aléatoires
 ```
-
----
-
-## Flux de données
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     INPUTS (sliders)                        │
-│  nabaztag_weather (0-5), nabaztag_traffic (0-6),           │
-│  nabaztag_pollution (0-10), nabaztag_nose_state (0-4)      │
-└─────────────────────────────┬───────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      SCRIPTS                                │
-│  nabaztag_set_weather, nabaztag_set_traffic,                │
-│  nabaztag_set_pollution, nabaztag_set_nose                 │
-│  (vérifient boolean enabled avant d'exécuter)               │
-└─────────────────────────────┬───────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   REST COMMANDS                              │
-│  /weather, /traffic, /pollution, /nose, /say               │
-│  → Nabaztag (IP: input_text.nabaztag_ip_address)            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌───────────────────────┐
-                    │   NABAZTAG (firmware)  │
-                    │  ├── LED RGB + nez    │
-                    │  ├── Moteurs oreilles │
-                    │  └── TTS (Piper) ←───Audio
-                    └───────────────────────┘
-```
-
----
-
-## Le Nabaztag qui parle (TTS)
-
-Comment ça marche:
-
-1. **Home Assistant** envoie `/say?t=Bonjour` au Nabaztag
-2. Le **Nabaztag** reçoit le message et le transmet à son serveur TTS interne (Piper)
-3. Le **Nabaztag** reçoit l'audio et le joue automatiquement
-
-**Vous n'avez rien à configurer** - tout est géré par le Nabaztag lui-même.
-HA envoie juste le texte, le lapin s'occupe du reste.
-
----
-
-## Dépendances externes
-
-### Capteurs requis
-
-- `sensor.waze_trajet_domicile_travail`: Temps de trajet domicile-travail (minutes)
-  - Utilisé par: `nabaztag_update_traffic_from_waze` automation
-  - Source: Intégration Waze ou équivalent
-
-### Intégrations recommandées
-
-- `device_tracker.nmap`: Détection de présence du Nabaztag sur le réseau
 
 ---
 
 ## Démarrage rapide
 
-### 1. Configuration IP
+### 1. Installer le package HA
+Copier le dossier `homeassistant/nabaztag/` dans le répertoire `config/` de Home Assistant, puis ajouter dans `configuration.yaml` :
 
-Dans Home Assistant, aller dans **Paramètres → Appareils & Services → Entités** et chercher `input_text.nabaztag_ip_address`. Configurer l'adresse IP du Nabaztag.
+```yaml
+homeassistant:
+  packages: !include_dir_named nabaztag
+```
 
-### 2. Activer les LEDs
+Recharger la configuration (`ha_reload_core(target="all")`).
 
-Aller dans l'interface Lovelace du Nabaztag et activer les boolean `nabaztag_weather_enabled`, `nabaztag_traffic_enabled`, etc.
+### 2. Configurer l'IP du lapin
+Dans HA, chercher `input_text.nabaztag_ip_address` et renseigner l'adresse IP du Nabaztag.
 
-### 3. Ajuster les sliders
-
-Utiliser les sliders pour définir les valeurs initiales (0-5 pour météo, 0-6 pour trafic, etc.).
+### 3. Activer les LEDs et les flags
+Dans l'interface Lovelace, activer les switches :
+- LEDs : `nabaztag_weather_enabled`, `nabaztag_traffic_enabled`, etc.
+- Firmware : `nabaztag_firmware_clock`, `nabaztag_firmware_halftime`, etc.
 
 ### 4. Tester
-
-Cliquer sur les boutons de l'interface Lovelace pour tester les différentes fonctionnalités.
+```bash
+# Faire parler le lapin
+curl "http://<IP_LAPIN>/say?t=Bonjour"
+```
 
 ---
 
 ## Commandes utiles
 
-### Recharger la configuration
-
 ```bash
-# Valider la configuration
+# Valider la configuration HA
 ha_check_config
 
-# Recharger tout
+# Recharger tout (après modif des packages)
 ha_reload_core(target="all")
 
-# Recharger spécifiquement
-ha_reload_core(target="automations")
-ha_reload_core(target="scripts")
-ha_reload_core(target="core")
-```
-
-### Vérifier les entités
-
-```bash
-# Liste des entités Nabaztag
+# Voir toutes les entités Nabaztag
 ha_search_entities(query="nabaztag")
 ```
 
 ---
 
-## Dépannage global
+## Dépannage
 
 ### Le Nabaztag ne répond pas
-
-1. Vérifier l'adresse IP: `input_text.nabaztag_ip_address`
-2. Tester la connectivité: `ping <IP>`
-3. Tester une commande: `curl http://<IP>/ack`
-
-### Erreur 401 (Unauthorized)
-
-Si vous voyez des erreurs 401 dans les traces d'automations:
-
-1. Le Nabaztag nécessite une authentification HTTP
-2. **Solution**: Désactiver l'authentification dans le firmware
-   - Modifier le fichier `config.forth` du firmware
-   - Commenter les lignes `username` et `md5-password`
-   - Recompiler et-flash le firmware
-3. Plus de détails dans [andreax79/ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag)
+1. Vérifier `input_text.nabaztag_ip_address`
+2. Tester : `ping <IP>`
+3. Tester une commande : `curl http://<IP>/ack`
 
 ### Les LEDs ne s'affichent pas
-
 1. Vérifier les boolean `nabaztag_*_enabled`
 2. Vérifier les valeurs des sliders
 3. Recharger les scripts
 
 ### Pas d'actions aléatoires
-
 1. Vérifier `input_boolean.nabaztaglife = on`
-2. Vérifier les automations dans les traces
-3. Vérifier les heures aléatoires dans `input_datetime.nabaztag_random_action_time_*`
+2. Vérifier les heures dans `input_datetime.nabaztag_random_action_time_*`
 
 ---
 
@@ -189,23 +146,22 @@ Si vous voyez des erreurs 401 dans les traces d'automations:
 | Terme | Description |
 |-------|-------------|
 | **Input** | Entité HA qui stocke une valeur (slider, boolean, texte) |
-| **REST Command** | Commande HTTP vers le Nabaztag |
-| **Automation** | Ensemble de règles qui déclenchen t des actions |
+| **REST Command** | Commande HTTP vers le serveur du Nabaztag |
+| **Automation** | Règle déclenchée par un événement |
 | **Script** | Séquence d'actions prédéfinie |
 | **Nabaztag Life** | Système d'actions vivantes aléatoires |
-| **Boolean** | Interrupteur on/off |
-| **Slider** | Input numérique avec curseur |
+| **Flag firmware** | Variable interne au firmware contrôlable via `/autocontrol` |
 
 ---
 
-## Annexe: Valeurs de référence
+## Annexe : valeurs de référence
 
 ### nabaztag_weather (0-5)
 
-| Valeur | LED | Description |
-|--------|-----|-------------|
+| Valeur | LED | Météo |
+|--------|-----|-------|
 | 0 | Vert | Ciel dégagé |
-| 1 | Jaune clair | Partiellement nuageux |
+| 1 | Jaune | Partiellement nuageux |
 | 2 | Gris | Brouillard |
 | 3 | Bleu | Pluie |
 | 4 | Blanc | Neige |
@@ -213,8 +169,8 @@ Si vous voyez des erreurs 401 dans les traces d'automations:
 
 ### nabaztag_traffic (0-6)
 
-| Valeur | Trajet | Description |
-|--------|--------|-------------|
+| Valeur | Temps trajet | État |
+|--------|-------------|------|
 | 0 | < 20 min | Fluide |
 | 1 | 20-25 min | Légèrement dense |
 | 2 | 25-30 min | Modéré |
@@ -227,10 +183,10 @@ Si vous voyez des erreurs 401 dans les traces d'automations:
 
 | Valeur | Qualité air |
 |--------|-------------|
-| 0-2 | Excellent/Bonne |
-| 3-4 | Acceptable/Médiocre |
+| 0-2 | Bonne |
+| 3-4 | Médiocre |
 | 5-6 | Mauvaise |
-| 7-10 | Très mauvaise/Alerte max |
+| 7-10 | Très mauvaise |
 
 ### nabaztag_nose_state (0-4)
 
@@ -241,12 +197,9 @@ Si vous voyez des erreurs 401 dans les traces d'automations:
 
 ---
 
-## Liens externes
+## Liens
 
-- [Firmware ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag)
-- [Discussion Home Assistant](https://community.home-assistant.io/t/nabaztag-tag-the-smart-rabbit-is-back/41696)
-- [Forum Nabaztag](https://nabaztag.forumactif.fr)
-
----
-
-*Documentation générée pour l'intégration Nabaztag Home Assistant*
+- [Projet nab-piper](https://github.com/jsapede/nabaztag-piper)
+- [Firmware ServerlessNabaztag](https://github.com/andreax79/ServerlessNabaztag) (fork d'origine)
+- [Guide des sons](SOUNDS_GUIDE.md)
+- [Documentation Home Assistant](https://www.home-assistant.io/)

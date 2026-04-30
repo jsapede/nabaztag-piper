@@ -380,6 +380,58 @@ Ce fichier documente tous les inputs (entrées) utilisés par l'intégration Nab
 
 ---
 
+## Input Booleans — Flags Firmware (nouveau dans `nab-piper`)
+
+Ces 4 switches contrôlent les automatismes internes du firmware via l'endpoint `/autocontrol`. Chaque bascule est synchronisée en temps réel.
+
+### nabaztag_firmware_clock
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nom affiché | Horloge (heure pile) |
+| Type | input_boolean |
+| Valeur initiale | On |
+
+**Influence**: Active/désactive les annonces horaires. Quand On, le firmware joue une annonce à chaque heure pile.
+
+---
+
+### nabaztag_firmware_halftime
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nom affiché | Demi-heure |
+| Type | input_boolean |
+| Valeur initiale | On |
+
+**Influence**: Active/désactive les annonces de demi-heure.
+
+---
+
+### nabaztag_firmware_surprise
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nom affiché | Surprise |
+| Type | input_boolean |
+| Valeur initiale | On |
+
+**Influence**: Active/désactive les sons surprise aléatoires déclenchés par le firmware.
+
+---
+
+### nabaztag_firmware_taichi
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nom affiché | Taichi |
+| Type | input_boolean |
+| Valeur initiale | On |
+
+**Influence**: Active/désactive les mouvements Taichi automatiques.
+
+---
+
 ## Dépannage
 
 ### Problème: Le lapin ne répond pas
