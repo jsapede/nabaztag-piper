@@ -1,7 +1,8 @@
 type: horizontal-stack
 cards:
   - type: custom:mushroom-template-card
-    icon: none
+    entity: input_number.nabaztag_traffic
+    icon: mdi:circle-medium
     card_mod:
       style:
         mushroom-shape-icon$: |
@@ -16,7 +17,8 @@ cards:
           }
 
   - type: custom:mushroom-template-card
-    icon: none
+    entity: input_number.nabaztag_traffic
+    icon: mdi:circle-medium
     card_mod:
       style:
         mushroom-shape-icon$: |
@@ -31,7 +33,8 @@ cards:
           }
 
   - type: custom:mushroom-template-card
-    icon: none
+    entity: input_number.nabaztag_traffic
+    icon: mdi:circle-medium
     card_mod:
       style:
         mushroom-shape-icon$: |
