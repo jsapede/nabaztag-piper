@@ -1,11 +1,32 @@
 # =========================
-# Nabaztag - REST Sensors
+# Nabaztag - Sensors
 # =========================
 
 sensor:
 
-  # ========== FULL STATUS ==========
-  # Récupère l'état complet du Nabaztag depuis /status
+  # ========== FAST STATUS (Telnet, 1s) ==========
+  # État réel des flags firmware via telnet (pas d'overhead HTTP)
+  # Format: sleep_state,autoclock,halftime,surprise,taichi
+
+  - platform: command_line
+    name: "Nabaztag Fast Status"
+    unique_id: nabaztag_fast_status
+    command: >
+      printf "\n sleep_is_sleeping . cr _autoclock_enabled @ . cr _autohalftime_enabled @ . cr _autosurprise_enabled @ . cr _autotaichi_enabled @ . cr quit\n" |
+      nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23 2>/dev/null |
+      grep -oP '\d+(?=\s*$)' | tail -5 | paste -sd,
+    scan_interval: 1
+    timeout: 3
+    value_template: "ok"
+    json_attributes:
+      - sleep_state
+      - autoclock
+      - autohalftime
+      - autosurprise
+      - autotaichi
+
+  # ========== FULL STATUS (HTTP, 5min) ==========
+  # Données de configuration (changent rarement)
 
   - platform: rest
     name: "Nabaztag Status"
@@ -23,14 +44,125 @@ sensor:
       - wake_up
       - go_to_bed
       - taichi_freq
-      - sleep_state
-      - autoclock_enabled
-      - autohalftime_enabled
-      - autosurprise_enabled
-      - autotaichi_enabled
       - streaming_state
       - rev
-    scan_interval: 120
+    scan_interval: 300
     timeout: 10
 
 
+# =========================
+# Nabaztag - Binary Sensors (état réel depuis telnet)
+# =========================
+
+binary_sensor:
+
+  - platform: template
+    sensors:
+      nabaztag_firmware_clock:
+        friendly_name: "Horloge firmware (état réel)"
+        value_template: >
+          {% if state_attr('sensor.nabaztag_fast_status', 'autoclock') is defined
+             and state_attr('sensor.nabaztag_fast_status', 'autoclock') == '1' %}
+            on
+          {% else %}
+            off
+          {% endif %}
+
+      nabaztag_firmware_halftime:
+        friendly_name: "Demi-heure firmware (état réel)"
+        value_template: >
+          {% if state_attr('sensor.nabaztag_fast_status', 'autohalftime') is defined
+             and state_attr('sensor.nabaztag_fast_status', 'autohalftime') == '1' %}
+            on
+          {% else %}
+            off
+          {% endif %}
+
+      nabaztag_firmware_surprise:
+        friendly_name: "Surprise firmware (état réel)"
+        value_template: >
+          {% if state_attr('sensor.nabaztag_fast_status', 'autosurprise') is defined
+             and state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' %}
+            on
+          {% else %}
+            off
+          {% endif %}
+
+      nabaztag_firmware_taichi:
+        friendly_name: "Taichi firmware (état réel)"
+        value_template: >
+          {% if state_attr('sensor.nabaztag_fast_status', 'autotaichi') is defined
+             and state_attr('sensor.nabaztag_fast_status', 'autotaichi') == '1' %}
+            on
+          {% else %}
+            off
+          {% endif %}
+
+      nabaztag_asleep:
+        friendly_name: "Nabaztag endormi (état réel)"
+        value_template: >
+          {% if state_attr('sensor.nabaztag_fast_status', 'sleep_state') is defined
+             and state_attr('sensor.nabaztag_fast_status', 'sleep_state') == '1' %}
+            on
+          {% else %}
+            off
+          {% endif %}
+
+
+# =========================
+# Nabaztag - Switches (état réel depuis telnet)
+# =========================
+# Ces switches lisent l'état réel du firmware via telnet toutes les 1s.
+# Plus d'optimisme : le switch affiche ce que le firmware a vraiment, pas ce qu'on lui a demandé.
+
+switch:
+
+  - platform: template
+    switches:
+      nabaztag_firmware_clock:
+        friendly_name: "Horloge (heure pile)"
+        value_template: "{{ state_attr('sensor.nabaztag_fast_status', 'autoclock') == '1' }}"
+        turn_on:
+          action: rest_command.nabaztag_autocontrol_clock
+          data:
+            clock: "1"
+        turn_off:
+          action: rest_command.nabaztag_autocontrol_clock
+          data:
+            clock: "0"
+
+      nabaztag_firmware_halftime:
+        friendly_name: "Demi-heure"
+        value_template: "{{ state_attr('sensor.nabaztag_fast_status', 'autohalftime') == '1' }}"
+        turn_on:
+          action: rest_command.nabaztag_autocontrol_halftime
+          data:
+            halftime: "1"
+        turn_off:
+          action: rest_command.nabaztag_autocontrol_halftime
+          data:
+            halftime: "0"
+
+      nabaztag_firmware_surprise:
+        friendly_name: "Surprise"
+        value_template: "{{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' }}"
+        turn_on:
+          action: rest_command.nabaztag_autocontrol_surprise
+          data:
+            surprise: "1"
+        turn_off:
+          action: rest_command.nabaztag_autocontrol_surprise
+          data:
+            surprise: "0"
+
+      nabaztag_firmware_taichi:
+        friendly_name: "Taichi"
+        value_template: "{{ state_attr('sensor.nabaztag_fast_status', 'autotaichi') == '1' }}"
+        turn_on:
+          action: rest_command.nabaztag_autocontrol_taichi
+          data:
+            taichi: "1"
+        turn_off:
+          action: rest_command.nabaztag_autocontrol_taichi
+          data:
+            taichi: "0"
