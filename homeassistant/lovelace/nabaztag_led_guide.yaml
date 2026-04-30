@@ -14,17 +14,19 @@ content: |
   | ⬤ (position changeante) | ⛈️ **Orage** |
   | ○ ⬤ ○ (centre clignote) | 🌨️ **Neige** |
   
-  ### 🚗 Trafic (LEDs du ventre)
-  
-  | LEDs | Signification |
-  |------|---------------|
-  | ○ ○ ○ | 🟢 **Libre** |
-  | ⬤ ○ ○ | 🟡 **Correct** |
-  | ⬤ ⬤ ○ | 🟠 **Modéré** |
-  | ⬤ ⬤ ⬤ | 🟡 **Normal** |
-  | ⬤ ○ ⬤ | 🔴 **Dense** |
-  | ○ ⬤ ⬤ | 🔴🔴 **Congestionné** |
-  | ⬤ ⬤ | 🚨 **Extrême** |
+  ### 🚗 Trafic (LEDs du ventre — chenillard)
+
+  Les 3 LEDs forment un **snake** qui défile de gauche à droite. La couleur et la vitesse dépendent du niveau :
+
+  | Niveau | Vitesse | Couleur | Chenillard |
+  |--------|---------|---------|------------|
+  | 0 **Libre** | 🏃 Rapide | 🟢 Vert | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
+  | 1 **Correct** | 🚶 Moyen | 🟢🟠 Vert+orange | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
+  | 2 **Modéré** | 🐢 Lent | 🟠🟢 2 orange | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
+  | 3 **Dense** | 🐌 Très lent | 🟠 Orange | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
+  | 4 **Embouteillage** | 🐌 Très lent | 🟠🔴 Orange+rouge | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
+  | 5 **Très chargé** | 🐌 Très lent | 🔴 Rouge | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
+  | 6 **Extrême** | 🕐 Très lent | 🔴 Rouge vif | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
   
   ### 💨 Pollution (LEDs du ventre)
   
