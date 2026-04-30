@@ -1,0 +1,9 @@
+v0.1.0
+Date: 2026-04-30
+
+Première release de nab-piper :
+- TTS local Piper + Coqui
+- Firmware modifié (NTP, flags, /autocontrol)
+- Standardisation MP3 (clockall, clock, surprise)
+- Intégration Home Assistant complète
+- Sensors telnet (état réel non-optimiste)
