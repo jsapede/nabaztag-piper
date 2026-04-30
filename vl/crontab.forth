@@ -5,7 +5,7 @@ variable taichi-next-time  \ Next taichi time
 
 : surprise ( -- )  \ Surprise
 sleeping? invert autosurprise-enabled @ and if  \ if not sleeping AND surprise enabled
-nil server-url @ :: "/config/surprise/" :: language @ :: "/" :: 299 random 1 + :: ".mp3" :: str-join  \ url
+nil server-url @ :: "/config/surprise/" :: language @ :: "/" :: 289 random 1 + :: ".mp3" :: str-join  \ url
 play-url
 then ;
 
