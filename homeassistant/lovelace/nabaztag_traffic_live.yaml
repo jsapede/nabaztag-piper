@@ -1,0 +1,31 @@
+type: vertical-stack
+cards:
+  - type: markdown
+    title: 🚗 Trafic en direct
+    content: >
+      {% set level = states('input_number.nabaztag_traffic') | int(0) %}
+      {% set colors = {
+        0: ['🟢','🟢','🟢'],
+        1: ['🟢','🟢','🟠'],
+        2: ['🟢','🟠','🟠'],
+        3: ['🟠','🟠','🟠'],
+        4: ['🟠','🔴','🔴'],
+        5: ['🔴','🔴','🔴'],
+        6: ['🔴','🔴','🔴']
+      } %}
+      {% set labels = {0:'Libre',1:'Correct',2:'Modéré',3:'Dense',4:'Embouteillage',5:'Très chargé',6:'Extrême'} %}
+      {% set speed = {0:'🏃 Rapide',1:'🚶 Moyen',2:'🐢 Lent',3:'🐌 Très lent',4:'🐌 Très lent',5:'🐌 Très lent',6:'🕐 Très lent'} %}
+
+      ## {{ colors[level][0] }} {{ colors[level][1] }} {{ colors[level][2] }}
+
+      **Niveau {{ level }}** — {{ labels[level] }}
+
+      {{ speed[level] }}
+
+  - type: entities
+    title: " "
+    entities:
+      - entity: input_number.nabaztag_traffic
+        name: Niveau
+      - entity: input_boolean.nabaztag_traffic_enabled
+        name: LED Trafic
