@@ -1,21 +1,68 @@
-type: markdown
-title: 🚗 Trafic en direct
-content: >
-  {% set level = states('input_number.nabaztag_traffic') | int(0) %}
-  {% set colors = {
-    0: ['🟢','🟢','🟢'],
-    1: ['🟢','🟢','🟠'],
-    2: ['🟢','🟠','🟠'],
-    3: ['🟠','🟠','🟠'],
-    4: ['🟠','🔴','🔴'],
-    5: ['🔴','🔴','🔴'],
-    6: ['🔴','🔴','🔴']
-  } %}
-  {% set labels = {0:'Libre',1:'Correct',2:'Modéré',3:'Dense',4:'Embouteillage',5:'Très chargé',6:'Extrême'} %}
-  {% set speed = {0:'🏃 Rapide',1:'🚶 Moyen',2:'🐢 Lent',3:'🐌 Très lent',4:'🐌 Très lent',5:'🐌 Très lent',6:'🕐 Très lent'} %}
+type: custom:config-template-card
+variables:
+  - level: "{{ states('input_number.nabaztag_traffic') | int(0) }}"
+  - speed: "{{ [0.3, 0.6, 0.9, 1.5, 2.5, 4.0, 6.0] }}"
+  - hex: "{{ ['#000','#ff0000','#00cc00','#ffff00','#0000ff','#ff00ff','#00ffff','#ffffff','#808080','#ff8080','#80ff80','#ffcc00','#8080ff','#ff80ff','#80ffff','#ff8000'] }}"
+  - pal: "{{ [[2,2,2],[2,2,15],[2,15,15],[15,15,15],[15,1,1],[1,1,1],[1,1,1]] }}"
+  - s: "{{ speed[level] }}"
+  - c: "{{ pal[level] }}"
+  - col0: "{{ hex[c[0]] }}"
+  - col1: "{{ hex[c[1]] }}"
+  - col2: "{{ hex[c[2]] }}"
+card:
+  type: vertical-stack
+  cards:
+    - type: horizontal-stack
+      cards:
+        - type: custom:mushroom-template-card
+          icon: none
+          primary: ""
+          card_mod:
+            style: |
+              mushroom-shape-icon$:
+                .shape {
+                  --shape-color: {{ col0 }};
+                  --shape-animation: snake {{ s }}s ease-in-out infinite;
+                  animation-delay: 0s;
+                }
+              @keyframes snake {
+                0%, 15% { opacity: 1; filter: brightness(1.4); }
+                20%, 100% { opacity: 0.08; filter: brightness(0.4); }
+              }
 
-  ## {{ colors[level][0] }} {{ colors[level][1] }} {{ colors[level][2] }}
+        - type: custom:mushroom-template-card
+          icon: none
+          primary: ""
+          card_mod:
+            style: |
+              mushroom-shape-icon$:
+                .shape {
+                  --shape-color: {{ col1 }};
+                  --shape-animation: snake {{ s }}s ease-in-out infinite;
+                  animation-delay: {{ (s / 3) | round(2) }}s;
+                }
+              @keyframes snake {
+                0%, 15% { opacity: 1; filter: brightness(1.4); }
+                20%, 100% { opacity: 0.08; filter: brightness(0.4); }
+              }
 
-  **Niveau {{ level }}** — {{ labels[level] }}
+        - type: custom:mushroom-template-card
+          icon: none
+          primary: ""
+          card_mod:
+            style: |
+              mushroom-shape-icon$:
+                .shape {
+                  --shape-color: {{ col2 }};
+                  --shape-animation: snake {{ s }}s ease-in-out infinite;
+                  animation-delay: {{ (s * 2 / 3) | round(2) }}s;
+                }
+              @keyframes snake {
+                0%, 15% { opacity: 1; filter: brightness(1.4); }
+                20%, 100% { opacity: 0.08; filter: brightness(0.4); }
+              }
 
-  {{ speed[level] }}
+    - type: entities
+      entities:
+        - entity: input_number.nabaztag_traffic
+          name: Trafic
