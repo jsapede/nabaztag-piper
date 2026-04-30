@@ -129,3 +129,10 @@ rest_command:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ taichi }}%20autotaichi-enabled%20%21"
     method: get
     timeout: 10
+
+  # ========== TAICHI ==========
+
+  nabaztag_taichi:
+    url: "http://{{ states('input_text.nabaztag_ip_address') }}/taichi?v={{ level }}"
+    method: get
+    timeout: 10

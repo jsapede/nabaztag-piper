@@ -237,6 +237,25 @@ script:
     sequence:
       - action: rest_command.nabaztag_setup
 
+  # ========== TAICHI ==========
+
+  nabaztag_taichi:
+    alias: "Nabaztag - Taichi"
+    description: "Déclenche le Taichi avec une intensité 0-255 (0=stop, 255=max)"
+    fields:
+      intensity:
+        name: Intensité
+        description: "Niveau d'intensité (0=stop, 40=min, 80=moyen, 255=max, 1000=répété)"
+        selector:
+          number:
+            min: 0
+            max: 1000
+            step: 1
+    sequence:
+      - action: rest_command.nabaztag_taichi
+        data:
+          level: "{{ intensity }}"
+
   # ========== NABAZTAG LIFE ==========
 
   nabaztag_generate_random_action_times:

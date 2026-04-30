@@ -108,7 +108,7 @@ Ces scripts vérifient que le boolean correspondant est `on` avant d'exécuter l
 | ID | nabaztag_set_weather |
 | Alias | Nabaztag - Météo |
 
-**Description**: Affiche la météo sur les LEDs du corps (uniquement si LED météo activée).
+**Description**: Force manuellement l'affichage météo sur les LEDs. Le firmware récupère déjà la météo depuis Open-Meteo API via `weather.forth`, ce script permet uniquement de forcer une valeur spécifique depuis HA.
 
 **Conditions**: `input_boolean.nabaztag_weather_enabled = on`
 
@@ -133,11 +133,11 @@ Ces scripts vérifient que le boolean correspondant est `on` avant d'exécuter l
 | ID | nabaztag_set_traffic |
 | Alias | Nabaztag - Trafic |
 
-**Description**: Affiche le trafic sur les LEDs du corps (uniquement si LED trafic activée).
+**Description**: Met à jour l'affichage du trafic sur les LEDs. Contrairement à la météo et la pollution, le **trafic n'est pas géré par le firmware** — il n'a pas d'API dédiée ; les données proviennent de **Waze** (ou autre source externe) et sont donc pilotées exclusivement depuis HA.
 
 **Conditions**: `input_boolean.nabaztag_traffic_enabled = on`
 
-**Entrée**: `input_number.nabaztag_traffic` (0-6)
+**Entrée**: `input_number.nabaztag_traffic` (0-6), mis à jour automatiquement par l'automation `nabaztag_update_traffic_from_waze`
 
 **Sequence**:
 ```yaml
@@ -158,7 +158,7 @@ Ces scripts vérifient que le boolean correspondant est `on` avant d'exécuter l
 | ID | nabaztag_set_pollution |
 | Alias | Nabaztag - Pollution |
 
-**Description**: Affiche le niveau de pollution sur les LEDs du corps (uniquement si LED pollution activée).
+**Description**: Force manuellement l'affichage de la pollution sur les LEDs. Comme la météo, le firmware récupère déjà la qualité de l'air depuis l'API Open-Meteo via `weather.forth` ; ce script permet de forcer une valeur.
 
 **Conditions**: `input_boolean.nabaztag_pollution_enabled = on`
 
@@ -254,64 +254,29 @@ Ces scripts vérifient que le boolean correspondant est `on` avant d'exécuter l
 
 ## Scripts d'animation Taichi
 
-### nabaztag_taichi_stop
+### nabaztag_taichi
 
 | Propriété | Valeur |
 |-----------|--------|
-| ID | nabaztag_taichi_stop |
-| Alias | Nabaztag - Taichi Stop |
+| ID | nabaztag_taichi |
+| Alias | Nabaztag - Taichi |
+| Champs | `intensity` (0-1000) |
 
-**Description**: Arrête l'animation Taichi.
+**Description**: Déclenche le Taichi avec une intensité paramétrable. Script unifié remplaçant les anciens scripts séparés (stop/min/medium/max).
 
-**Sequence**: `/taichi?v=0`
+**Paramètres** :
 
----
+| Valeur | Effet |
+|--------|-------|
+| 0 | Arrête l'animation |
+| 40 | Intensité minimale |
+| 80 | Intensité moyenne |
+| 255 | Intensité maximale |
+| 1000 | Mode répété (sans arrêt) |
 
-### nabaztag_taichi_min
+**Sequence**: `/taichi?v={{ intensity }}`
 
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_taichi_min |
-| Alias | Nabaztag - Taichi Min |
-
-**Description**: Animation Taichi intensité minimale (niveau 40).
-
-**Sequence**:
-1. `/taichi?v=40`
-2. Delay 5 secondes
-3. `/taichi?v=1000`
-
----
-
-### nabaztag_taichi_medium
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_taichi_medium |
-| Alias | Nabaztag - Taichi Moyen |
-
-**Description**: Animation Taichi intensité moyenne (niveau 80).
-
-**Sequence**:
-1. `/taichi?v=80`
-2. Delay 5 secondes
-3. `/taichi?v=1000`
-
----
-
-### nabaztag_taichi_max
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_taichi_max |
-| Alias | Nabaztag - Taichi Max |
-
-**Description**: Animation Taichi intensité maximale (niveau 255).
-
-**Sequence**:
-1. `/taichi?v=255`
-2. Delay 5 secondes
-3. `/taichi?v=1000`
+**Utilisation** : Appel depuis une automation avec `data: { intensity: 80 }` ou depuis l'UI Lovelace avec un sélecteur numérique.
 
 ---
 
