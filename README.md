@@ -165,3 +165,15 @@ homeassistant:
 Recharger la configuration HA (`ha_reload_core(target="all")`), puis renseigner l'adresse IP du lapin dans l'entité `input_text.nabaztag_ip_address`.
 
 Les 6 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
+
+### Lovelace — Tableau de bord et guide des LEDs
+
+Le dossier `homeassistant/lovelace/` contient trois fichiers YAML à importer comme cartes dans votre tableau de bord HA :
+
+**`nabaztag_lovelace.yaml`** — le tableau de bord principal qui regroupe en un écran le contrôle des LEDs (météo, trafic, pollution, nez) et les switches firmware (horloge, demi-heure, surprise, taichi).
+
+**`nabaztag_lovelace_config.yaml`** — une carte dédiée aux réglages avancés : langue, fuseau horaire, heures de réveil/coucher, fréquence taichi.
+
+**`nabaztag_led_guide.yaml`** — un pense-bête visuel qui explique la signification des couleurs des LEDs (soleil, pluie, orage, trafic, pollution, nez).
+
+Pour importer une carte : ouvrir le tableau de bord HA → cliquer sur l'icône crayon → **Ajouter carte** → passer en **éditeur YAML** → coller le contenu du fichier.
