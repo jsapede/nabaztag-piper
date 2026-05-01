@@ -19,11 +19,11 @@ cards:
   - type: entities
     title: 🤖 Automatismes firmware
     entities:
-      - entity: input_boolean.nabaztag_firmware_clock
+      - entity: switch.nabaztag_firmware_clock
         name: Horloge (heur)
-      - entity: input_boolean.nabaztag_firmware_halftime
+      - entity: switch.nabaztag_firmware_halftime
         name: Demi-heure
-      - entity: input_boolean.nabaztag_firmware_surprise
+      - entity: switch.nabaztag_firmware_surprise
         name: Surprise
-      - entity: input_boolean.nabaztag_firmware_taichi
+      - entity: switch.nabaztag_firmware_taichi
         name: Taichi

@@ -54,70 +54,37 @@ sensor:
 
 
 # =========================
-# Nabaztag - Binary Sensors (état réel depuis telnet)
-# =========================
-
-binary_sensor:
-
-  - platform: template
-    sensors:
-      nabaztag_firmware_clock:
-        friendly_name: "Horloge firmware (état réel)"
-        value_template: >
-          {% if state_attr('sensor.nabaztag_fast_status', 'autoclock') is defined
-             and state_attr('sensor.nabaztag_fast_status', 'autoclock') == '1' %}
-            on
-          {% else %}
-            off
-          {% endif %}
-
-      nabaztag_firmware_halftime:
-        friendly_name: "Demi-heure firmware (état réel)"
-        value_template: >
-          {% if state_attr('sensor.nabaztag_fast_status', 'autohalftime') is defined
-             and state_attr('sensor.nabaztag_fast_status', 'autohalftime') == '1' %}
-            on
-          {% else %}
-            off
-          {% endif %}
-
-      nabaztag_firmware_surprise:
-        friendly_name: "Surprise firmware (état réel)"
-        value_template: >
-          {% if state_attr('sensor.nabaztag_fast_status', 'autosurprise') is defined
-             and state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' %}
-            on
-          {% else %}
-            off
-          {% endif %}
-
-      nabaztag_firmware_taichi:
-        friendly_name: "Taichi firmware (état réel)"
-        value_template: >
-          {% if state_attr('sensor.nabaztag_fast_status', 'autotaichi') is defined
-             and state_attr('sensor.nabaztag_fast_status', 'autotaichi') == '1' %}
-            on
-          {% else %}
-            off
-          {% endif %}
-
-      nabaztag_asleep:
-        friendly_name: "Nabaztag endormi (état réel)"
-        value_template: >
-          {% if state_attr('sensor.nabaztag_fast_status', 'sleep_state') is defined
-             and state_attr('sensor.nabaztag_fast_status', 'sleep_state') == '1' %}
-            on
-          {% else %}
-            off
-          {% endif %}
-
-
-# =========================
-# Nabaztag - Template Switches (modern syntax)
+# Nabaztag - Template (binary_sensor + switches, modern syntax)
 # =========================
 # État réel via telnet toutes les 1s, non-optimiste.
 
 template:
+  - binary_sensor:
+      - name: "Horloge firmware (état réel)"
+        unique_id: nabaztag_firmware_clock_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'autoclock') == '1' }}
+
+      - name: "Demi-heure firmware (état réel)"
+        unique_id: nabaztag_firmware_halftime_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'autohalftime') == '1' }}
+
+      - name: "Surprise firmware (état réel)"
+        unique_id: nabaztag_firmware_surprise_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' }}
+
+      - name: "Taichi firmware (état réel)"
+        unique_id: nabaztag_firmware_taichi_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'autotaichi') == '1' }}
+
+      - name: "Nabaztag endormi (état réel)"
+        unique_id: nabaztag_asleep_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'sleep_state') == '1' }}
+
   - switch:
       - name: "Horloge (heure pile)"
         unique_id: nabaztag_firmware_clock
