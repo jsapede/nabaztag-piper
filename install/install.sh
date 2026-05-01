@@ -37,6 +37,13 @@ run() {
     fi
 }
 
+# ─── Demande du dossier global ──────────────────────────────
+if [ "$UNINSTALL" = false ] && [ -z "${GLOBAL_DIR:-}" ]; then
+    printf " Dossier d'installation global [/opt/nabaztag-piper] : "
+    read -r input
+    GLOBAL_DIR="${input:-/opt/nabaztag-piper}"
+fi
+
 prompt_yn() {
     local prompt="$1" default="${2:-n}" reply
     if [ "$DRY_RUN" = true ]; then echo "  ${CYAN}[?]${NC} $prompt (simulation)"; return 0; fi
@@ -405,15 +412,15 @@ if [ "$DRY_RUN" = false ]; then
     echo " Composants à (ré)installer (o = oui, Entrée = non) :"
     echo "  (le firmware et le redémarrage des services sont toujours effectués)"
 
-    local m=$(_manifest_load)
+    m=$(_manifest_load)
     for key in piper ffmpeg espeak_ng piper_voice service_tts service_webserver; do
-        local installed=$(echo "$m" | python3 -c "
+        installed=$(echo "$m" | python3 -c "
 import sys, json
 m = json.load(sys.stdin)
 c = m.get('components', {}).get('$key', {})
 print('true' if c.get('installed') else 'false')
 " 2>/dev/null || echo "false")
-        local label=""
+        label=""
         case "$key" in
             piper) label="Piper binaire";;
             ffmpeg) label="FFmpeg";;
@@ -489,7 +496,7 @@ if [ "$TTS_ENGINE" != "coqui" ]; then
     fi
     # 5. Voix
     echo "  → Voix Piper..."
-    local voice_path="$PIPER_VOICES_DIR/$VOICE_NAME"
+    voice_path="$PIPER_VOICES_DIR/$VOICE_NAME"
     if [ "$REINSTALL_VOICE" = true ] || [ ! -f "$voice_path.onnx" ]; then
         echo "     Téléchargement $VOICE_NAME..."
         run wget -q "$PIPER_VOICE_URL/$PIPER_VOICE_PATH/$VOICE_NAME.onnx" -O "$voice_path.onnx"
@@ -531,9 +538,9 @@ _manifest_set piper true "$(piper --version 2>/dev/null | head -1 | grep -oP '[\
 # 8. Serveur web statique
 echo "  → Serveur web statique..."
 if [ ! -f "$SWS_BIN" ]; then
-    local sws_url="https://github.com/static-web-server/static-web-server/releases/download/$SWS_VERSION/static-web-server-$SWS_VERSION-x86_64-unknown-linux-gnu.tar.gz"
+    sws_url="https://github.com/static-web-server/static-web-server/releases/download/$SWS_VERSION/static-web-server-$SWS_VERSION-x86_64-unknown-linux-gnu.tar.gz"
     run wget -q "$sws_url" -O /tmp/sws.tar.gz
-    local sws_dir=$(tar tzf /tmp/sws.tar.gz | head -1 | cut -d/ -f1)
+    sws_dir=$(tar tzf /tmp/sws.tar.gz | head -1 | cut -d/ -f1)
     run tar xzf /tmp/sws.tar.gz -C /usr/local/bin/ --strip-components=1 "$sws_dir/static-web-server"
     run chmod +x "$SWS_BIN"
     run rm -f /tmp/sws.tar.gz
