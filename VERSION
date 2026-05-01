@@ -1,13 +1,10 @@
-v0.2.0
+v0.3.0
 Date: 2026-04-30
 
-Deuxième release de nab-piper :
-- Installateur interactif complet (questions IP, ports, moteur TTS)
-- Détection composants avec menu de réinstallation
-- Compilation firmware dans répertoire temporaire (git pull compatible)
-- Package HA injecté avec IP du lapin
-- Script de vérification nabaztag-check.sh + alias bash
-- Capteurs telnet corrigés (mots Forth sleep_is_sleeping → sleeping?)
-- Animation snake traffic.json (7 niveaux vert→orange→rouge)
-- Documentation RAZ (français + anglais)
-- Licence GPL v3 + dépendances tierces
+Troisième release de nab-piper :
+- Capteurs telnet enrichis (info-weather, info-traffic, info-pollution)
+- Switches LEDs non-optimistes lisant l'état réel via telnet (1s)
+- Migration syntaxe moderne HA (template switches + binary_sensors, 2026.6+)
+- Fichier info_animations.json consolidé régénéré (snake traffic)
+- Automation traffic déclenchée sur input_number (modifiable manuellement)
+- Prompts validateurs bouclent sur saisie invalide

@@ -1,5 +1,22 @@
 # Changelog - Nabaztag Serverless TTS
 
+## v0.3.0 — 2026-04-30
+
+### Nouveautés
+- **Capteurs telnet enrichis** : 8 valeurs lues en 1 connexion (sleep_state + 4 flags + info-weather + info-traffic + info-pollution)
+- **Switches LEDs non-optimistes** : `switch.nabaztag_led_*` lisent l'état réel des services info via telnet (1s)
+- **Migration syntaxe moderne HA** : template switches et binary_sensors en syntaxe `template:` (compatible HA 2026.6+)
+- **Fichier consolidé régénéré** : `info_animations.json` inclut le snake traffic (7 niveaux vert→orange→rouge)
+- **Automation traffic** : déclenchée sur `input_number.nabaztag_traffic` — modifiable manuellement ou depuis n'importe quelle source
+- **Tous les fichiers d'animations** : `mail.json`, `stock.json`, `weather.json`, `pollution.json` consolidés
+
+### Correctifs
+- Les prompts interactifs bouclent sur saisie invalide au lieu de prendre une action par défaut
+- Lovelace : références `input_boolean.nabaztag_firmware_*` → `switch.nabaztag_firmware_*`
+- Automation traffic ne dépend plus de Waze (se déclenche sur changement de l'input)
+
+---
+
 ## v0.2.0 — 2026-04-30
 
 ### Nouveautés
