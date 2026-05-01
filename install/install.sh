@@ -253,8 +253,7 @@ _compile_firmware() {
     run cp -r "$SOURCE_DIR/firmware" "$build_dir/" 2>/dev/null || true
     run cp "$SOURCE_DIR/Makefile" "$build_dir/" 2>/dev/null || true
     run cp -r "$SOURCE_DIR/scripts" "$build_dir/" 2>/dev/null || true
-    mkdir -p "$build_dir/vl"
-    run cp "$SOURCE_DIR/vl/config.forth" "$build_dir/vl/" 2>/dev/null || true
+    run cp -r "$SOURCE_DIR/vl" "$build_dir/" 2>/dev/null || true
 
     # Injecter l'IP du TTS dans la copie (pas dans l'original)
     run sed -i "s|XXX\.XXX\.XXX\.XXX:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|;s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
