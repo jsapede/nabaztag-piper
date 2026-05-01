@@ -5,16 +5,16 @@
 sensor:
 
   # ========== FAST STATUS (Telnet, 1s) ==========
-  # État réel des flags firmware via telnet (pas d'overhead HTTP)
-  # Format: sleep_state,autoclock,halftime,surprise,taichi
+  # État réel des flags firmware et des services info via telnet
+  # Format: sleep_state,autoclock,halftime,surprise,taichi,weather,traffic,pollution
 
   - platform: command_line
     name: "Nabaztag Fast Status"
     unique_id: nabaztag_fast_status
     command: >
-      printf "\n sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr quit\n" |
+      printf "\n sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n" |
       nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23 2>/dev/null |
-      grep -oP '\d+(?=\s*$)' | tail -5 | paste -sd,
+      sed 's/^\?$/-1/' | grep -oP '(?<=> )\d+$|^\d+$|^-1$' | tail -8 | paste -sd,
     scan_interval: 1
     timeout: 3
     value_template: "ok"
@@ -24,6 +24,9 @@ sensor:
       - autohalftime
       - autosurprise
       - autotaichi
+      - weather
+      - traffic
+      - pollution
 
   # ========== FULL STATUS (HTTP, 5min) ==========
   # Données de configuration (changent rarement)
@@ -110,10 +113,8 @@ binary_sensor:
 
 
 # =========================
-# Nabaztag - Switches (état réel depuis telnet)
+# Nabaztag - Switches firmware (état réel depuis telnet)
 # =========================
-# Ces switches lisent l'état réel du firmware via telnet toutes les 1s.
-# Plus d'optimisme : le switch affiche ce que le firmware a vraiment, pas ce qu'on lui a demandé.
 
 switch:
 
@@ -166,3 +167,40 @@ switch:
           action: rest_command.nabaztag_autocontrol_taichi
           data:
             taichi: "0"
+
+
+# =========================
+# Nabaztag - Switches LEDs (état réel depuis telnet)
+# =========================
+
+  - platform: template
+    switches:
+      nabaztag_led_weather:
+        friendly_name: "LED Météo"
+        value_template: "{{ state_attr('sensor.nabaztag_fast_status', 'weather') not in [None, '-1'] }}"
+        turn_on:
+          action: rest_command.nabaztag_weather
+          data:
+            weather: "{{ states('input_number.nabaztag_weather') | int }}"
+        turn_off:
+          action: rest_command.nabaztag_clear
+
+      nabaztag_led_traffic:
+        friendly_name: "LED Trafic"
+        value_template: "{{ state_attr('sensor.nabaztag_fast_status', 'traffic') not in [None, '-1'] }}"
+        turn_on:
+          action: rest_command.nabaztag_traffic
+          data:
+            traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
+        turn_off:
+          action: rest_command.nabaztag_clear
+
+      nabaztag_led_pollution:
+        friendly_name: "LED Pollution"
+        value_template: "{{ state_attr('sensor.nabaztag_fast_status', 'pollution') not in [None, '-1'] }}"
+        turn_on:
+          action: rest_command.nabaztag_pollution
+          data:
+            pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
+        turn_off:
+          action: rest_command.nabaztag_clear
