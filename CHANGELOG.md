@@ -1,5 +1,28 @@
 # Changelog - Nabaztag Serverless TTS
 
+## v0.2.0 — 2026-04-30
+
+### Nouveautés
+- **Installateur interactif** : questions guidées (IP lapin, IP TTS, ports, moteur), génération auto du `.env`
+- **Détection composants** : `which`/`test -f` pour détecter Piper, FFmpeg, espeak-ng, voix, services — menu de réinstallation
+- **Compilation firmware dans tmpdir** : plus de modification du repo → `git pull` compatible
+- **Package HA injecté** : copie de `homeassistant/nabaztag/` dans `$GLOBAL_DIR` avec IP du lapin pré-remplie
+- **Script nabaztag-check.sh** : vérification état services + logs + alias bash `nabaztag`
+- **Animation traffic.json** : snake chenillard 7 niveaux (vert→orange→rouge, vitesse variable)
+- **Capteurs telnet corrigés** : `sleep_is_sleeping` → `sleeping?` (mots Forth corrects)
+- **Documentation anglaise** : `README.en.md` + `CHANGELOG.en.md`
+- **Licence GPL v3** + `LICENSE-THIRD-PARTY.md`
+
+### Correctifs
+- Compilation firmware ne pollue plus le repo (build dans tmpdir)
+- `local` hors fonction retirés (erreur bash)
+- Système manifeste JSON supprimé (trop complexe, remplacé par `which`/`test -f`)
+- `run()` restaurée après suppression accidentelle
+- GLOBAL_DIR : validation anti-conflit avec le clone
+- `.env.example` racine supprimé (doublon de `install/.env.example`)
+
+---
+
 ## Comparatif : Original (`andreax79/ServerlessNabaztag`) vs Notre Repo
 
 ### 1. DNS (Domain Name System)
