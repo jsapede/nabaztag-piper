@@ -34,6 +34,14 @@ while true; do
     echo "   Le dossier ne peut pas être vide"
 done
 
+# Vérifier que GLOBAL_DIR n'est pas le dossier du clone
+if [ "$(realpath "$GLOBAL_DIR" 2>/dev/null)" = "$(realpath "$PROJECT_DIR" 2>/dev/null)" ]; then
+    echo -e " ${RED}ERREUR${NC}: Le dossier global ne peut pas être le même que le dossier du dépôt"
+    echo "   Dépôt: $PROJECT_DIR"
+    echo "   Le dossier global doit être un répertoire dédié (ex: /opt/nabaztag-piper)"
+    exit 1
+fi
+
 MANIFEST="$GLOBAL_DIR/install_manifest.json"
 
 # ─── Couleurs ────────────────────────────────────────────────
