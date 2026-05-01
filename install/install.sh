@@ -25,24 +25,16 @@ done
 # ─── Chemins ─────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-GLOBAL_DIR="${GLOBAL_DIR:-/opt/nabaztag-piper}"
+
+# ─── Demande du dossier global (obligatoire) ─────────────────
+while true; do
+    printf " Dossier d'installation global : "
+    read -r GLOBAL_DIR
+    [ -n "$GLOBAL_DIR" ] && break
+    echo "   Le dossier ne peut pas être vide"
+done
+
 MANIFEST="$GLOBAL_DIR/install_manifest.json"
-
-# ─── Couleurs ────────────────────────────────────────────────
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
-
-run() {
-    if [ "$DRY_RUN" = true ]; then echo -e "  ${YELLOW}❯${NC} $*"
-    else echo -e "  ${GREEN}❯${NC} $*" && "$@"
-    fi
-}
-
-# ─── Demande du dossier global ──────────────────────────────
-if [ "$UNINSTALL" = false ] && [ -z "${GLOBAL_DIR:-}" ]; then
-    printf " Dossier d'installation global [/opt/nabaztag-piper] : "
-    read -r input
-    GLOBAL_DIR="${input:-/opt/nabaztag-piper}"
-fi
 
 prompt_yn() {
     local prompt="$1" default="${2:-n}" reply
