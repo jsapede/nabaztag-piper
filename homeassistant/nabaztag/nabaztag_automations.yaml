@@ -82,16 +82,17 @@ automation:
             sequence:
               - action: script.nabaztag_toggle_nose
 
-  # ========== MISE À JOUR TRAFIC WAZE ==========
-  # Envoie traffic au Nabaztag quand sensor Waze change
+  # ========== MISE À JOUR TRAFIC ==========
+  # Envoie la valeur du trafic au lapin quand input_number change
+  # La source peut être Waze (automatique) ou manuelle (HA)
 
   - id: nabaztag_traffic_update
     alias: "Nabaztag - Update Traffic"
-    description: "Envoie traffic au Nabaztag basé sur sensor Waze"
+    description: "Envoie traffic au Nabaztag quand input_number.nabaztag_traffic change"
     mode: single
     trigger:
       - trigger: state
-        entity_id: sensor.waze_trajet_domicile_travail
+        entity_id: input_number.nabaztag_traffic
     condition:
       - condition: state
         entity_id: binary_sensor.ping_nabaztag
@@ -100,23 +101,7 @@ automation:
         entity_id: input_boolean.nabaztag_traffic_enabled
         state: "on"
     action:
-      - variables:
-          duration: "{{ trigger.to_state.state | float(0) }}"
-          traffic_level: >
-            {% if duration < 20 %}0
-            {% elif duration < 25 %}1
-            {% elif duration < 30 %}2
-            {% elif duration < 35 %}3
-            {% elif duration < 45 %}4
-            {% elif duration < 60 %}5
-            {% else %}6
-            {% endif %}
-      - action: input_number.set_value
-        target:
-          entity_id: input_number.nabaztag_traffic
-        data:
-          value: "{{ traffic_level }}"
       - action: rest_command.nabaztag_traffic
         data:
-          traffic: "{{ traffic_level }}"
+          traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
 
