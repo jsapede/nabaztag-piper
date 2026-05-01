@@ -12,7 +12,7 @@ sensor:
     name: "Nabaztag Fast Status"
     unique_id: nabaztag_fast_status
     command: >
-      printf "\n sleep_is_sleeping . cr _autoclock_enabled @ . cr _autohalftime_enabled @ . cr _autosurprise_enabled @ . cr _autotaichi_enabled @ . cr quit\n" |
+      printf "\n sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr quit\n" |
       nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23 2>/dev/null |
       grep -oP '\d+(?=\s*$)' | tail -5 | paste -sd,
     scan_interval: 1
