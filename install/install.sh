@@ -54,7 +54,11 @@ run() {
 prompt_yn() {
     local prompt="$1" default="${2:-n}" reply
     if [ "$DRY_RUN" = true ]; then echo "  ${CYAN}[?]${NC} $prompt (simulation)"; return 0; fi
-    printf "  ${CYAN}[?]${NC} $prompt [${default^^}/${default,,}] " >&2
+    if [ "$default" = "y" ]; then
+        printf "  ${CYAN}[?]${NC} $prompt [${CYAN}Y${NC}/n] " >&2
+    else
+        printf "  ${CYAN}[?]${NC} $prompt [y/${CYAN}N${NC}] " >&2
+    fi
     read -n 1 -r reply; echo >&2
     [ "${reply,,}" = "${default,,}" ] || [ "${reply,,}" = "y" ]
 }
