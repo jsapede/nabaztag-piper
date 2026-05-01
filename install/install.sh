@@ -611,6 +611,44 @@ run systemctl daemon-reload
 run systemctl enable --now nabaztag-tts 2>/dev/null || true
 run systemctl enable --now nabaztag-webserver 2>/dev/null || true
 
+# ─── Script de vérification ────────────────────────────────
+echo "  → Script de vérification..."
+if [ "$DRY_RUN" = false ]; then
+    cat > "$GLOBAL_DIR/nabaztag-check.sh" << 'SCRIPT'
+#!/bin/bash
+echo "═══ Services Nabaztag ═══"
+
+check() {
+    if systemctl is-active "$1" >/dev/null 2>&1; then echo "  $1 : ${GREEN}✓ actif${NC}"
+    else echo "  $1 : ${RED}✗ inactif${NC}"
+    fi
+}
+
+check nabaztag-tts
+check nabaztag-webserver
+
+echo ""
+echo "═══ Derniers logs ═══"
+echo "--- TTS ---"
+journalctl -u nabaztag-tts -n 5 --no-pager 2>/dev/null || echo "  (pas de logs)"
+echo ""
+echo "--- Web ---"
+journalctl -u nabaztag-webserver -n 5 --no-pager 2>/dev/null || echo "  (pas de logs)"
+
+echo ""
+echo "═══ Commandes ═══"
+echo "  Logs TTS  : journalctl -u nabaztag-tts -f"
+echo "  Logs Web  : journalctl -u nabaztag-webserver -f"
+echo "  Redémarrer: systemctl restart nabaztag-tts nabaztag-webserver"
+SCRIPT
+    chmod +x "$GLOBAL_DIR/nabaztag-check.sh"
+    # Proposer l'alias bash
+    if ! grep -q "nabaztag-check" ~/.bashrc 2>/dev/null; then
+        echo "alias nabaztag='$GLOBAL_DIR/nabaztag-check.sh'" >> ~/.bashrc
+        echo "   Alias bash 'nabaztag' ajouté (source ~/.bashrc ou rouvrez votre terminal)"
+    fi
+fi
+
 # ─── Finalisation manifeste ───────────────────────────────
 _manifest_detect
 
@@ -627,6 +665,8 @@ echo "  Package HA : $GLOBAL_DIR/homeassistant/nabaztag/"
 echo "              → copier vers /config/nabaztag/ dans HA"
 echo "              → IP lapin déjà injectée dans input_text.nabaztag_ip_address"
 echo "  Manifest  : $MANIFEST"
+echo "  Check     : $GLOBAL_DIR/nabaztag-check.sh"
+echo "  Alias     : nabaztag (dans le terminal)"
 echo ""
 echo "  systemctl status nabaztag-tts"
 echo "  journalctl -u nabaztag-tts -f"
