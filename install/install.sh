@@ -36,6 +36,15 @@ done
 
 MANIFEST="$GLOBAL_DIR/install_manifest.json"
 
+# ─── Couleurs ────────────────────────────────────────────────
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
+
+run() {
+    if [ "$DRY_RUN" = true ]; then echo -e "  ${YELLOW}❯${NC} $*"
+    else echo -e "  ${GREEN}❯${NC} $*" && "$@"
+    fi
+}
+
 prompt_yn() {
     local prompt="$1" default="${2:-n}" reply
     if [ "$DRY_RUN" = true ]; then echo "  ${CYAN}[?]${NC} $prompt (simulation)"; return 0; fi
