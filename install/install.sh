@@ -54,13 +54,19 @@ run() {
 prompt_yn() {
     local prompt="$1" default="${2:-n}" reply
     if [ "$DRY_RUN" = true ]; then echo "  ${CYAN}[?]${NC} $prompt (simulation)"; return 0; fi
-    if [ "$default" = "y" ]; then
-        printf "  ${CYAN}[?]${NC} $prompt [${CYAN}Y${NC}/n] " >&2
-    else
-        printf "  ${CYAN}[?]${NC} $prompt [y/${CYAN}N${NC}] " >&2
-    fi
-    read -n 1 -r reply; echo >&2
-    [ "${reply,,}" = "${default,,}" ] || [ "${reply,,}" = "y" ]
+    while true; do
+        if [ "$default" = "y" ]; then
+            printf "  ${CYAN}[?]${NC} $prompt [${CYAN}Y${NC}/n] " >&2
+        else
+            printf "  ${CYAN}[?]${NC} $prompt [y/${CYAN}N${NC}] " >&2
+        fi
+        read -n 1 -r reply; echo >&2
+        case "${reply,,}" in
+            y) return 0 ;;
+            n) return 1 ;;
+            "") [ "$default" = "y" ] && return 0 || return 1 ;;
+        esac
+    done
 }
 
 validate_ip() { [[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; }
@@ -106,16 +112,19 @@ _interactive_env() {
     if [ -f "$GLOBAL_DIR/.env" ]; then
         echo ""
         echo -e " ${YELLOW}⚠️  .env déjà présent dans $GLOBAL_DIR${NC}"
-        echo "   [G]arder l'existant (ne rien changer)"
-        echo "   [R]ecréer avec l'assistant interactif"
-        echo "   [A]bandonner"
-        printf "   Choix [G] : "
-        read -n 1 -r reply; echo
-        case "${reply,,}" in
-            r) ;;
-            a) echo "Installation abandonnée"; exit 1 ;;
-            *) echo "   Utilisation de l'existant"; source "$GLOBAL_DIR/.env"; return 0 ;;
-        esac
+        while true; do
+            echo "   [G]arder l'existant (ne rien changer)"
+            echo "   [R]ecréer avec l'assistant interactif"
+            echo "   [A]bandonner"
+            printf "   Choix [G] : "
+            read -n 1 -r reply; echo
+            case "${reply,,}" in
+                r) break ;;
+                a) echo "Installation abandonnée"; exit 1 ;;
+                g) echo "   Utilisation de l'existant"; source "$GLOBAL_DIR/.env"; return 0 ;;
+                *) echo -e "   ${YELLOW}Réponse invalide (G, R ou A)${NC}" ;;
+            esac
+        done
     fi
 
     echo ""
