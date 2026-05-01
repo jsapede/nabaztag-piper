@@ -252,6 +252,7 @@ _compile_firmware() {
     run cp -r "$SOURCE_DIR/compiler" "$build_dir/" 2>/dev/null || true
     run cp -r "$SOURCE_DIR/firmware" "$build_dir/" 2>/dev/null || true
     run cp "$SOURCE_DIR/Makefile" "$build_dir/" 2>/dev/null || true
+    run cp -r "$SOURCE_DIR/scripts" "$build_dir/" 2>/dev/null || true
     mkdir -p "$build_dir/vl"
     run cp "$SOURCE_DIR/vl/config.forth" "$build_dir/vl/" 2>/dev/null || true
 
@@ -414,7 +415,6 @@ fi
 # 7. Compilation firmware (toujours)
 echo "  → Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
 _compile_firmware
-_manifest_set piper true "$(piper --version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1 || echo unknown)" "{\"binary\":\"$(which piper 2>/dev/null || true)\"}"
 
 # 8. Serveur web statique
 echo "  → Serveur web statique..."
