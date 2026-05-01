@@ -309,8 +309,8 @@ if [ "$DRY_RUN" = false ]; then
     echo "  (le firmware et le redémarrage des services sont toujours effectués)"
 
     for pair in piper:piper ffmpeg:ffmpeg espeak_ng:espeak_ng piper_voice:piper_voice service_tts:service_tts service_webserver:service_webserver; do
-        local key="${pair%%:*}"
-        local label="$(_component_label "$key")"
+        key="${pair%%:*}"
+        label="$(_component_label "$key")"
         if _check_component "$key"; then
             if prompt_yn "$label déjà présent — Forcer la réinstallation ?" n; then
                 case "$key" in
