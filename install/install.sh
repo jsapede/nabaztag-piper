@@ -42,8 +42,6 @@ if [ "$(realpath "$GLOBAL_DIR" 2>/dev/null)" = "$(realpath "$PROJECT_DIR" 2>/dev
     exit 1
 fi
 
-MANIFEST="$GLOBAL_DIR/install_manifest.json"
-
 # ─── Couleurs ────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
@@ -64,124 +62,34 @@ prompt_yn() {
 validate_ip() { [[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; }
 
 # ═══════════════════════════════════════════════════════════════
-# MANIFEST
+# DÉTECTION COMPOSANTS
 # ═══════════════════════════════════════════════════════════════
 
-_manifest_init() {
-    echo '{"manifest_version":1,"project":"nab-piper","source_dir":"","script_version":"0.1.0","created_at":"","updated_at":"","config":{},"components":{}}'
+_check_component() {
+    case "$1" in
+        piper)        which piper >/dev/null 2>&1 ;;
+        ffmpeg)       which ffmpeg >/dev/null 2>&1 ;;
+        espeak_ng)    which espeak-ng >/dev/null 2>&1 ;;
+        piper_voice)  [ -f "$PIPER_VOICES_DIR/$VOICE_NAME.onnx" ] ;;
+        firmware)     [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ] ;;
+        service_tts)  systemctl is-active nabaztag-tts >/dev/null 2>&1 ;;
+        service_webserver) systemctl is-active nabaztag-webserver >/dev/null 2>&1 ;;
+        uv)           which uv >/dev/null 2>&1 ;;
+        *)            return 1 ;;
+    esac
 }
 
-_manifest_load() {
-    if [ -f "$MANIFEST" ]; then
-        cat "$MANIFEST"
-    else
-        _manifest_init
-    fi
+_component_label() {
+    case "$1" in piper) echo "Piper binaire";; ffmpeg) echo "FFmpeg";; espeak_ng) echo "espeak-ng";; piper_voice) echo "Modèle de voix";; firmware) echo "Firmware";; service_tts) echo "Service TTS";; service_webserver) echo "Serveur web";; uv) echo "uv";; esac
 }
 
-_manifest_save() {
-    echo "$MANIFEST_JSON" > "$MANIFEST"
-}
-
-_manifest_set() {
-    local key="$1" installed="$2" version="$3" extra_json="$4"
-    local now
-    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    MANIFEST_JSON=$(echo "$MANIFEST_JSON" | python3 -c "
-import sys, json
-m = json.load(sys.stdin)
-if 'components' not in m: m['components'] = {}
-m['components']['$key'] = {'installed': $installed, 'detected_at': '$now'}
-if '$version': m['components']['$key']['version'] = '$version'
-if '$extra_json': m['components']['$key'].update(json.loads('$extra_json'))
-m['updated_at'] = '$now'
-json.dump(m, sys.stdout)
-" 2>/dev/null || echo "$MANIFEST_JSON")
-}
-
-_manifest_remove() {
-    local key="$1"
-    MANIFEST_JSON=$(echo "$MANIFEST_JSON" | python3 -c "
-import sys, json
-m = json.load(sys.stdin)
-if 'components' in m and '$key' in m['components']:
-    del m['components']['$key']
-m['updated_at'] = '$(date -u +"%Y-%m-%dT%H:%M:%SZ")'
-json.dump(m, sys.stdout)
-" 2>/dev/null || echo "$MANIFEST_JSON")
-}
-
-_manifest_clear() { rm -f "$MANIFEST"; }
-
-_manifest_detect() {
-    local now rev
-    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-    # Piper
-    if which piper >/dev/null 2>&1; then
-        local pv=$(piper --version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1)
-        _manifest_set piper true "${pv:-unknown}" "{\"binary\":\"$(which piper 2>/dev/null || true)\"}"
-    else
-        _manifest_set piper false "" ""
-    fi
-
-    # FFmpeg
-    if which ffmpeg >/dev/null 2>&1; then
-        local fv=$(ffmpeg -version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1)
-        _manifest_set ffmpeg true "${fv:-unknown}" "{\"binary\":\"$(which ffmpeg)\"}"
-    else
-        _manifest_set ffmpeg false "" ""
-    fi
-
-    # espeak-ng
-    if which espeak-ng >/dev/null 2>&1; then
-        local ev=$(espeak-ng --version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1)
-        _manifest_set espeak_ng true "${ev:-unknown}" "{\"binary\":\"$(which espeak-ng)\"}"
-    else
-        _manifest_set espeak_ng false "" ""
-    fi
-
-    # Voix Piper
-    local voice_path="$GLOBAL_DIR/voices/piper/$PIPER_VOICE_PATH"
-    if [ -f "$voice_path.onnx" ]; then
-        _manifest_set piper_voice true "${voice_path##*/}" "{\"path\":\"${voice_path}.onnx\"}"
-    else
-        _manifest_set piper_voice false "" ""
-    fi
-
-    # Firmware compile
-    if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
-        rev=$(grep -oP 'Rev: \K\d+' "$GLOBAL_DIR/firmware/vl/bc.jsp" 2>/dev/null || echo "unknown")
-        _manifest_set firmware true "$rev" "{\"path\":\"$GLOBAL_DIR/firmware/vl/bc.jsp\"}"
-    else
-        _manifest_set firmware false "" ""
-    fi
-
-    # Services
-    local stt=$(systemctl is-active nabaztag-tts 2>/dev/null || echo "inactive")
-    _manifest_set service_tts true "" "{\"name\":\"nabaztag-tts\",\"state\":\"$stt\"}"
-    local sws=$(systemctl is-active nabaztag-webserver 2>/dev/null || echo "inactive")
-    _manifest_set service_webserver true "" "{\"name\":\"nabaztag-webserver\",\"state\":\"$sws\"}"
-
-    _manifest_save
-}
-
-_manifest_show_status() {
-    local m=$(_manifest_load)
+_show_status() {
     echo ""
     echo " État des composants installés :"
-    for key in piper ffmpeg espeak_ng piper_voice firmware service_tts service_webserver; do
-        local state=$(echo "$m" | python3 -c "
-import sys, json
-m = json.load(sys.stdin)
-c = m.get('components', {}).get('$key', {})
-if c.get('installed'):
-    v = c.get('version','')
-    print('${GREEN}✓${NC} $key' + (f' (v{v})' if v else ''))
-else:
-    print('${RED}✗${NC} $key')
-" 2>/dev/null || echo "   $key: ?")
-        echo -e "   $state"
+    for c in piper ffmpeg espeak_ng piper_voice firmware service_tts service_webserver; do
+        if _check_component "$c"; then echo -e "   ${GREEN}✓${NC} $(_component_label "$c")"
+        else echo -e "   ${RED}✗${NC} $(_component_label "$c")"
+        fi
     done
 }
 
@@ -310,7 +218,6 @@ if [ "$UNINSTALL" = true ]; then
     echo -e "  ${YELLOW}Supprimer $GLOBAL_DIR ? (y/N)${NC}"
     read -r confirm
     if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
-        _manifest_clear
         run rm -rf "$GLOBAL_DIR"
         echo "  ${GREEN}$GLOBAL_DIR supprimé${NC}"
     fi
@@ -324,22 +231,6 @@ fi
 
 # ─── Phase 1 : Environnement ────────────────────────────────
 _interactive_env
-MANIFEST_JSON=$(_manifest_load)
-MANIFEST_JSON=$(echo "$MANIFEST_JSON" | python3 -c "
-import sys, json
-m = json.load(sys.stdin)
-m['source_dir'] = '$PROJECT_DIR'
-if 'config' not in m: m['config'] = {}
-m['config']['tts_server_ip'] = '$TTS_SERVER_IP'
-m['config']['tts_port'] = '${TTS_PORT:-6790}'
-m['config']['web_server_port'] = '${WEB_SERVER_PORT:-80}'
-m['config']['tts_engine'] = '${TTS_ENGINE:-piper}'
-m['config']['piper_voice_path'] = '${PIPER_VOICE_PATH:-fr/fr_FR/siwis/medium}'
-m['config']['espeak_voice'] = '${ESPEAK_VOICE:-fr}'
-if not m.get('created_at'): m['created_at'] = '$(date -u +"%Y-%m-%dT%H:%M:%SZ")'
-json.dump(m, sys.stdout)
-")
-_manifest_save
 
 VOICE_NAME=$(echo "$PIPER_VOICE_PATH" | awk -F/ '{print $2"-"$3"-"$4}')
 COQUI_VENV="$GLOBAL_DIR/.venv"
@@ -382,8 +273,6 @@ _compile_firmware() {
     run cp -r "$build_dir/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
     if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
         echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
-        _manifest_set firmware true "$REVISION_STAMP" "{\"path\":\"$GLOBAL_DIR/firmware/vl/bc.jsp\"}"
-        _manifest_save
     else
         echo "   AVERTISSEMENT: firmware non compilé - utiliser un binaire pre-compilé"
     fi
@@ -406,40 +295,24 @@ if [ "$FIRMWARE_ONLY" = true ]; then
     exit 0
 fi
 
-# ─── Phase 3 : Détection composants ──────────────────────
-_manifest_detect
+# ─── Phase 3 : Détection composants + menu ─────────────────
+_show_status
 
-# ─── Phase 4 : Menu interactif (sauf dry-run) ────────────
 REINSTALL_PIPER=false
 REINSTALL_DEPS=false
 REINSTALL_VOICE=false
 REINSTALL_SERVICES=false
 
 if [ "$DRY_RUN" = false ]; then
-    _manifest_show_status
     echo ""
     echo " Composants à (ré)installer (o = oui, Entrée = non) :"
     echo "  (le firmware et le redémarrage des services sont toujours effectués)"
 
-    m=$(_manifest_load)
-    for key in piper ffmpeg espeak_ng piper_voice service_tts service_webserver; do
-        installed=$(echo "$m" | python3 -c "
-import sys, json
-m = json.load(sys.stdin)
-c = m.get('components', {}).get('$key', {})
-print('true' if c.get('installed') else 'false')
-" 2>/dev/null || echo "false")
-        label=""
-        case "$key" in
-            piper) label="Piper binaire";;
-            ffmpeg) label="FFmpeg";;
-            espeak_ng) label="espeak-ng";;
-            piper_voice) label="Modèle de voix";;
-            service_tts) label="Service TTS";;
-            service_webserver) label="Serveur web";;
-        esac
-        if [ "$installed" = "true" ]; then
-            if prompt_yn "$label déjà installé — Réinstaller ?" n; then
+    for pair in piper:piper ffmpeg:ffmpeg espeak_ng:espeak_ng piper_voice:piper_voice service_tts:service_tts service_webserver:service_webserver; do
+        local key="${pair%%:*}"
+        local label="$(_component_label "$key")"
+        if _check_component "$key"; then
+            if prompt_yn "$label déjà présent — Forcer la réinstallation ?" n; then
                 case "$key" in
                     piper) REINSTALL_PIPER=true;;
                     ffmpeg|espeak_ng) REINSTALL_DEPS=true;;
@@ -448,7 +321,7 @@ print('true' if c.get('installed') else 'false')
                 esac
             fi
         else
-            echo -e "  ${CYAN}→${NC} $label sera installé (composant manquant)"
+            echo "  → $label sera installé (composant manquant)"
             case "$key" in
                 piper) REINSTALL_PIPER=true;;
                 ffmpeg|espeak_ng) REINSTALL_DEPS=true;;
@@ -489,7 +362,6 @@ if [ "$REINSTALL_DEPS" = true ]; then
             _manifest_set "$pkg" true "" "{\"binary\":\"$(which $pkg 2>/dev/null || true)\"}"
         fi
     done
-    _manifest_save
 else
     echo "  → Dépendances système : déjà installées"
 fi
@@ -649,9 +521,6 @@ SCRIPT
     fi
 fi
 
-# ─── Finalisation manifeste ───────────────────────────────
-_manifest_detect
-
 # ─── Résumé ──────────────────────────────────────────────
 echo ""
 echo "═══════════════════════════════════════════════════════"
@@ -664,7 +533,6 @@ echo "  Web serveur: http://localhost:${WEB_SERVER_PORT:-80}/vl/"
 echo "  Package HA : $GLOBAL_DIR/homeassistant/nabaztag/"
 echo "              → copier vers /config/nabaztag/ dans HA"
 echo "              → IP lapin déjà injectée dans input_text.nabaztag_ip_address"
-echo "  Manifest  : $MANIFEST"
 echo "  Check     : $GLOBAL_DIR/nabaztag-check.sh"
 echo "  Alias     : nabaztag (dans le terminal)"
 echo ""
