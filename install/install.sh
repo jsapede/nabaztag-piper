@@ -336,16 +336,34 @@ TTS_PORT="${TTS_PORT:-6790}"
 
 # ─── Phase 2 : Compilation firmware (TOUJOURS) ──────────────
 _compile_firmware() {
-    [ -n "$CHANGED" ] && (run make -C "$SOURCE_DIR" clean 2>/dev/null) || true
+    local build_dir=$(mktemp -d)
+    local old_revision=""
+    # Sauvegarder l'ancienne révision si fichier déjà modifié
+    [ -f "$SOURCE_DIR/firmware/utils/url.mtl" ] && old_revision=$(grep -oP 'XXX_REVISION_XXX' "$SOURCE_DIR/firmware/utils/url.mtl" || echo "")
+
+    # Copier les sources dans un répertoire temporaire pour ne pas polluer le repo
+    run cp -r "$SOURCE_DIR/compiler" "$build_dir/" 2>/dev/null || true
+    run cp -r "$SOURCE_DIR/firmware" "$build_dir/" 2>/dev/null || true
+    run cp "$SOURCE_DIR/Makefile" "$build_dir/" 2>/dev/null || true
+    mkdir -p "$build_dir/vl"
+    run cp "$SOURCE_DIR/vl/config.forth" "$build_dir/vl/" 2>/dev/null || true
+
+    # Injecter l'IP du TTS dans la copie (pas dans l'original)
     run sed -i "s|XXX\.XXX\.XXX\.XXX:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|;s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
-        "$SOURCE_DIR/vl/config.forth" 2>/dev/null || true
+        "$build_dir/vl/config.forth" 2>/dev/null || true
+    # Injecter le timestamp dans les copies (pas dans l'original)
     REVISION_STAMP=$(date +%Y%m%d%H%M)
-    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$SOURCE_DIR/firmware/utils/url.mtl" 2>/dev/null || true
-    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$SOURCE_DIR/firmware/main.mtl" 2>/dev/null || true
+    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$build_dir/firmware/utils/url.mtl" 2>/dev/null || true
+    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$build_dir/firmware/main.mtl" 2>/dev/null || true
     echo "   Revision firmware: $REVISION_STAMP"
-    run make -C "$SOURCE_DIR" compiler 2>&1 || echo "   Compilateur déjà présent ou absent (pre-compilé utilisé)"
-    run make -C "$SOURCE_DIR" firmware 2>&1 || true
-    run cp -r "$SOURCE_DIR/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
+
+    # Compiler depuis le répertoire temporaire
+    run make -C "$build_dir" compiler 2>&1 || echo "   Compilateur déjà présent ou absent (pre-compilé utilisé)"
+    run make -C "$build_dir" firmware 2>&1 || true
+
+    # Copier le résultat vers GLOBAL_DIR
+    run mkdir -p "$GLOBAL_DIR/firmware/vl"
+    run cp -r "$build_dir/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
     if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
         echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
         _manifest_set firmware true "$REVISION_STAMP" "\"path\": \"$GLOBAL_DIR/firmware/vl/bc.jsp\","
@@ -353,6 +371,8 @@ _compile_firmware() {
     else
         echo "   AVERTISSEMENT: firmware non compilé - utiliser un binaire pre-compilé"
     fi
+
+    rm -rf "$build_dir"
 }
 
 echo "═══════════════════════════════════════════════════════"
