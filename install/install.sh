@@ -84,8 +84,8 @@ _manifest_save() {
 }
 
 _manifest_set() {
-    local key="$1" installed="$2" version="$3" extra="$4"
-    local ts now
+    local key="$1" installed="$2" version="$3" extra_json="$4"
+    local now
     now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     MANIFEST_JSON=$(echo "$MANIFEST_JSON" | python3 -c "
 import sys, json
@@ -93,7 +93,7 @@ m = json.load(sys.stdin)
 if 'components' not in m: m['components'] = {}
 m['components']['$key'] = {'installed': $installed, 'detected_at': '$now'}
 if '$version': m['components']['$key']['version'] = '$version'
-$extra
+if '$extra_json': m['components']['$key'].update(json.loads('$extra_json'))
 m['updated_at'] = '$now'
 json.dump(m, sys.stdout)
 " 2>/dev/null || echo "$MANIFEST_JSON")
@@ -120,7 +120,7 @@ _manifest_detect() {
     # Piper
     if which piper >/dev/null 2>&1; then
         local pv=$(piper --version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1)
-        _manifest_set piper true "${pv:-unknown}" "\"binary\": \"$(which piper)\","
+        _manifest_set piper true "${pv:-unknown}" "{\"binary\":\"$(which piper 2>/dev/null || true)\"}"
     else
         _manifest_set piper false "" ""
     fi
@@ -128,7 +128,7 @@ _manifest_detect() {
     # FFmpeg
     if which ffmpeg >/dev/null 2>&1; then
         local fv=$(ffmpeg -version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1)
-        _manifest_set ffmpeg true "${fv:-unknown}" "\"binary\": \"$(which ffmpeg)\","
+        _manifest_set ffmpeg true "${fv:-unknown}" "{\"binary\":\"$(which ffmpeg)\"}"
     else
         _manifest_set ffmpeg false "" ""
     fi
@@ -136,7 +136,7 @@ _manifest_detect() {
     # espeak-ng
     if which espeak-ng >/dev/null 2>&1; then
         local ev=$(espeak-ng --version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1)
-        _manifest_set espeak_ng true "${ev:-unknown}" "\"binary\": \"$(which espeak-ng)\","
+        _manifest_set espeak_ng true "${ev:-unknown}" "{\"binary\":\"$(which espeak-ng)\"}"
     else
         _manifest_set espeak_ng false "" ""
     fi
@@ -144,7 +144,7 @@ _manifest_detect() {
     # Voix Piper
     local voice_path="$GLOBAL_DIR/voices/piper/$PIPER_VOICE_PATH"
     if [ -f "$voice_path.onnx" ]; then
-        _manifest_set piper_voice true "${voice_path##*/}" "\"path\": \"$voice_path.onnx\","
+        _manifest_set piper_voice true "${voice_path##*/}" "{\"path\":\"${voice_path}.onnx\"}"
     else
         _manifest_set piper_voice false "" ""
     fi
@@ -152,16 +152,16 @@ _manifest_detect() {
     # Firmware compile
     if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
         rev=$(grep -oP 'Rev: \K\d+' "$GLOBAL_DIR/firmware/vl/bc.jsp" 2>/dev/null || echo "unknown")
-        _manifest_set firmware true "$rev" "\"path\": \"$GLOBAL_DIR/firmware/vl/bc.jsp\","
+        _manifest_set firmware true "$rev" "{\"path\":\"$GLOBAL_DIR/firmware/vl/bc.jsp\"}"
     else
         _manifest_set firmware false "" ""
     fi
 
     # Services
     local stt=$(systemctl is-active nabaztag-tts 2>/dev/null || echo "inactive")
-    _manifest_set service_tts true "" "\"name\": \"nabaztag-tts\", \"state\": \"$stt\","
+    _manifest_set service_tts true "" "{\"name\":\"nabaztag-tts\",\"state\":\"$stt\"}"
     local sws=$(systemctl is-active nabaztag-webserver 2>/dev/null || echo "inactive")
-    _manifest_set service_webserver true "" "\"name\": \"nabaztag-webserver\", \"state\": \"$sws\","
+    _manifest_set service_webserver true "" "{\"name\":\"nabaztag-webserver\",\"state\":\"$sws\"}"
 
     _manifest_save
 }
@@ -382,7 +382,7 @@ _compile_firmware() {
     run cp -r "$build_dir/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
     if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
         echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
-        _manifest_set firmware true "$REVISION_STAMP" "\"path\": \"$GLOBAL_DIR/firmware/vl/bc.jsp\","
+        _manifest_set firmware true "$REVISION_STAMP" "{\"path\":\"$GLOBAL_DIR/firmware/vl/bc.jsp\"}"
         _manifest_save
     else
         echo "   AVERTISSEMENT: firmware non compilé - utiliser un binaire pre-compilé"
@@ -486,7 +486,7 @@ if [ "$REINSTALL_DEPS" = true ]; then
             echo "     $pkg présent"
         else
             run apt-get install -y -qq "$pkg"
-            _manifest_set "$pkg" true "" "\"binary\":\"$(which $pkg 2>/dev/null || true)\","
+            _manifest_set "$pkg" true "" "{\"binary\":\"$(which $pkg 2>/dev/null || true)\"}"
         fi
     done
     _manifest_save
@@ -542,7 +542,7 @@ fi
 # 7. Compilation firmware (toujours)
 echo "  → Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
 _compile_firmware
-_manifest_set piper true "$(piper --version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1 || echo unknown)" "\"binary\":\"$(which piper 2>/dev/null || true)\","
+_manifest_set piper true "$(piper --version 2>/dev/null | head -1 | grep -oP '[\d\.]+' | head -1 || echo unknown)" "{\"binary\":\"$(which piper 2>/dev/null || true)\"}"
 
 # 8. Serveur web statique
 echo "  → Serveur web statique..."
