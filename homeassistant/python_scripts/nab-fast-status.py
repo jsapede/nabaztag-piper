@@ -3,10 +3,10 @@ import socket, re, time, json, sys
 ip = sys.argv[1] if len(sys.argv) > 1 else '192.168.0.58'
 try:
     s = socket.socket()
-    s.settimeout(5)
+    s.settimeout(2)
     s.connect((ip, 23))
     s.send(b'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n')
-    time.sleep(0.3)
+    time.sleep(0.1)
     d = b''
     while 1:
         try:

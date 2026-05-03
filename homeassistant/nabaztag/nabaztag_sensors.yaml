@@ -7,8 +7,8 @@ command_line:
       name: "Nabaztag Fast Status"
       unique_id: nabaztag_fast_status
       command: python3 /config/python_scripts/nab-fast-status.py {{ states('input_text.nabaztag_ip_address') }}
-      scan_interval: 10
-      command_timeout: 8
+      scan_interval: 5
+      command_timeout: 4
       value_template: "ok"
       json_attributes:
         - sleep_state
@@ -52,27 +52,15 @@ template:
       - name: "Horloge firmware (état réel)"
         unique_id: nabaztag_firmware_clock_binary
         state: >
-          {{ state_attr('sensor.nabaztag_fast_status', 'autoclock') == '1' }}
-
-      - name: "Demi-heure firmware (état réel)"
-        unique_id: nabaztag_firmware_halftime_binary
-        state: >
-          {{ state_attr('sensor.nabaztag_fast_status', 'autohalftime') == '1' }}
-
-      - name: "Surprise firmware (état réel)"
-        unique_id: nabaztag_firmware_surprise_binary
-        state: >
-          {{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' }}
-
-      - name: "Taichi firmware (état réel)"
-        unique_id: nabaztag_firmware_taichi_binary
-        state: >
-          {{ state_attr('sensor.nabaztag_fast_status', 'autotaichi') == '1' }}
-
-      - name: "Nabaztag endormi (état réel)"
-        unique_id: nabaztag_asleep_binary
-        state: >
-          {{ state_attr('sensor.nabaztag_fast_status', 'sleep_state') == '1' }}
+          {{ state_attr('sensor.nabaztag_fast_status', 'autoclock') == 1 }}
+...
+          {{ state_attr('sensor.nabaztag_fast_status', 'autohalftime') == 1 }}
+...
+          {{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == 1 }}
+...
+          {{ state_attr('sensor.nabaztag_fast_status', 'autotaichi') == 1 }}
+...
+          {{ state_attr('sensor.nabaztag_fast_status', 'sleep_state') == 1 }}
 
       - name: "LED Météo (état réel)"
         unique_id: nabaztag_led_weather_binary
