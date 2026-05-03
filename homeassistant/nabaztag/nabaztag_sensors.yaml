@@ -8,24 +8,28 @@ command_line:
       unique_id: nabaztag_fast_status
       command: >
         python3 -c "
-        import socket,re,time
-        s=socket.socket();s.settimeout(3)
-        s.connect(('{{ states('input_text.nabaztag_ip_address') }}',23))
-        s.send(b'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n')
-        time.sleep(0.3)
-        d=b''
-        while 1:
-         try:
-          c=s.recv(4096)
-          if not c:break
-          d+=c
-         except:break
-        s.close()
-        v=re.findall(rb'> (\d+)|(?<=\n)(\d+)(?=\n)',d)
-        print(','.join([(a or b).decode() for a,b in v[-8:]]))
-        " 2>/dev/null
-      scan_interval: 1
-      command_timeout: 3
+        import socket,re,time,sys
+        try:
+         s=socket.socket();s.settimeout(5)
+         s.connect(('{{ states('input_text.nabaztag_ip_address') }}',23))
+         s.send(b'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n')
+         time.sleep(0.5)
+         d=b''
+         while 1:
+          try:
+           c=s.recv(4096)
+           if not c:break
+           d+=c
+          except:break
+         s.close()
+         v=re.findall(rb'> (\d+)|(?<=\n)(\d+)(?=\n)',d)
+         if v: print(','.join([(a or b).decode() for a,b in v[-8:]]))
+         else: print('0,0,0,0,0,0,0,0')
+        except Exception as e:
+         print('0,0,0,0,0,0,0,0')
+        "
+      scan_interval: 5
+      command_timeout: 10
       value_template: "ok"
       json_attributes:
         - sleep_state
