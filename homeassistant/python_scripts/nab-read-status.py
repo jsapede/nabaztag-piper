@@ -7,25 +7,23 @@ try:
     s = socket.socket()
     s.settimeout(3)
     s.connect((ip, 23))
-    cmds = 'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit'
-    s.send((cmds + '\r\n').encode())
-    time.sleep(0.8)
+    s.send(b'status-all\r\n')
+    time.sleep(0.3)
     s.settimeout(0.3)
     try:
         d = s.recv(8192)
     except:
         d = b''
     s.close()
-    vals = []
+    # Find the line with ">" which contains the values
     for l in d.split(b'\n'):
-        l = l.strip()
-        if re.match(rb'^-?\d+$', l):
-            vals.append(int(l))
-        else:
-            m = re.match(rb'\[\d+\] > (-?\d+)', l)
-            if m:
-                vals.append(int(m.group(1)))
-    result = dict(zip(keys, vals + [-1] * (len(keys) - len(vals))))
-    print(json.dumps(result))
+        if b'>' in l:
+            vals = re.findall(rb'-?\d+', l.split(b'>')[1])
+            if len(vals) >= 8:
+                print(json.dumps(dict(zip(keys, [int(v) for v in vals[:8]]))))
+                raise SystemExit(0)
+    print(json.dumps({k: -1 for k in keys}))
+except SystemExit:
+    pass
 except:
     print(json.dumps({k: -1 for k in keys}))

@@ -158,3 +158,22 @@ fun forth_revision f=
 fun forth_say_push f text=
     forth_push f [str:text];
     0;;
+
+/**
+ * STATUS-ALL ( -- )
+ * Print all status values as space-separated integers
+ * Format: sleep_state autoclock autohalftime autosurprise autotaichi weather traffic pollution
+ */
+fun forth_status_all f=
+    let itoa sleep_is_sleeping -> v0 in
+    let itoa _autoclock_enabled -> v1 in
+    let itoa _autohalftime_enabled -> v2 in
+    let itoa _autosurprise_enabled -> v3 in
+    let itoa _autotaichi_enabled -> v4 in
+    let itoa (if info_service_get INFO_WEATHER != nil then info_service_get INFO_WEATHER else -1) -> v5 in
+    let itoa (if info_service_get INFO_TRAFFIC != nil then info_service_get INFO_TRAFFIC else -1) -> v6 in
+    let itoa (if info_service_get INFO_POLLUTION != nil then info_service_get INFO_POLLUTION else -1) -> v7 in
+    forth_write f strcatlist v0 :: " " :: v1 :: " " :: v2 :: " " :: v3 :: " " :: v4 :: " " :: v5 :: " " :: v6 :: " " :: v7 :: "\n" :: nil
+;;
+
+
