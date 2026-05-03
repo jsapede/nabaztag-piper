@@ -12,9 +12,23 @@ sensor:
     name: "Nabaztag Fast Status"
     unique_id: nabaztag_fast_status
     command: >
-      printf "\n sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n" |
-      nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23 2>/dev/null |
-      sed 's/^\?$/-1/' | grep -oP '(?<=> )\d+$|^\d+$|^-1$' | tail -8 | paste -sd,
+      python3 -c "
+      import socket,re,time
+      s=socket.socket();s.settimeout(3)
+      s.connect(('{{ states('input_text.nabaztag_ip_address') }}',23))
+      s.send(b'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n')
+      time.sleep(0.3)
+      d=b''
+      while 1:
+       try:
+        c=s.recv(4096)
+        if not c:break
+        d+=c
+       except:break
+      s.close()
+      v=re.findall(rb'> (\d+)|(?<=\n)(\d+)(?=\n)',d)
+      print(','.join([(a or b).decode() for a,b in v[-8:]]))
+      " 2>/dev/null
     scan_interval: 1
     timeout: 3
     value_template: "ok"
@@ -114,11 +128,11 @@ template:
         unique_id: nabaztag_firmware_surprise
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' }}"
         turn_on:
-          - action: shell_command.nabaztag_telnet_surprise
+          - action: shell_command.nabaztag_telnet_surprise_flag
             data:
               surprise: "1"
         turn_off:
-          - action: shell_command.nabaztag_telnet_surprise
+          - action: shell_command.nabaztag_telnet_surprise_flag
             data:
               surprise: "0"
 
