@@ -131,7 +131,7 @@ automation:
           seconds: 1
       - action: homeassistant.update_entity
         target:
-          entity_id: sensor.nabaztag_status
+          entity_id: sensor.nabaztag_telnet_status
 
   - id: nabaztag_firmware_toggle_halftime
     alias: "Nabaztag - Toggle Halftime"
@@ -151,7 +151,7 @@ automation:
           seconds: 1
       - action: homeassistant.update_entity
         target:
-          entity_id: sensor.nabaztag_status
+          entity_id: sensor.nabaztag_telnet_status
 
   - id: nabaztag_firmware_toggle_surprise
     alias: "Nabaztag - Toggle Surprise"
@@ -171,7 +171,7 @@ automation:
           seconds: 1
       - action: homeassistant.update_entity
         target:
-          entity_id: sensor.nabaztag_status
+          entity_id: sensor.nabaztag_telnet_status
 
   - id: nabaztag_firmware_toggle_taichi
     alias: "Nabaztag - Toggle Taichi"
@@ -191,5 +191,5 @@ automation:
           seconds: 1
       - action: homeassistant.update_entity
         target:
-          entity_id: sensor.nabaztag_status
+          entity_id: sensor.nabaztag_telnet_status
 
