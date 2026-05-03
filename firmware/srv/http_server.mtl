@@ -166,6 +166,9 @@ fun http_get_json_status sock args=
             (json_obj "ears" ears_json) :: ",\n" ::
             (json_obj "leds" leds_json) :: ",\n" ::
             (json_obj "info" info_json) :: ",\n" ::
+            (json_int "info_weather" info_service_get INFO_WEATHER) :: ",\n" ::
+            (json_int "info_traffic" info_service_get INFO_TRAFFIC) :: ",\n" ::
+            (json_int "info_pollution" info_service_get INFO_POLLUTION) :: ",\n" ::
             (json_obj "network" net_json) :: ",\n" ::
             (json_obj "wifi" wifi_json) :: ",\n" ::
             (json_str "rev" BYTECODE_REVISION_STR) :: "\n" ::
