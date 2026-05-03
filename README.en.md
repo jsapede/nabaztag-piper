@@ -127,17 +127,24 @@ A **REST sensor** periodically queries `/status` to retrieve the rabbit's full s
 
 The HA package creates several families of entities to interact with the rabbit:
 
-- **4 non-optimistic firmware switches** (`switch.nabaztag_firmware_*`): clock, halftime, surprise, taichi — **template switches** reading the **actual firmware state** via telnet (every 1s) instead of assuming the command succeeded. Toggling sends the command to the rabbit via `/forth` and telnet confirms the change within a second.
-- **Telnet sensor** (`sensor.nabaztag_fast_status`): queries the rabbit's telnet every 1s for `sleep_state` and the 4 firmware flags. Allows HA to react instantly to state changes without waiting for HTTP polling.
-- **Configuration entities**: rabbit IP address, language, timezone, ear position, message to speak
-- **REST sensor**: queries `/status` every 5 minutes for rarely-changing data (language, version, timezone)
-- **LED switches**: 4 `input_boolean` for enabling/disabling weather, traffic, pollution and nose animations
+- **4 non-optimistic firmware switches** (`switch.nabaztag_firmware_*`): clock, halftime, surprise, taichi — **template switches** reading the **actual firmware state** via telnet (1s). Toggling sends commands via telnet (`info-set`, `clear-info`).
+- **3 non-optimistic LED switches** (`switch.nabaztag_led_*`): weather, traffic, pollution — real info service state via telnet.
+- **Telnet sensor** (`sensor.nabaztag_fast_status`): queries telnet every 1s for 8 values: sleep_state, 4 firmware flags, weather, traffic, pollution.
+- **Configuration entities**: rabbit IP, language, timezone, ear position, message
+- **REST sensor**: `/status` every 5 minutes (language, version, timezone)
+- **LED switches**: 4 `input_boolean` for enabling/disabling animations
 
-**Scripts** automate common actions: restoring all LEDs after reconnection, enabling/disabling animations, and a **Nabaztag Life** script that randomly picks among 10 actions (tell a joke, announce weather, give time, ear dance, yawn, etc.).
+### LED Animations
 
-**Automations** ensure automatic linking between HA and the rabbit:
-- **Reconnection**: on HA startup or rabbit return, sends configuration (`/setup`), restores LEDs and synchronizes firmware flags
-- **LED toggle**: when the user enables/disables an LED in HA, the appropriate script is triggered
+All animations are defined in `vl/config/animation/` and consolidated in `info_animations.json`:
+
+| Service | Type | Levels | Tempo | Duration |
+|---------|------|--------|-------|----------|
+| 🌤️ **Weather** | Flare center↔sides | 6 (sun→storm) | 63 | ~5s |
+| 🚗 **Traffic** | Snake left→right | 7 (free→extreme) | 33→133 | 2s→8s |
+| 💨 **Pollution** | Bargraph + double blink | 11 (good→very bad) | 63 | ~5s |
+
+Commands are sent via telnet using the Forth word `info-set ( val -- service )` added to the firmware, with `clear-info` to clear all.
 - **Nabaztag Life**: triggers the random action script periodically to make the rabbit feel alive
 
 ### Installing the HA package

@@ -127,17 +127,24 @@ Un **capteur REST** interroge régulièrement `/status` pour remonter l'état co
 
 Le package HA crée plusieurs familles d'entités pour interagir avec le lapin :
 
-- **4 switches firmware non-optimistes** (`switch.nabaztag_firmware_*`) : horloge, demi-heure, surprise, taichi — des **template switches** qui lisent **l'état réel du firmware** via telnet (toutes les 1s) au lieu de supposer que la commande a fonctionné. Le toggle envoie la commande au lapin via `/forth` et le telnet confirme le changement en moins d'une seconde.
-- **Sensor telnet** (`sensor.nabaztag_fast_status`) : interroge le telnet du lapin toutes les 1s pour `sleep_state` et les 4 flags firmware. Permet à HA de réagir instantanément à un changement d'état sans attendre le polling HTTP.
+- **4 switches firmware non-optimistes** (`switch.nabaztag_firmware_*`) : horloge, demi-heure, surprise, taichi — des **template switches** lisant l'état réel du firmware via telnet (1s). Le toggle envoie la commande via telnet (`info-set`, `clear-info`).
+- **3 switches LEDs non-optimistes** (`switch.nabaztag_led_*`) : météo, trafic, pollution — état réel des services info via telnet.
+- **Sensor telnet** (`sensor.nabaztag_fast_status`) : interroge le telnet toutes les 1s pour 8 valeurs : sleep_state, 4 flags firmware, weather, traffic, pollution.
 - **Entités de configuration** : l'adresse IP du lapin, la langue, le fuseau horaire, la position des oreilles, le message à dire
-- **Capteur REST** : interroge `/status` toutes les 5 minutes pour les données qui changent rarement (langue, version, fuseau)
-- **Switches LEDs** : 4 `input_boolean` pour activer/désactiver les animations météo, trafic, pollution et nez
+- **Capteur REST** : interroge `/status` toutes les 5 minutes (langue, version, fuseau)
+- **Switches LEDs** : 4 `input_boolean` pour activer/désactiver les animations
 
-Des **scripts** automatisent les actions courantes : restaurer toutes les LEDs après une reconnexion, activer/désactiver une animation, et un script **Nabaztag Life** qui pioche aléatoirement parmi 10 actions (raconter une blague, annoncer la météo, donner l'heure, danser des oreilles, faire un bâillement, etc.).
+### Animations LEDs
 
-Les **automatisations** assurent le lien automatique entre HA et le lapin :
-- **Reconnexion** : au démarrage de HA ou au retour du lapin, envoie la configuration (`/setup`), restaure les LEDs et synchronise les flags firmware
-- **Toggle LEDs** : quand l'utilisateur active/désactive une LED dans HA, le script approprié est déclenché
+Toutes les animations sont définies dans `vl/config/animation/` et consolidées dans `info_animations.json` :
+
+| Service | Type | Niveaux | Tempo | Durée |
+|---------|------|---------|-------|-------|
+| 🌤️ **Météo** | Flare centre↔côtés | 6 (soleil→orage) | 63 | ~5s |
+| 🚗 **Trafic** | Snake gauche→droite | 7 (libre→extrême) | 33→133 | 2s→8s |
+| 💨 **Pollution** | Bargraph + double blink | 11 (bon→très mauvais) | 63 | ~5s |
+
+Les commandes sont envoyées par telnet via le mot Forth `info-set ( val service -- )` ajouté au firmware, avec `clear-info` pour effacer.
 - **Nabaztag Life** : déclenche le script d'action aléatoire périodiquement pour rendre le lapin vivant
 
 ### Installation du package HA

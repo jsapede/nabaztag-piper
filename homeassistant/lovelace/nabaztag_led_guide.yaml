@@ -3,38 +3,45 @@ title: 💡 Nabaztag - Guide des LEDs
 content: |
   ## Signification des LEDs du Nabaztag
   
-  ### 🌤️ Météo (LEDs du ventre - 3 LEDs)
-  
-  | LEDs | Signification |
-  |------|---------------|
-  | ⬤ ⬤ ⬤ (jaune) | ☀️ **Soleil** |
-  | ⬤ ○ ⬤ (bleu-jaune-bleu) | ⛅ **Nuage** |
-  | ⬤ (clignotement alterné) | 💧 **Pluie** |
-  | ⬤ (clignotement simultané) | 🌫️ **Brouillard** |
-  | ⬤ (position changeante) | ⛈️ **Orage** |
-  | ○ ⬤ ○ (centre clignote) | 🌨️ **Neige** |
-  
-  ### 🚗 Trafic (LEDs du ventre — chenillard)
+  ### 🌤️ Météo (LEDs du ventre — flares)
 
-  Les 3 LEDs forment un **snake** qui défile de gauche à droite. La couleur et la vitesse dépendent du niveau :
+  Chaque niveau alterne entre centre allumé et côtés allumés (flare), tempo unique (~5s/cycle) :
 
-  | Niveau | Vitesse | Couleur | Chenillard |
-  |--------|---------|---------|------------|
-  | 0 **Libre** | 🏃 Rapide | 🟢 Vert | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
-  | 1 **Correct** | 🚶 Moyen | 🟢🟠 Vert+orange | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
-  | 2 **Modéré** | 🐢 Lent | 🟠🟢 2 orange | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
-  | 3 **Dense** | 🐌 Très lent | 🟠 Orange | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
-  | 4 **Embouteillage** | 🐌 Très lent | 🟠🔴 Orange+rouge | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
-  | 5 **Très chargé** | 🐌 Très lent | 🔴 Rouge | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
-  | 6 **Extrême** | 🕐 Très lent | 🔴 Rouge vif | `•○○` `••○` `•••` `○••` `○○•` `○○○` |
-  
-  ### 💨 Pollution (LEDs du ventre)
-  
-  | Vitesse clignotement | Signification |
-  |---------------------|---------------|
-  | Lent | 🟢 **Bon** (0-3) |
-  | Moyen | 🟡 **Moyen** (4-6) |
-  | Rapide | 🔴 **Mauvais** (7-10) |
+  | Niveau | Flare | Couleur |
+  |--------|-------|---------|
+  | 0 **Soleil** | `⚫🟡⚫ ↔ 🟡⚫🟡` | 🟡 Jaune |
+  | 1 **Nuage** | `⚫🟡⚫ ↔ 🌑⚫🌑` | 🟡🌑 Jaune+gris |
+  | 2 **Brouillard** | `⚫🌑⚫ ↔ 🌑⚫🌑` | 🌑 Gris |
+  | 3 **Pluie** | `⚫🔵⚫ ↔ 🔵⚫🔵` | 🔵 Bleu |
+  | 4 **Neige** | `⚫⬜⚫ ↔ ⬜⚫⬜` | ⬜ Blanc |
+  | 5 **Orage** | `🟡🔵🟡 ↔ 🔵🟡🔵` | 🟡🔵 Jaune+bleu |
+
+  ### 🚗 Trafic (LEDs du ventre — snake)
+
+  Les 3 LEDs forment un **snake** qui défile de gauche à droite. La couleur ralentit quand le trafic augmente :
+
+  | Niveau | Temps | Couleur | Chenillard |
+  |--------|-------|---------|------------|
+  | 0 **Libre** | 2s 🏃 | 🟢 Vert | `🟢○○ → 🟢🟢○ → 🟢🟢🟢 → ○🟢🟢 → ○○🟢 → ○○○` |
+  | 1 **Correct** | 3s 🚶 | 🟢🟠 Vert+orange | `🟠○○ → 🟢🟠○ → 🟢🟢🟠 → ○🟢🟢 → ○○🟢 → ○○○` |
+  | 2 **Modéré** | 4s 🐢 | 🟢🟠 2 orange | `🟠○○ → 🟠🟠○ → 🟢🟠🟠 → ○🟢🟠 → ○○🟢 → ○○○` |
+  | 3 **Dense** | 5s ↔ | 🟠 Orange | `🟠○○ → 🟠🟠○ → 🟠🟠🟠 → ○🟠🟠 → ○○🟠 → ○○○` |
+  | 4 **Embouteillage** | 6s 🐌 | 🟠🔴 Rouge+orange | `🔴○○ → 🔴🟠○ → 🔴🟠🟠 → ○🔴🟠 → ○○🔴 → ○○○` |
+  | 5 **Très chargé** | 7s 🐌 | 🔴🔴🟠 Rouge | `🔴○○ → 🔴🔴○ → 🔴🔴🟠 → ○🔴🟠 → ○○🔴 → ○○○` |
+  | 6 **Extrême** | 8s 🕐 | 🔴🔴🔴 Rouge vif | `🔴○○ → 🔴🔴○ → 🔴🔴🔴 → ○🔴🔴 → ○○🔴 → ○○○` |
+
+  ### 💨 Pollution (LEDs du ventre — bargraph + clignotement)
+
+  Les LEDs s'allument progressivement, clignotent 2×, puis s'éteignent. La couleur évolue avec le niveau :
+
+  | Niveaux | Couleur | Séquence |
+  |---------|---------|----------|
+  | 0-1 **Bon** | 🟢 Vert | `🟢○○ → 🟢🟢○ → 🟢🟢🟢 → ○○○ → 🟢🟢🟢 → ○○○ → 🟢🟢🟢 → ○○○` |
+  | 2-3 **Correct** | 🟢🟠 Vert+jaune | `🟢○○ → 🟢🟢○ → 🟢🟢🟠 → ○○○ → 🟢🟢🟠 → ○○○ → 🟢🟢🟠 → ○○○` |
+  | 4-5 **Moyen** | 🟢🟠 Vert+orange | `🟢○○ → 🟢🟠○ → 🟢🟠🟠 → ○○○ → 🟢🟠🟠 → ○○○ → 🟢🟠🟠 → ○○○` |
+  | 6-7 **Médiocre** | 🟠 Orange | `🟠○○ → 🟠🟠○ → 🟠🟠🟠 → ○○○ → 🟠🟠🟠 → ○○○ → 🟠🟠🟠 → ○○○` |
+  | 8-9 **Mauvais** | 🟠🔴 Orange+rouge | `🟠○○ → 🟠🟠○ → 🟠🟠🔴 → ○○○ → 🟠🟠🔴 → ○○○ → 🟠🟠🔴 → ○○○` |
+  | 10 **Très mauvais** | 🔴🔴🔴 Rouge | `🟠○○ → 🟠🔴○ → 🟠🔴🔴 → ○○○ → 🟠🔴🔴 → ○○○ → 🟠🔴🔴 → ○○○` |
   
   ### 👃 Nez (LED du nez)
   

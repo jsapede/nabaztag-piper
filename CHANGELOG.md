@@ -1,44 +1,6 @@
 # Changelog - Nabaztag Serverless TTS
 
-## v0.3.0 — 2026-04-30
-
-### Nouveautés
-- **Capteurs telnet enrichis** : 8 valeurs lues en 1 connexion (sleep_state + 4 flags + info-weather + info-traffic + info-pollution)
-- **Switches LEDs non-optimistes** : `switch.nabaztag_led_*` lisent l'état réel des services info via telnet (1s)
-- **Migration syntaxe moderne HA** : template switches et binary_sensors en syntaxe `template:` (compatible HA 2026.6+)
-- **Fichier consolidé régénéré** : `info_animations.json` inclut le snake traffic (7 niveaux vert→orange→rouge)
-- **Automation traffic** : déclenchée sur `input_number.nabaztag_traffic` — modifiable manuellement ou depuis n'importe quelle source
-- **Tous les fichiers d'animations** : `mail.json`, `stock.json`, `weather.json`, `pollution.json` consolidés
-
-### Correctifs
-- Les prompts interactifs bouclent sur saisie invalide au lieu de prendre une action par défaut
-- Lovelace : références `input_boolean.nabaztag_firmware_*` → `switch.nabaztag_firmware_*`
-- Automation traffic ne dépend plus de Waze (se déclenche sur changement de l'input)
-
----
-
-## v0.2.0 — 2026-04-30
-
-### Nouveautés
-- **Installateur interactif** : questions guidées (IP lapin, IP TTS, ports, moteur), génération auto du `.env`
-- **Détection composants** : `which`/`test -f` pour détecter Piper, FFmpeg, espeak-ng, voix, services — menu de réinstallation
-- **Compilation firmware dans tmpdir** : plus de modification du repo → `git pull` compatible
-- **Package HA injecté** : copie de `homeassistant/nabaztag/` dans `$GLOBAL_DIR` avec IP du lapin pré-remplie
-- **Script nabaztag-check.sh** : vérification état services + logs + alias bash `nabaztag`
-- **Animation traffic.json** : snake chenillard 7 niveaux (vert→orange→rouge, vitesse variable)
-- **Capteurs telnet corrigés** : `sleep_is_sleeping` → `sleeping?` (mots Forth corrects)
-- **Documentation anglaise** : `README.en.md` + `CHANGELOG.en.md`
-- **Licence GPL v3** + `LICENSE-THIRD-PARTY.md`
-
-### Correctifs
-- Compilation firmware ne pollue plus le repo (build dans tmpdir)
-- `local` hors fonction retirés (erreur bash)
-- Système manifeste JSON supprimé (trop complexe, remplacé par `which`/`test -f`)
-- `run()` restaurée après suppression accidentelle
-- GLOBAL_DIR : validation anti-conflit avec le clone
-- `.env.example` racine supprimé (doublon de `install/.env.example`)
-
----
+> Les versions détaillées sont disponibles dans les [GitHub Releases](https://github.com/jsapede/nabaztag-piper/releases).
 
 ## Comparatif : Original (`andreax79/ServerlessNabaztag`) vs Notre Repo
 

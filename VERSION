@@ -1,10 +1,10 @@
-v0.3.0
-Date: 2026-04-30
+v0.4.0
+Date: 2026-05-03
 
-Troisième release de nab-piper :
-- Capteurs telnet enrichis (info-weather, info-traffic, info-pollution)
-- Switches LEDs non-optimistes lisant l'état réel via telnet (1s)
-- Migration syntaxe moderne HA (template switches + binary_sensors, 2026.6+)
-- Fichier info_animations.json consolidé régénéré (snake traffic)
-- Automation traffic déclenchée sur input_number (modifiable manuellement)
-- Prompts validateurs bouclent sur saisie invalide
+Quatrième release de nab-piper :
+- info-set : mot Forth pour contrôler les services info par telnet
+- Palette : gris et bleus plus foncés (indices 4 et 8)
+- Animations météo : 6 flares unifiés tempo 63 (~5s)
+- Animations pollution : 11 niveaux bargraph + double blink tempo 63
+- Animation trafic : échelle 2s→8s, niveau 3 = 5s (homogène)
+- HA : shell_command telnet pour info-set, clear-info
