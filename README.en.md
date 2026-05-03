@@ -164,10 +164,7 @@ homeassistant:
 
 Reload HA configuration (`ha_reload_core(target="all")`), then set the rabbit's IP address in the `input_text.nabaztag_ip_address` entity.
 
-> **Dependency**: telnet sensors and `shell_command` commands require `netcat-openbsd` on the HA machine :
-> ```bash
-> apt install netcat-openbsd
-> ```
+> **Note**: telnet sensors and `shell_command` use Python with `\r\n` (RFC Telnet) — no external binary (`nc`, `netcat`) is required.
 
 ### Lovelace — Dashboard and LED guide
 
@@ -181,7 +178,7 @@ The `homeassistant/lovelace/` folder contains three YAML files to import as card
 
 To import a card: open the HA dashboard → click the pencil icon → **Add card** → switch to **YAML editor** → paste the file contents.
 
-> **Telnet dependency**: fast sensors (1s) and non-optimistic firmware switches require `netcat-openbsd` on the HA machine (`apt install netcat-openbsd`). The sensor queries the rabbit's telnet (`nc -q 0 <IP> 23`) to read actual firmware flag and sleep states, without HTTP overhead.
+> **Note**: the telnet sensor (`nab-read-status.py`) uses the `status-all` Forth word to read all 8 flags in one compiled call (~800ms). No external binary required — standard Python is sufficient.
 
 Detailed HA integration documentation (entities, REST commands, scripts, automations, sound guide) is available in [`homeassistant/docs/`](homeassistant/docs/INDEX.md).
 

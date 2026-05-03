@@ -164,10 +164,7 @@ homeassistant:
 
 Recharger la configuration HA (`ha_reload_core(target="all")`), puis renseigner l'adresse IP du lapin dans l'entité `input_text.nabaztag_ip_address`.
 
-> **Dépendance** : les sensors telnet et les commandes `shell_command` nécessitent `netcat-openbsd` sur la machine HA :
-> ```bash
-> apt install netcat-openbsd
-> ```
+> **Note** : les sensors telnet et les `shell_command` utilisent Python avec `\r\n` (RFC Telnet) — aucun binaire externe (`nc`, `netcat`) n'est requis.
 
 Les 6 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
 
@@ -183,7 +180,7 @@ Le dossier `homeassistant/lovelace/` contient trois fichiers YAML à importer co
 
 Pour importer une carte : ouvrir le tableau de bord HA → cliquer sur l'icône crayon → **Ajouter carte** → passer en **éditeur YAML** → coller le contenu du fichier.
 
-> **Dépendance telnet** : les sensors rapides (1s) et les switches firmware non-optimistes nécessitent `netcat-openbsd` sur la machine HA (`apt install netcat-openbsd`). Le sensor interroge le telnet du lapin (`nc -q 0 <IP> 23`) pour lire l'état réel des flags firmware et du sommeil, sans passer par HTTP.
+> **Note** : le capteur telnet (`nab-read-status.py`) utilise le mot Forth `status-all` pour lire les 8 flags en un appel compilé (~800ms). Aucun binaire externe n'est nécessaire — Python standard suffit.
 
 Une documentation détaillée de l'intégration HA (entités, commandes REST, scripts, automatisations, guide des sons) est disponible dans [`homeassistant/docs/`](homeassistant/docs/INDEX.md).
 

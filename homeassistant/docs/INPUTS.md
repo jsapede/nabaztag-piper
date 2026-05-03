@@ -366,15 +366,12 @@ Les switches sont définis dans `nabaztag_sensors.yaml` :
 | `switch.nabaztag_firmware_taichi` | `_autotaichi_enabled` | `/forth?c=1%20autotaichi-enabled%20!` |
 
 **Principe de fonctionnement :**
-1. Le `command_line` sensor `sensor.nabaztag_fast_status` interroge le telnet du lapin toutes les 1s :
-   ```
-   printf "sleep_is_sleeping . cr _autoclock_enabled @ . cr ..." | nc -q 0 <IP> 23
-   ```
-2. Les template switches lisent les attributs de ce sensor pour afficher l'état réel
-3. Quand l'utilisateur toggle un switch, la commande `/forth` est envoyée au lapin, et le telnet confirme le changement < 1s plus tard
+1. Le `command_line` sensor `sensor.nabaztag_telnet_status` interroge le telnet du lapin via le mot Forth `status-all` (8 valeurs en un appel compilé, ~800ms)
+2. Les template binary_sensors lisent les attributs de ce sensor pour afficher l'état réel
+3. Quand l'utilisateur toggle un input_boolean, l'automation envoie la commande telnet (`nab-telnet.py`), puis `homeassistant.update_entity` force le rafraîchissement du capteur
 4. Le sensor HTTP `/status` passe en `scan_interval: 300` (5 min) — uniquement pour les données de configuration (langue, fuseau, version)
 
-**Prérequis :** `netcat-openbsd` (`nc`) sur la machine Home Assistant.
+**Note :** la communication telnet utilise Python sockets standard avec `\r\n` (RFC Telnet) — aucun binaire externe n'est requis.
 ## Dépannage
 
 ### Problème: Le lapin ne répond pas
