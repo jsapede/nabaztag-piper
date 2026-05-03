@@ -5,7 +5,7 @@
 rest:
   - resource_template: "http://{{ states('input_text.nabaztag_ip_address') }}/status"
     method: GET
-    scan_interval: 10
+    scan_interval: 300
     timeout: 10
     sensor:
       - name: "Nabaztag Status"
