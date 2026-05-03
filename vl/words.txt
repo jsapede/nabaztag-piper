@@ -71,6 +71,7 @@ HELP           ( -- )
 HTTP-GET       ( url -- content header )                Perform an HTTP GET request and return the content as a string HTTPS is not supported
 HTTP-POST      ( payload url -- content header )        Perform an HTTP POST request and return the content as a string HTTPS is not supported
 IF             (immediate) ( cond -- )                  Begin a conditional Compile a conditional jump to the matching ELSE or THEN
+INFO-SET       ( val service -- ) (1=weather, 2=stock, 3=traffic, ...) Update an info service
 INTERPRETER    ( -- )                                   Interactive Forth interpreter
 INVERT         ( n -- flag )                            Logical NOT
 IP             ( -- ip )                                Push the IP address of the WIFI interface onto the stack
@@ -126,6 +127,7 @@ SLEEPING-TIME? ( -- flag )                              Check if current hour is
 SLEEPING?      ( -- flag)                               Return true if the Nabaztag is in sleep mode
 SPACE          ( -- )                                   Display space
 START-TASK     ( text delay name -- )                   Start a new task with the given name, delay, and text to execute.
+STATUS-ALL     ( -- )                                   Print all status values as space-separated integers Format: sleep_state autoclock autohalftime autosurprise autotaichi weather traffic pollution
 STOP-TASK      ( task-id -- flag )                      Stop the task with the given task id.
 STR-JOIN       ( list -- str )                          Join a list of strings into a single string
 SURPRISE       ( -- )                                   Surprise
