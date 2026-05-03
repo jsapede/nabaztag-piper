@@ -98,3 +98,19 @@
 | `/status` JSON (lines 147-169 vs 147-173) | No `autoclock_enabled` fields | Added `"autoclock_enabled": _autoclock_enabled,` (and 3 more) | ✅ **Full status**: API now returns all 4 auto-control flags |
 | `/autocontrol` endpoint | Does not exist | `http_get_autocontrol` (lines 428-443) | ✅ **New API**: enables/disables features via HTTP (uses `forth_interpreter_ex` since MTL cannot write Forth variables) |
 | `/setup` (lines 397-408 vs 401-415) | `config_set_taichi_freq` only | Added `http_arg_str args 'u'` → `config_set_server_url` (for SERVERLESS mode) | ✅ **Server URL** configurable via HTTP (for XMPP-free mode) |
+
+---
+
+### 11. v0.7.0 — `status-all` Forth Word, Telnet Sensor, Optimized Scripts (2026-05-03)
+
+| File | Original (`andreax79`) | Our Repo | Impact |
+|------|----------------------|----------|--------|
+| `firmware/forth/nabaztag.mtl` | No `status-all` function | New Forth word `status-all` reading all 8 values (sleep_state, 4 flags, 3 info) in one compiled call | ✅ **Performance**: ~300ms vs ~800ms for 8 separate commands |
+| `firmware/srv/http_server.mtl` | `/status` only returns the 4 auto-control flags | Added `info_weather`, `info_traffic`, `info_pollution` as flat fields in `/status` JSON | ✅ **Enriched API**: 3 info services now exposed as distinct JSON fields |
+| `homeassistant/nabaztag/nabaztag_sensors.yaml` | REST sensor only | Replaced with `command_line` telnet using `nab-read-status.py` and `status-all` word | ✅ **Reliability**: reads actual firmware state, no REST polling delay |
+| `homeassistant/nabaztag/nabaztag_sensors.yaml` | `binary_sensor` reading `sensor.nabaztag_status` | Template `binary_sensor` reading `sensor.nabaztag_telnet_status` | ✅ **Fresh data**: reads from the new telnet sensor |
+| `homeassistant/nabaztag/nabaztag_automations.yaml` | No refresh after toggle | Added `homeassistant.update_entity` targeting `sensor.nabaztag_telnet_status` | ✅ **Instant update**: sensor refreshes immediately after each switch toggle |
+| `homeassistant/nabaztag/nabaztag_sensors.yaml` | Binary sensors named after `info` sub-object fields | Binary sensors renamed to use flat field names (`info_weather`, `info_traffic`, `info_pollution`) | ✅ **Flat names**: match the new firmware JSON fields |
+| `homeassistant/nabaztag/nabaztag_sensors.yaml` | No backup REST sensor | REST sensor kept with `scan_interval: 300` | ✅ **Redundancy**: fallback if telnet is unavailable |
+| `scripts/nab-telnet.py` | `\n` as line separator | `\r\n` (CR+LF, Telnet RFC-compliant), sleep reduced 0.3→0.2s | ✅ **Compatibility**: respects Telnet protocol, faster response |
+| New: `scripts/nab-read-status.py` | Does not exist | Python script reading all 8 statuses via `status-all`, JSON output in ~800ms | ✅ **New script**: atomic read of all firmware flags in a single telnet connection |

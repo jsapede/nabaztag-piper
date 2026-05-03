@@ -113,17 +113,17 @@ Des **commandes REST paramétrables** (`rest_command`) permettent d'actionner to
 
 Le point central est l'endpoint **`/autocontrol`** qui permet d'activer ou désactiver à distance les fonctionnalités internes du firmware — les annonces horaires, les surprises, le taichi. Chacune est pilotée par un **switch HA** (`input_boolean`) qui met à jour le flag correspondant dans le firmware en temps réel, sans avoir à redémarrer le lapin.
 
-Un **capteur REST** interroge régulièrement `/status` pour remonter l'état complet du lapin (sommeil, langue, configuration, flags actifs) et le rendre disponible dans HA pour les automatisations et les tableaux de bord.
+Un **capteur telnet** (`command_line`) interroge le mot Forth `status-all` via `nab-read-status.py` pour remonter l'état complet du lapin (sommeil, 4 flags firmware, météo, trafic, pollution) en ~800ms. Un capteur REST conserve `/status` en secours toutes les 300s.
 
 ### Scripts, automatisations et entités
 
 Le package HA crée plusieurs familles d'entités pour interagir avec le lapin :
 
 - **4 switches firmware non-optimistes** (`switch.nabaztag_firmware_*`) : horloge, demi-heure, surprise, taichi — des **template switches** lisant l'état réel du firmware via telnet (1s). Le toggle envoie la commande via telnet (`info-set`, `clear-info`).
-- **3 switches LEDs non-optimistes** (`switch.nabaztag_led_*`) : météo, trafic, pollution — état réel des services info via telnet.
-- **Sensor telnet** (`sensor.nabaztag_fast_status`) : interroge le telnet toutes les 1s pour 8 valeurs : sleep_state, 4 flags firmware, weather, traffic, pollution.
+- **3 switches LEDs non-optimistes** (`switch.nabaztag_led_*`) : météo, trafic, pollution — état réel des services info via telnet, lisant les champs plats `info_weather`, `info_traffic`, `info_pollution`.
+- **Sensor telnet** (`sensor.nabaztag_telnet_status`) : interroge `status-all` via `nab-read-status.py` pour 8 valeurs (sleep_state, 4 flags, 3 services info) en ~800ms.
 - **Entités de configuration** : l'adresse IP du lapin, la langue, le fuseau horaire, la position des oreilles, le message à dire
-- **Capteur REST** : interroge `/status` toutes les 5 minutes (langue, version, fuseau)
+- **Capteur REST de secours** : `/status` toutes les 300s (langue, version, fuseau)
 - **Switches LEDs** : 4 `input_boolean` pour activer/désactiver les animations
 
 ### Animations LEDs
@@ -149,7 +149,7 @@ config/
 └── nabaztag/
     ├── nabaztag_inputs.yaml       # Entités (text, select, number, boolean)
     ├── nabaztag_commands.yaml      # Commandes REST
-    ├── nabaztag_sensors.yaml       # Capteur /status
+    ├── nabaztag_sensors.yaml       # Capteurs telnet + REST (secours)
     ├── nabaztag_scripts.yaml       # Scripts
     ├── nabaztag_automations.yaml   # Automatisations
     └── nabaztag_life.yaml          # Actions vivantes aléatoires

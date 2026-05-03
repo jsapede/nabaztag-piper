@@ -113,17 +113,17 @@ The integration is based on an **HA package** (`homeassistant/nabaztag/`) provid
 
 The central piece is the **`/autocontrol`** endpoint, which enables or disables firmware internal features — hourly chimes, surprises, taichi. Each feature is controlled by an **HA template switch** that updates the corresponding firmware flag in real time, without rebooting the rabbit.
 
-A **REST sensor** periodically queries `/status` to retrieve the rabbit's full state (sleep, language, configuration, active flags) and makes it available in HA for automations and dashboards.
+A **telnet sensor** (`command_line`) queries the `status-all` Forth word via `nab-read-status.py` to retrieve the rabbit's full state (sleep, 4 firmware flags, weather, traffic, pollution) in ~800ms. A REST sensor keeps `/status` as backup every 300s.
 
 ### Scripts, automations and entities
 
 The HA package creates several families of entities to interact with the rabbit:
 
 - **4 non-optimistic firmware switches** (`switch.nabaztag_firmware_*`): clock, halftime, surprise, taichi — **template switches** reading the **actual firmware state** via telnet (1s). Toggling sends commands via telnet (`info-set`, `clear-info`).
-- **3 non-optimistic LED switches** (`switch.nabaztag_led_*`): weather, traffic, pollution — real info service state via telnet.
-- **Telnet sensor** (`sensor.nabaztag_fast_status`): queries telnet every 1s for 8 values: sleep_state, 4 firmware flags, weather, traffic, pollution.
+- **3 non-optimistic LED switches** (`switch.nabaztag_led_*`): weather, traffic, pollution — real info service state via telnet, reading flat fields `info_weather`, `info_traffic`, `info_pollution`.
+- **Telnet sensor** (`sensor.nabaztag_telnet_status`): queries `status-all` via `nab-read-status.py` for 8 values (sleep_state, 4 flags, 3 info services) in ~800ms.
 - **Configuration entities**: rabbit IP, language, timezone, ear position, message
-- **REST sensor**: `/status` every 5 minutes (language, version, timezone)
+- **Backup REST sensor**: `/status` every 300s (language, version, timezone)
 - **LED switches**: 4 `input_boolean` for enabling/disabling animations
 
 ### LED Animations
@@ -149,7 +149,7 @@ config/
 └── nabaztag/
     ├── nabaztag_inputs.yaml       # Entities (text, select, number, boolean)
     ├── nabaztag_commands.yaml      # REST commands
-    ├── nabaztag_sensors.yaml       # Sensors (telnet + HTTP)
+    ├── nabaztag_sensors.yaml       # Sensors (telnet + REST backup)
     ├── nabaztag_scripts.yaml       # Scripts
     ├── nabaztag_automations.yaml   # Automations
     └── nabaztag_life.yaml          # Random life actions
