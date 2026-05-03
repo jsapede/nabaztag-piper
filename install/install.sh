@@ -437,12 +437,6 @@ fi
 echo "  → Compilation du firmware (IP TTS: $TTS_SERVER_IP:$TTS_PORT)..."
 _compile_firmware
 
-# Rechargement des animations sur le lapin
-if [ "$DRY_RUN" = false ] && [ -n "${NABAZTAG_IP:-}" ]; then
-    printf "\n load-info-animations\n quit\n" | timeout 10 nc "$NABAZTAG_IP" 23 2>/dev/null || true
-    echo "   Animations rechargées sur le lapin"
-fi
-
 # 8. Serveur web statique
 echo "  → Serveur web statique..."
 if [ ! -f "$SWS_BIN" ]; then
@@ -509,6 +503,12 @@ echo "  → Redémarrage des services..."
 run systemctl daemon-reload
 run systemctl enable --now nabaztag-tts 2>/dev/null || true
 run systemctl enable --now nabaztag-webserver 2>/dev/null || true
+
+# Rechargement des animations (après redémarrage des services)
+if [ "$DRY_RUN" = false ] && [ -n "${NABAZTAG_IP:-}" ]; then
+    printf "\n load-info-animations cr 0 1 info-set cr quit\n" | timeout 10 nc "$NABAZTAG_IP" 23 2>/dev/null || true
+    echo "   Animations rechargées sur le lapin"
+fi
 
 # ─── Script de vérification ────────────────────────────────
 echo "  → Script de vérification..."
