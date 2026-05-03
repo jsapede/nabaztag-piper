@@ -166,7 +166,7 @@ automation:
         entity_id: input_boolean.nabaztag_firmware_taichi
     condition:
       - condition: state
-        entity_id: binary_sensor.ping_nazbatag
+        entity_id: binary_sensor.ping_nabaztag
         state: "on"
     action:
       - action: shell_command.nabaztag_telnet_taichi_flag
