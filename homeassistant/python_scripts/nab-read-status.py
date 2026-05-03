@@ -9,8 +9,8 @@ try:
     s.connect((ip, 23))
     cmds = 'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit'
     s.send((cmds + '\r\n').encode())
-    time.sleep(0.5)
-    s.settimeout(0.5)
+    time.sleep(0.8)
+    s.settimeout(0.3)
     try:
         d = s.recv(8192)
     except:

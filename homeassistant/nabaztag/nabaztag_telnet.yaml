@@ -1,0 +1,17 @@
+command_line:
+  - sensor:
+      name: "Nabaztag Telnet Status"
+      unique_id: nabaztag_telnet_status
+      command: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') }}"
+      scan_interval: 30
+      command_timeout: 10
+      value_template: "{{ value_json.sleep_state }}"
+      json_attributes:
+        - sleep_state
+        - autoclock
+        - autohalftime
+        - autosurprise
+        - autotaichi
+        - weather
+        - traffic
+        - pollution
