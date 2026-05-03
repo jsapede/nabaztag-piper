@@ -19,7 +19,7 @@ s.settimeout(5)
 try:
     s.connect((ip, 23))
     s.send((cmd + '\r\n').encode())
-    time.sleep(0.5)
+    time.sleep(0.2)
 except Exception:
     pass  # silencieux (comme || true)
 finally:
