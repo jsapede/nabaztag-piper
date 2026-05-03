@@ -6,33 +6,9 @@ command_line:
   - sensor:
       name: "Nabaztag Fast Status"
       unique_id: nabaztag_fast_status
-      command: |
-        python3 -c "
-        import socket,re,time,sys
-        try:
-         s=socket.socket();s.settimeout(5)
-         s.connect(('{{ states('input_text.nabaztag_ip_address') }}',23))
-         s.send(b'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n')
-         time.sleep(0.5)
-         d=b''
-         while 1:
-          try:
-           c=s.recv(4096)
-           if not c:break
-           d+=c
-          except:break
-         s.close()
-         v=re.findall(rb'> (\d+)|(?<=\n)(\d+)(?=\n)',d)
-         if v:
-          vals=[int(a or b) for a,b in v[-8:]]
-          print('{"sleep_state":%d,"autoclock":%d,"autohalftime":%d,"autosurprise":%d,"autotaichi":%d,"weather":%d,"traffic":%d,"pollution":%d}'%tuple(vals))
-         else:
-          print('{"sleep_state":0,"autoclock":0,"autohalftime":0,"autosurprise":0,"autotaichi":0,"weather":0,"traffic":0,"pollution":0}')
-        except:
-         print('{"sleep_state":0,"autoclock":0,"autohalftime":0,"autosurprise":0,"autotaichi":0,"weather":0,"traffic":0,"pollution":0}')
-        "
-      scan_interval: 5
-      command_timeout: 10
+      command: python3 /config/python_scripts/nab-fast-status.py {{ states('input_text.nabaztag_ip_address') }}
+      scan_interval: 10
+      command_timeout: 8
       value_template: "ok"
       json_attributes:
         - sleep_state
