@@ -1,10 +1,8 @@
 # =========================
-# Nabaztag - REST Commands
+# Nabaztag - REST Commands (telnet impossible)
 # =========================
 
 rest_command:
-  # ========== BASIC CONTROL ==========
-
   nabaztag_stop:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/stop"
     method: get
@@ -15,64 +13,20 @@ rest_command:
     method: get
     timeout: 60
 
-  # ========== TEXT TO SPEECH ==========
-
   nabaztag_say:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/say?t={{ message }}"
     method: get
     timeout: 30
-
-  # ========== EARS ==========
-
-  nabaztag_left_ear:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/left?p={{ position }}&d=0"
-    method: get
-    timeout: 10
-
-  nabaztag_right_ear:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/right?p={{ position }}&d=0"
-    method: get
-    timeout: 10
-
-  # ========== NOSE ==========
 
   nabaztag_nose:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/nose?v={{ state }}"
     method: get
     timeout: 10
 
-  # ========== INFO LEDs ==========
-
-  nabaztag_weather:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/weather?v={{ weather }}"
-    method: get
-    timeout: 10
-
-  nabaztag_traffic:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/traffic?v={{ traffic }}"
-    method: get
-    timeout: 10
-
-  nabaztag_pollution:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/pollution?v={{ pollution }}"
-    method: get
-    timeout: 10
-
-  # ========== SETUP ==========
-
   nabaztag_setup:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/setup?j={{ state_attr('zone.home', 'latitude') | round(3) }}&k={{ state_attr('zone.home', 'longitude') | round(3) }}&l={{ states('input_select.nabaztag_language') }}&c={{ {'Europe/Paris': 'PAR', 'Europe/London': 'LON', 'America/New_York': 'NYC', 'Asia/Tokyo': 'TYO'}[states('input_select.nabaztag_timezone_city')]|default('PAR') }}&d={{ 1 if is_state('input_boolean.nabaztag_daylight_saving', 'on') else 0 }}&w={{ states('input_number.nabaztag_wake_hour') | int }}&b={{ states('input_number.nabaztag_sleep_hour') | int }}&t={{ states('input_number.nabaztag_taichi_freq') | int }}"
     method: get
     timeout: 30
-
-  # ========== CLEAR ==========
-
-  nabaztag_clear:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/clear"
-    method: get
-    timeout: 10
-
-  # ========== PLAY AUDIO ==========
 
   nabaztag_play:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/play?u={{ url }}"
@@ -84,62 +38,14 @@ rest_command:
     method: get
     timeout: 60
 
-  # ========== STATUS ==========
-
   nabaztag_status:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/status"
     method: get
     timeout: 10
 
-  # ========== NABAZTAG LIFE ==========
-
-  nabaztag_communication:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/communication"
-    method: get
-    timeout: 10
-
-  nabaztag_surprise:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/surprise"
-    method: get
-    timeout: 10
-
-  # ========== FIRMWARE AUTO CONTROL ==========
-
-  nabaztag_autocontrol:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/autocontrol?c={{ clock | default('') }}&h={{ halftime | default('') }}&s={{ surprise | default('') }}&t={{ taichi | default('') }}"
-    method: get
-    timeout: 10
-
-  nabaztag_autocontrol_clock:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ clock }}%20autoclock-enabled%20%21"
-    method: get
-    timeout: 10
-
-  nabaztag_autocontrol_halftime:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ halftime }}%20autohalftime-enabled%20%21"
-    method: get
-    timeout: 10
-
-  nabaztag_autocontrol_surprise:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ surprise }}%20autosurprise-enabled%20%21"
-    method: get
-    timeout: 10
-
-  nabaztag_autocontrol_taichi:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/forth?c={{ taichi }}%20autotaichi-enabled%20%21"
-    method: get
-    timeout: 10
-
-  # ========== TAICHI ==========
-
-  nabaztag_taichi:
-    url: "http://{{ states('input_text.nabaztag_ip_address') }}/taichi?v={{ level }}"
-    method: get
-    timeout: 10
-
 
 # =========================
-# Nabaztag - Telnet Commands (info-set, flags)
+# Nabaztag - Telnet Commands
 # =========================
 
 shell_command:
@@ -149,8 +55,15 @@ shell_command:
   nabaztag_telnet_clear: "printf 'clear-info\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
   nabaztag_telnet_clock: "printf '%d autoclock-enabled !\n' {{ clock | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
   nabaztag_telnet_halftime: "printf '%d autohalftime-enabled !\n' {{ halftime | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
-  nabaztag_telnet_surprise: "printf '%d autosurprise-enabled !\n' {{ surprise | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_surprise_flag: "printf '%d autosurprise-enabled !\n' {{ surprise | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
   nabaztag_telnet_taichi_flag: "printf '%d autotaichi-enabled !\n' {{ taichi | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
   nabaztag_telnet_taichi: "printf '%d taichi\n' {{ intensity | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
   nabaztag_telnet_wakeup: "printf 'wake-up\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
   nabaztag_telnet_sleep: "printf 'sleep\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_left_ear: "printf 'left-ear forward %d 0 move-ear\n' {{ position | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_right_ear: "printf 'right-ear forward %d 0 move-ear\n' {{ position | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_communication: "printf '9 play-midi\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_ack: "printf '4 play-midi\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_ministop: "printf '1 play-midi\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_surprise: "printf 'surprise\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_stop: "printf 'stop\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"

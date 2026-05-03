@@ -199,7 +199,7 @@ script:
     alias: "Nabaztag - Oreille gauche"
     description: "Bouge oreille gauche à position définie"
     sequence:
-      - action: rest_command.nabaztag_left_ear
+      - action: shell_command.nabaztag_telnet_left_ear
         data:
           position: "{{ states('input_select.nabaztag_ear_position') }}"
 
@@ -207,7 +207,7 @@ script:
     alias: "Nabaztag - Oreille droite"
     description: "Bouge oreille droite à position définie"
     sequence:
-      - action: rest_command.nabaztag_right_ear
+      - action: shell_command.nabaztag_telnet_right_ear
         data:
           position: "{{ states('input_select.nabaztag_ear_position') }}"
 
@@ -215,11 +215,11 @@ script:
     alias: "Nabaztag - Les deux oreilles"
     description: "Bouge les deux oreilles successivement"
     sequence:
-      - action: rest_command.nabaztag_left_ear
+      - action: shell_command.nabaztag_telnet_left_ear
         data:
           position: "{{ states('input_select.nabaztag_ear_position') }}"
       - delay: "00:00:01"
-      - action: rest_command.nabaztag_right_ear
+      - action: shell_command.nabaztag_telnet_right_ear
         data:
           position: "{{ states('input_select.nabaztag_ear_position') }}"
 
@@ -246,7 +246,7 @@ script:
             max: 1000
             step: 1
     sequence:
-      - action: rest_command.nabaztag_taichi
+      - action: shell_command.nabaztag_telnet_taichi
         data:
           level: "{{ intensity }}"
 

@@ -70,7 +70,7 @@ script:
   nabaztag_tell_joke:
     alias: "Nabaztag - Raconter une blague"
     sequence:
-      - action: rest_command.nabaztag_communication
+      - action: shell_command.nabaztag_telnet_communication
       - delay: "00:00:01"
       - action: rest_command.nabaztag_say
         data:
@@ -103,13 +103,13 @@ script:
             {% elif weather_value == 5 %}5
             {% else %}4
             {% endif %}
-      - action: rest_command.nabaztag_weather
+      - action: shell_command.nabaztag_telnet_weather
         data:
           weather: "{{ weather_value }}"
-      - action: rest_command.nabaztag_left_ear
+      - action: shell_command.nabaztag_telnet_left_ear
         data:
           position: "{{ ear_position }}"
-      - action: rest_command.nabaztag_right_ear
+      - action: shell_command.nabaztag_telnet_right_ear
         data:
           position: "{{ ear_position }}"
       - delay: "00:00:02"
@@ -130,7 +130,7 @@ script:
   nabaztag_announce_time:
     alias: "Nabaztag - Annoncer l'heure"
     sequence:
-      - action: rest_command.nabaztag_ack
+      - action: shell_command.nabaztag_telnet_ack
       - delay: "00:00:01"
       - action: rest_command.nabaztag_say
         data:
@@ -144,7 +144,7 @@ script:
         data:
           message: "{{ ['Allez un petit étirement !', 'Il est temps de se dégourdir !', 'Un peu d\\'exercice !'] | random }}"
       - delay: "00:00:05"
-      - action: rest_command.nabaztag_taichi
+      - action: shell_command.nabaztag_telnet_taichi
 
   # Bâillement
   nabaztag_yawn:
@@ -153,24 +153,24 @@ script:
       - action: rest_command.nabaztag_say
         data:
           message: "{{ ['Haaaaa petit bâillement !', 'Je suis un peu fatigué', 'Hooooo excusez-moi'] | random }}"
-      - action: rest_command.nabaztag_left_ear
+      - action: shell_command.nabaztag_telnet_left_ear
         data:
           position: 0
-      - action: rest_command.nabaztag_right_ear
+      - action: shell_command.nabaztag_telnet_right_ear
         data:
           position: 0
       - delay: "00:00:02"
-      - action: rest_command.nabaztag_left_ear
+      - action: shell_command.nabaztag_telnet_left_ear
         data:
           position: 16
-      - action: rest_command.nabaztag_right_ear
+      - action: shell_command.nabaztag_telnet_right_ear
         data:
           position: 16
       - delay: "00:00:01"
-      - action: rest_command.nabaztag_left_ear
+      - action: shell_command.nabaztag_telnet_left_ear
         data:
           position: 8
-      - action: rest_command.nabaztag_right_ear
+      - action: shell_command.nabaztag_telnet_right_ear
         data:
           position: 8
 
@@ -178,21 +178,21 @@ script:
   nabaztag_ear_dance:
     alias: "Nabaztag - Danse des oreilles"
     sequence:
-      - action: rest_command.nabaztag_communication
+      - action: shell_command.nabaztag_telnet_communication
       - repeat:
           count: 3
           sequence:
-            - action: rest_command.nabaztag_left_ear
+            - action: shell_command.nabaztag_telnet_left_ear
               data:
                 position: "{{ range(0, 11) | random }}"
-            - action: rest_command.nabaztag_right_ear
+            - action: shell_command.nabaztag_telnet_right_ear
               data:
                 position: "{{ range(0, 11) | random }}"
             - delay: "00:00:00.5"
-      - action: rest_command.nabaztag_left_ear
+      - action: shell_command.nabaztag_telnet_left_ear
         data:
           position: 8
-      - action: rest_command.nabaztag_right_ear
+      - action: shell_command.nabaztag_telnet_right_ear
         data:
           position: 8
 
@@ -207,31 +207,31 @@ script:
               - condition: template
                 value_template: "{{ sound_choice == 1 }}"
             sequence:
-              - action: rest_command.nabaztag_communication
+              - action: shell_command.nabaztag_telnet_communication
           - conditions:
               - condition: template
                 value_template: "{{ sound_choice == 2 }}"
             sequence:
-              - action: rest_command.nabaztag_ack
+              - action: shell_command.nabaztag_telnet_ack
           - conditions:
               - condition: template
                 value_template: "{{ sound_choice == 3 }}"
             sequence:
-              - action: rest_command.nabaztag_ministop
+              - action: shell_command.nabaztag_telnet_ministop
 
   # Danse complète
   nabaztag_dance:
     alias: "Nabaztag - Danse"
     sequence:
-      - action: rest_command.nabaztag_taichi
+      - action: shell_command.nabaztag_telnet_taichi
       - delay: "00:00:02"
       - repeat:
           count: 3
           sequence:
-            - action: rest_command.nabaztag_left_ear
+            - action: shell_command.nabaztag_telnet_left_ear
               data:
                 position: "{{ range(0, 11) | random }}"
-            - action: rest_command.nabaztag_right_ear
+            - action: shell_command.nabaztag_telnet_right_ear
               data:
                 position: "{{ range(0, 11) | random }}"
             - delay: "00:00:00.5"
@@ -244,7 +244,7 @@ script:
         target:
           entity_id: script.nabaztag_dance
       - delay: "00:00:05"
-      - action: rest_command.nabaztag_surprise
+      - action: shell_command.nabaztag_telnet_surprise
 
   # ========== SPEECH SCRIPTS ==========
 
