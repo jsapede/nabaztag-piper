@@ -80,28 +80,20 @@ The project involves **three actors** communicating via HTTP:
 git clone https://github.com/jsapede/nabaztag-piper
 cd nabaztag-piper/install
 
-# 2. Copy and edit configuration
-cp .env.example .env
-nano .env
-```
-
-Essential configuration variables:
-
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `TTS_SERVER_IP` | IP of the TTS server running Piper | `192.168.1.100` |
-| `TTS_ENGINE` | TTS engine | `piper` (default) or `coqui` |
-| `PIPER_VOICE_PATH` | Piper voice model | `fr/fr_FR/siwis/medium` |
-| `PIPER_USE_PHONEMES` | Enable espeak-ng phonemes | `true` |
-
-```bash
-# 3. Run the installer
+# 2. Run the interactive installer
 ./install.sh
 ```
 
-The script installs dependencies (Piper, FFmpeg, espeak-ng), downloads the voice model, compiles the firmware with the TTS server IP, and configures two systemd services (`nabaztag-tts` for speech synthesis, `nabaztag-webserver` for static file serving).
+The script asks interactively for:
+- The global installation directory
+- The rabbit IP address
+- The TTS server IP (where Piper runs)
+- TTS and web server ports
+- TTS engine (Piper or Coqui)
 
-#### 4. Point the rabbit to the server
+It automatically generates the `.env`, installs dependencies (Piper, FFmpeg, espeak-ng), downloads the voice model, compiles the firmware with the TTS IP, and configures both systemd services (`nabaztag-tts` for speech, `nabaztag-webserver` for static files).
+
+#### 3. Point the rabbit to the server
 
 In the rabbit's connection interface, set the static web server address:
 
@@ -172,7 +164,10 @@ homeassistant:
 
 Reload HA configuration (`ha_reload_core(target="all")`), then set the rabbit's IP address in the `input_text.nabaztag_ip_address` entity.
 
-> **Dependency**: `command_line` sensors (telnet) require `netcat-openbsd` → `apt install netcat-openbsd`
+> **Dependency**: telnet sensors and `shell_command` commands require `netcat-openbsd` on the HA machine :
+> ```bash
+> apt install netcat-openbsd
+> ```
 
 ### Lovelace — Dashboard and LED guide
 

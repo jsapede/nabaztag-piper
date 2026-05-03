@@ -80,28 +80,20 @@ Le projet met en jeu **trois acteurs** communiquant par HTTP :
 git clone https://github.com/jsapede/nabaztag-piper
 cd nabaztag-piper/install
 
-# 2. Copier et éditer la configuration
-cp .env.example .env
-nano .env
-```
-
-Variables essentielles à renseigner :
-
-| Variable | Rôle | Exemple |
-|----------|------|---------|
-| `TTS_SERVER_IP` | IP du serveur où tourne Piper | `192.168.1.100` |
-| `TTS_ENGINE` | Moteur TTS | `piper` (défaut) ou `coqui` |
-| `PIPER_VOICE_PATH` | Voix Piper | `fr/fr_FR/siwis/medium` |
-| `PIPER_USE_PHONEMES` | Activation des phonèmes espeak-ng | `true` |
-
-```bash
-# 3. Lancer l'installateur
+# 2. Lancer l'installateur interactif
 ./install.sh
 ```
 
-Le script installe les dépendances (Piper, FFmpeg, espeak-ng), télécharge le modèle de voix, compile le firmware avec l'IP du serveur TTS, et configure les deux services systemd (`nabaztag-tts` pour la synthèse vocale, `nabaztag-webserver` pour le serveur de fichiers statiques).
+Le script vous demande interactivement :
+- Le dossier d'installation global
+- L'IP du Nabaztag
+- L'IP du serveur TTS (où tourne Piper)
+- Les ports du serveur TTS et du serveur web
+- Le moteur TTS (Piper ou Coqui)
 
-#### 4. Pointer le lapin vers le serveur
+Il génère automatiquement le `.env`, installe les dépendances (Piper, FFmpeg, espeak-ng), télécharge le modèle de voix, compile le firmware avec l'IP du serveur TTS, et configure les deux services systemd (`nabaztag-tts` pour la synthèse vocale, `nabaztag-webserver` pour le serveur de fichiers statiques).
+
+#### 3. Pointer le lapin vers le serveur
 
 Dans l'interface de connexion du lapin, configurer l'adresse du serveur web statique :
 
@@ -172,9 +164,12 @@ homeassistant:
 
 Recharger la configuration HA (`ha_reload_core(target="all")`), puis renseigner l'adresse IP du lapin dans l'entité `input_text.nabaztag_ip_address`.
 
-Les 6 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
+> **Dépendance** : les sensors telnet et les commandes `shell_command` nécessitent `netcat-openbsd` sur la machine HA :
+> ```bash
+> apt install netcat-openbsd
+> ```
 
-> **Dépendance** : les sensors `command_line` (telnet) nécessitent `netcat-openbsd` → `apt install netcat-openbsd`
+Les 6 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
 
 ### Lovelace — Tableau de bord et guide des LEDs
 
