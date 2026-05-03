@@ -154,6 +154,7 @@ fun forth_init_dictionary=
         [ [str:"random"            ] [ func:#forth_random ]] ::
         [ [str:"volume"            ] [ func:#forth_volume ]] ::
         [ [str:"clear-info"        ] [ func:#forth_clear_info ]] ::
+        [ [str:"info-set"          ] [ func:#forth_info_set ]] ::
         [ [str:"set-info-animation"] [ func:#forth_set_info_animation ]] ::
         [ [str:"play-url"          ] [ func:#forth_play_url ]] ::
         [ [str:"play-midi"         ] [ func:#forth_play_midi ]] ::

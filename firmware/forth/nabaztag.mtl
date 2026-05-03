@@ -71,6 +71,16 @@ fun forth_clear_info f=
     nil;;
 
 /**
+ * INFO-SET ( val service -- )
+ * Update an info service (1=weather, 2=stock, 3=traffic, ...)
+ */
+fun forth_info_set f=
+    let forth_pop f -> service in
+    let forth_pop f -> val in
+    info_service_update service.int val.int;
+    nil;;
+
+/**
  * SET-INFO-ANIMATION ( data n -- )
  * Set info animation n from json
  */
