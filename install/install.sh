@@ -17,9 +17,14 @@ DRY_RUN=false
 UNINSTALL=false
 FIRMWARE_ONLY=false
 for arg in "$@"; do
-    [ "$arg" = "--dry-run" ] && DRY_RUN=true
-    [ "$arg" = "--uninstall" ] && UNINSTALL=true
-    [ "$arg" = "--firmware" ] && FIRMWARE_ONLY=true
+    case "$arg" in
+        --dry-run) DRY_RUN=true;;
+        --uninstall) UNINSTALL=true;;
+        --firmware) FIRMWARE_ONLY=true;;
+        *) echo -e "${RED}Erreur${NC}: option inconnue '$arg'"
+           echo "  Usage: ./install.sh [--dry-run] [--uninstall] [--firmware]"
+           exit 1;;
+    esac
 done
 
 # ─── Chemins ─────────────────────────────────────────────────
@@ -232,7 +237,7 @@ if [ "$UNINSTALL" = true ]; then
     read -r confirm
     if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
         run rm -rf "$GLOBAL_DIR"
-        echo "  ${GREEN}$GLOBAL_DIR supprimé${NC}"
+        echo -e "  ${GREEN}$GLOBAL_DIR supprimé${NC}"
     fi
     echo "  Désinstallation terminée"
     exit 0
