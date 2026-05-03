@@ -494,8 +494,15 @@ run systemctl enable --now nabaztag-webserver 2>/dev/null || true
 
 # Rechargement des animations (après redémarrage des services)
 if [ "$DRY_RUN" = false ] && [ -n "${NABAZTAG_IP:-}" ]; then
-    printf "\n load-info-animations cr 0 1 info-set cr quit\n" | timeout 10 nc "$NABAZTAG_IP" 23 2>/dev/null || true
-    echo "   Animations rechargées sur le lapin"
+    echo "  → Rechargement des animations sur le lapin (attendez...)"
+    if command -v python3 >/dev/null 2>&1 && [ -f "$PROJECT_DIR/homeassistant/python_scripts/nab-telnet.py" ]; then
+        python3 "$PROJECT_DIR/homeassistant/python_scripts/nab-telnet.py" "$NABAZTAG_IP" "load-info-animations"
+        sleep 1
+        python3 "$PROJECT_DIR/homeassistant/python_scripts/nab-telnet.py" "$NABAZTAG_IP" "0 1 info-set"
+    else
+        printf "\n load-info-animations cr 0 1 info-set cr quit\n" | timeout 10 nc "$NABAZTAG_IP" 23 2>/dev/null || true
+    fi
+    echo "   ✓ Animations rechargées sur le lapin"
 fi
 
 # ─── Script de vérification ────────────────────────────────
