@@ -23,10 +23,13 @@ command_line:
           except:break
          s.close()
          v=re.findall(rb'> (\d+)|(?<=\n)(\d+)(?=\n)',d)
-         if v: print(','.join([(a or b).decode() for a,b in v[-8:]]))
-         else: print('0,0,0,0,0,0,0,0')
+         if v:
+          vals=[int(a or b) for a,b in v[-8:]]
+          print('{"sleep_state":%d,"autoclock":%d,"autohalftime":%d,"autosurprise":%d,"autotaichi":%d,"weather":%d,"traffic":%d,"pollution":%d}'%tuple(vals))
+         else:
+          print('{"sleep_state":0,"autoclock":0,"autohalftime":0,"autosurprise":0,"autotaichi":0,"weather":0,"traffic":0,"pollution":0}')
         except:
-         print('0,0,0,0,0,0,0,0')
+         print('{"sleep_state":0,"autoclock":0,"autohalftime":0,"autosurprise":0,"autotaichi":0,"weather":0,"traffic":0,"pollution":0}')
         "
       scan_interval: 5
       command_timeout: 10
