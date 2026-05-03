@@ -114,3 +114,7 @@ shell_command:
     python3 /config/python_scripts/nab-telnet.py
     {{ states('input_text.nabaztag_ip_address') }}
     "stop"
+  nabaztag_telnet_load_animations: >
+    python3 /config/python_scripts/nab-telnet.py
+    {{ states('input_text.nabaztag_ip_address') }}
+    "load-info-animations"

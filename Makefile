@@ -45,7 +45,10 @@ deploy: firmware
 		echo "Please set the DEPLOY_TARGET variable in .env file"; \
 		exit 1; \
 	fi
-	scp vl/bc.jsp vl/*.forth vl/index.html vl/words.txt $(DEPLOY_TARGET)
+	scp vl/bc.jsp vl/*.forth vl/index.html vl/words.txt vl/info_animations.json $(DEPLOY_TARGET)
+	set -e; for f in vl/*.forth vl/info_animations.json; do \
+		scp $$f `dirname $(DEPLOY_TARGET)`/`basename $$f`; \
+	done
 
 .PHONY: run-sim
 run-sim:

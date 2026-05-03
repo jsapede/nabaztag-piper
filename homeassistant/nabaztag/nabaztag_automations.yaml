@@ -27,6 +27,9 @@ automation:
         state: "on"
     action:
       - action: rest_command.nabaztag_setup
+      - delay:
+          seconds: 2
+      - action: shell_command.nabaztag_telnet_load_animations
       - action: script.nabaztag_restore_leds
       - action: shell_command.nabaztag_telnet_clock
         data:
