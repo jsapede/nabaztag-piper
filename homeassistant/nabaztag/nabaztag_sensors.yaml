@@ -1,76 +1,68 @@
 # =========================
-# Nabaztag - Sensors
+# Nabaztag - Sensors (modern syntax)
 # =========================
 
-sensor:
+command_line:
+  - sensor:
+      name: "Nabaztag Fast Status"
+      unique_id: nabaztag_fast_status
+      command: >
+        python3 -c "
+        import socket,re,time
+        s=socket.socket();s.settimeout(3)
+        s.connect(('{{ states('input_text.nabaztag_ip_address') }}',23))
+        s.send(b'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n')
+        time.sleep(0.3)
+        d=b''
+        while 1:
+         try:
+          c=s.recv(4096)
+          if not c:break
+          d+=c
+         except:break
+        s.close()
+        v=re.findall(rb'> (\d+)|(?<=\n)(\d+)(?=\n)',d)
+        print(','.join([(a or b).decode() for a,b in v[-8:]]))
+        " 2>/dev/null
+      scan_interval: 1
+      timeout: 3
+      value_template: "ok"
+      json_attributes:
+        - sleep_state
+        - autoclock
+        - autohalftime
+        - autosurprise
+        - autotaichi
+        - weather
+        - traffic
+        - pollution
 
-  # ========== FAST STATUS (Telnet, 1s) ==========
-  # État réel des flags firmware et des services info via telnet
-  # Format: sleep_state,autoclock,halftime,surprise,taichi,weather,traffic,pollution
-
-  - platform: command_line
-    name: "Nabaztag Fast Status"
-    unique_id: nabaztag_fast_status
-    command: >
-      python3 -c "
-      import socket,re,time
-      s=socket.socket();s.settimeout(3)
-      s.connect(('{{ states('input_text.nabaztag_ip_address') }}',23))
-      s.send(b'sleeping? . cr autoclock-enabled @ . cr autohalftime-enabled @ . cr autosurprise-enabled @ . cr autotaichi-enabled @ . cr info-weather @ . cr info-traffic @ . cr info-pollution @ . cr quit\n')
-      time.sleep(0.3)
-      d=b''
-      while 1:
-       try:
-        c=s.recv(4096)
-        if not c:break
-        d+=c
-       except:break
-      s.close()
-      v=re.findall(rb'> (\d+)|(?<=\n)(\d+)(?=\n)',d)
-      print(','.join([(a or b).decode() for a,b in v[-8:]]))
-      " 2>/dev/null
-    scan_interval: 1
-    timeout: 3
-    value_template: "ok"
-    json_attributes:
-      - sleep_state
-      - autoclock
-      - autohalftime
-      - autosurprise
-      - autotaichi
-      - weather
-      - traffic
-      - pollution
-
-  # ========== FULL STATUS (HTTP, 5min) ==========
-  # Données de configuration (changent rarement)
-
-  - platform: rest
-    name: "Nabaztag Status"
-    unique_id: nabaztag_status
-    resource_template: "http://{{ states('input_text.nabaztag_ip_address') }}/status"
-    method: GET
-    value_template: >
-      {% if value_json.sleep_state is defined and value_json.sleep_state == 1 %}
-        asleep
-      {% else %}
-        awake
-      {% endif %}
-    json_attributes:
-      - language
-      - wake_up
-      - go_to_bed
-      - taichi_freq
-      - streaming_state
-      - rev
-    scan_interval: 300
-    timeout: 10
+rest:
+  - sensor:
+      name: "Nabaztag Status"
+      unique_id: nabaztag_status
+      resource_template: "http://{{ states('input_text.nabaztag_ip_address') }}/status"
+      method: GET
+      value_template: |
+        {% if value_json.sleep_state is defined and value_json.sleep_state == 1 %}
+          asleep
+        {% else %}
+          awake
+        {% endif %}
+      json_attributes:
+        - language
+        - wake_up
+        - go_to_bed
+        - taichi_freq
+        - streaming_state
+        - rev
+      scan_interval: 300
+      timeout: 10
 
 
 # =========================
-# Nabaztag - Template (binary_sensor + switches, modern syntax)
+# Nabaztag - Template (binary_sensor + switches)
 # =========================
-# État réel via telnet toutes les 1s, non-optimiste.
 
 template:
   - binary_sensor:
