@@ -18,8 +18,8 @@ s = socket.socket()
 s.settimeout(5)
 try:
     s.connect((ip, 23))
-    s.send((cmd + '\n').encode())
-    time.sleep(0.3)
+    s.send((cmd + '\r\n').encode())
+    time.sleep(0.5)
 except Exception:
     pass  # silencieux (comme || true)
 finally:
