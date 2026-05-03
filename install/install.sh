@@ -203,6 +203,10 @@ EOF
             echo -e " ${GREEN}Package HA : IP lapin injectée dans nabaztag_inputs.yaml${NC}"
         fi
         echo "   Package HA : $GLOBAL_DIR/homeassistant/nabaztag/"
+        # Copier le script telnet
+        mkdir -p "$GLOBAL_DIR/homeassistant/python_scripts"
+        cp "$PROJECT_DIR/homeassistant/python_scripts/nab-telnet.py" "$GLOBAL_DIR/homeassistant/python_scripts/" 2>/dev/null || true
+        echo "   Script telnet : $GLOBAL_DIR/homeassistant/python_scripts/nab-telnet.py"
     fi
 
     source "$GLOBAL_DIR/.env"
@@ -544,6 +548,8 @@ echo "  Web serveur: http://localhost:${WEB_SERVER_PORT:-80}/vl/"
 echo "  Package HA : $GLOBAL_DIR/homeassistant/nabaztag/"
 echo "              → copier vers /config/nabaztag/ dans HA"
 echo "              → IP lapin déjà injectée dans input_text.nabaztag_ip_address"
+echo "  Script telnet : $GLOBAL_DIR/homeassistant/python_scripts/nab-telnet.py"
+echo "                → copier vers /config/python_scripts/ dans HA"
 echo "  Check     : $GLOBAL_DIR/nabaztag-check.sh"
 echo "  Alias     : nabaztag (dans le terminal)"
 echo ""
