@@ -125,6 +125,26 @@ input_boolean:
     initial: off
     icon: mdi:led-on
 
+  nabaztag_firmware_clock:
+    name: "Horloge (autoclock)"
+    initial: on
+    icon: mdi:clock
+
+  nabaztag_firmware_halftime:
+    name: "Demi-heure (autohalftime)"
+    initial: on
+    icon: mdi:clock-outline
+
+  nabaztag_firmware_surprise:
+    name: "Surprise (autosurprise)"
+    initial: on
+    icon: mdi:emoticon-excited
+
+  nabaztag_firmware_taichi:
+    name: "Taichi (autotaichi)"
+    initial: on
+    icon: mdi:yoga
+
 
 input_datetime:
   nabaztag_random_action_time_1:

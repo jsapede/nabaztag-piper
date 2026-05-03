@@ -61,7 +61,7 @@ rest:
 
 
 # =========================
-# Nabaztag - Template (binary_sensor + switches)
+# Nabaztag - Template binary_sensors (état réel telnet)
 # =========================
 
 template:
@@ -91,75 +91,17 @@ template:
         state: >
           {{ state_attr('sensor.nabaztag_fast_status', 'sleep_state') == '1' }}
 
-  - switch:
-      - name: "Horloge (heure pile)"
-        unique_id: nabaztag_firmware_clock
-        state: "{{ state_attr('sensor.nabaztag_fast_status', 'autoclock') == '1' }}"
-        turn_on:
-          - action: shell_command.nabaztag_telnet_clock
-            data:
-              clock: "1"
-        turn_off:
-          - action: shell_command.nabaztag_telnet_clock
-            data:
-              clock: "0"
+      - name: "LED Météo (état réel)"
+        unique_id: nabaztag_led_weather_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'weather') not in [None, '-1'] }}
 
-      - name: "Demi-heure"
-        unique_id: nabaztag_firmware_halftime
-        state: "{{ state_attr('sensor.nabaztag_fast_status', 'autohalftime') == '1' }}"
-        turn_on:
-          - action: shell_command.nabaztag_telnet_halftime
-            data:
-              halftime: "1"
-        turn_off:
-          - action: shell_command.nabaztag_telnet_halftime
-            data:
-              halftime: "0"
+      - name: "LED Trafic (état réel)"
+        unique_id: nabaztag_led_traffic_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'traffic') not in [None, '-1'] }}
 
-      - name: "Surprise"
-        unique_id: nabaztag_firmware_surprise
-        state: "{{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' }}"
-        turn_on:
-          - action: shell_command.nabaztag_telnet_surprise_flag
-            data:
-              surprise: "1"
-        turn_off:
-          - action: shell_command.nabaztag_telnet_surprise_flag
-            data:
-              surprise: "0"
-
-      - name: "Taichi"
-        unique_id: nabaztag_firmware_taichi
-        state: "{{ state_attr('sensor.nabaztag_fast_status', 'autotaichi') == '1' }}"
-        turn_on:
-          - action: shell_command.nabaztag_telnet_taichi_flag
-            data:
-              taichi: "1"
-        turn_off:
-          - action: shell_command.nabaztag_telnet_taichi_flag
-            data:
-              taichi: "0"
-
-      - name: "LED Météo"
-        unique_id: nabaztag_led_weather
-        state: "{{ state_attr('sensor.nabaztag_fast_status', 'weather') not in [None, '-1'] }}"
-        turn_on:
-          - action: shell_command.nabaztag_telnet_weather
-        turn_off:
-          - action: shell_command.nabaztag_telnet_clear
-
-      - name: "LED Trafic"
-        unique_id: nabaztag_led_traffic
-        state: "{{ state_attr('sensor.nabaztag_fast_status', 'traffic') not in [None, '-1'] }}"
-        turn_on:
-          - action: shell_command.nabaztag_telnet_traffic
-        turn_off:
-          - action: shell_command.nabaztag_telnet_clear
-
-      - name: "LED Pollution"
-        unique_id: nabaztag_led_pollution
-        state: "{{ state_attr('sensor.nabaztag_fast_status', 'pollution') not in [None, '-1'] }}"
-        turn_on:
-          - action: shell_command.nabaztag_telnet_pollution
-        turn_off:
-          - action: shell_command.nabaztag_telnet_clear
+      - name: "LED Pollution (état réel)"
+        unique_id: nabaztag_led_pollution_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_fast_status', 'pollution') not in [None, '-1'] }}
