@@ -398,9 +398,13 @@ if [ "$TTS_ENGINE" != "coqui" ]; then
     voice_path="$PIPER_VOICES_DIR/$VOICE_NAME"
     if [ "$REINSTALL_VOICE" = true ] || [ ! -f "$voice_path.onnx" ]; then
         echo "     Téléchargement $VOICE_NAME..."
-        run wget -q "$PIPER_VOICE_URL/$PIPER_VOICE_PATH/$VOICE_NAME.onnx" -O "$voice_path.onnx"
-        run wget -q "$PIPER_VOICE_URL/$PIPER_VOICE_PATH/$VOICE_NAME.onnx.json" -O "$voice_path.onnx.json"
-        echo "     OK"
+        run wget -q --timeout=30 "$PIPER_VOICE_URL/$PIPER_VOICE_PATH/$VOICE_NAME.onnx" -O "$voice_path.onnx" || echo "     ⚠️ Échec du téléchargement (ressayez avec ./install.sh)"
+        run wget -q --timeout=30 "$PIPER_VOICE_URL/$PIPER_VOICE_PATH/$VOICE_NAME.onnx.json" -O "$voice_path.onnx.json" || echo "     ⚠️ Échec du téléchargement .json"
+        if [ -f "$voice_path.onnx" ]; then
+            echo "     OK"
+        else
+            echo -e "     ${RED}ÉCHEC${NC} — vérifiez votre connexion Internet"
+        fi
     else
         echo "     Voix déjà présente (conservée)"
     fi
