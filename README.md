@@ -141,19 +141,25 @@ Les commandes sont envoyées par telnet via le mot Forth `info-set ( val service
 
 ### Installation du package HA
 
-Le package se trouve dans `homeassistant/nabaztag/`. Il suffit de copier ce dossier dans le répertoire `config/` de Home Assistant :
+Le package se trouve dans `homeassistant/nabaztag/`. Copier ce dossier **et** les scripts Python dans les répertoires correspondants de Home Assistant :
 
 ```
 config/
 ├── configuration.yaml
+├── python_scripts/              # ← À créer si inexistant
+│   ├── nab-telnet.py            # Envoi de commandes Forth par telnet
+│   └── nab-read-status.py       # Lecture des 8 flags via status-all
 └── nabaztag/
     ├── nabaztag_inputs.yaml       # Entités (text, select, number, boolean)
-    ├── nabaztag_commands.yaml      # Commandes REST
-    ├── nabaztag_sensors.yaml       # Capteurs telnet + REST (secours)
-    ├── nabaztag_scripts.yaml       # Scripts
-    ├── nabaztag_automations.yaml   # Automatisations
-    └── nabaztag_life.yaml          # Actions vivantes aléatoires
+    ├── nabaztag_commands.yaml     # Commandes REST + shell (telnet)
+    ├── nabaztag_sensors.yaml      # Capteurs telnet + REST (secours)
+    ├── nabaztag_telnet.yaml       # Capteur command_line telnet
+    ├── nabaztag_scripts.yaml      # Scripts
+    ├── nabaztag_automations.yaml  # Automatisations
+    └── nabaztag_life.yaml         # Actions vivantes aléatoires
 ```
+
+Les scripts Python dans `python_scripts/` sont appelés par les `shell_command` et le capteur `command_line`. Home Assistant les exécute automatiquement depuis ce dossier (pas besoin de les déclarer).
 
 Puis ajouter dans `configuration.yaml` :
 

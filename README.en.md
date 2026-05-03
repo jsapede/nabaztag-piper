@@ -141,19 +141,25 @@ Commands are sent via telnet using the Forth word `info-set ( val -- service )` 
 
 ### Installing the HA package
 
-Copy the `homeassistant/nabaztag/` folder to your HA `config/` directory:
+Copy the `homeassistant/nabaztag/` folder **and** the Python scripts to the corresponding directories in your HA `config/`:
 
 ```
 config/
 ├── configuration.yaml
+├── python_scripts/              # ← Create if it doesn't exist
+│   ├── nab-telnet.py            # Send Forth commands via telnet
+│   └── nab-read-status.py       # Read all 8 flags via status-all
 └── nabaztag/
     ├── nabaztag_inputs.yaml       # Entities (text, select, number, boolean)
-    ├── nabaztag_commands.yaml      # REST commands
-    ├── nabaztag_sensors.yaml       # Sensors (telnet + REST backup)
-    ├── nabaztag_scripts.yaml       # Scripts
-    ├── nabaztag_automations.yaml   # Automations
-    └── nabaztag_life.yaml          # Random life actions
+    ├── nabaztag_commands.yaml     # REST + shell (telnet) commands
+    ├── nabaztag_sensors.yaml      # Sensors (REST backup)
+    ├── nabaztag_telnet.yaml       # command_line telnet sensor
+    ├── nabaztag_scripts.yaml      # Scripts
+    ├── nabaztag_automations.yaml  # Automations
+    └── nabaztag_life.yaml         # Random life actions
 ```
+
+Python scripts in `python_scripts/` are called by `shell_command` and `command_line` sensors. HA executes them automatically from this folder — no declaration needed.
 
 Then add to `configuration.yaml`:
 
