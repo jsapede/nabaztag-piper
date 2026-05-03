@@ -6,23 +6,24 @@
 #   cd nabaztag-piper/install
 #   ./install.sh                              # installation interactive
 #   ./install.sh --dry-run                    # simulation
-#   ./install.sh --firmware                   # recompilation firmware uniquement
 #   ./install.sh --uninstall                  # désinstallation complète
 # ═══════════════════════════════════════════════════════════════
 
 set -e
 
+# ─── IP locale (par défaut pour TTS + serveur web) ──────────
+LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+LOCAL_IP="${LOCAL_IP:-127.0.0.1}"
+
 # ─── Modes ───────────────────────────────────────────────────
 DRY_RUN=false
 UNINSTALL=false
-FIRMWARE_ONLY=false
 for arg in "$@"; do
     case "$arg" in
         --dry-run) DRY_RUN=true;;
         --uninstall) UNINSTALL=true;;
-        --firmware) FIRMWARE_ONLY=true;;
         *) echo -e "${RED}Erreur${NC}: option inconnue '$arg'"
-           echo "  Usage: ./install.sh [--dry-run] [--uninstall] [--firmware]"
+           echo "  Usage: ./install.sh [--dry-run] [--uninstall]"
            exit 1;;
     esac
 done
@@ -31,13 +32,10 @@ done
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# ─── Demande du dossier global (obligatoire) ─────────────────
-while true; do
-    printf " Dossier d'installation global : "
-    read -r GLOBAL_DIR
-    [ -n "$GLOBAL_DIR" ] && break
-    echo "   Le dossier ne peut pas être vide"
-done
+# ─── Demande du dossier global ──────────────────────────────
+printf " Dossier d'installation global [/opt/nab-tts] : "
+read -r input
+GLOBAL_DIR="${input:-/opt/nab-tts}"
 
 # Vérifier que GLOBAL_DIR n'est pas le dossier du clone
 if [ "$(realpath "$GLOBAL_DIR" 2>/dev/null)" = "$(realpath "$PROJECT_DIR" 2>/dev/null)" ]; then
@@ -146,37 +144,30 @@ _interactive_env() {
         echo -e " ${RED}Format IP invalide${NC}"
     done
 
-    if [ "$FIRMWARE_ONLY" = false ]; then
-        while true; do
-            printf " IP du serveur TTS : "; read -r ip
-            tts_ip="${ip:-}"
-            [ -n "$tts_ip" ] && validate_ip "$tts_ip" && break
-            [ -n "$tts_ip" ] || echo " IP obligatoire"
-        done
-        while true; do
-            printf " Port du serveur TTS [6790] : "; read -r port
-            tts_port="${port:-6790}"
-            [[ "$tts_port" =~ ^[0-9]+$ ]] && [ "$tts_port" -ge 1 ] && [ "$tts_port" -le 65535 ] && break
-            echo " Port invalide (1-65535)"
-        done
-        while true; do
-            printf " Port du serveur web [80] : "; read -r port
-            web_port="${port:-80}"
-            [[ "$web_port" =~ ^[0-9]+$ ]] && [ "$web_port" -ge 1 ] && [ "$web_port" -le 65535 ] && break
-            echo " Port invalide (1-65535)"
-        done
-        while true; do
-            printf " Moteur TTS (piper/coqui) [piper] : "; read -r engine
-            engine="${engine:-piper}"
-            [[ "$engine" == "piper" || "$engine" == "coqui" ]] && break
-            echo " Choix invalide (piper ou coqui)"
-        done
-    else
-        tts_ip="$TTS_SERVER_IP"
-        tts_port="${TTS_PORT:-6790}"
-        web_port="${WEB_SERVER_PORT:-80}"
-        engine="${TTS_ENGINE:-piper}"
-    fi
+    while true; do
+        printf " IP du serveur TTS [$LOCAL_IP] : "; read -r ip
+        tts_ip="${ip:-$LOCAL_IP}"
+        validate_ip "$tts_ip" && break
+        echo -e " ${RED}Format IP invalide${NC}"
+    done
+    while true; do
+        printf " Port du serveur TTS [6790] : "; read -r port
+        tts_port="${port:-6790}"
+        [[ "$tts_port" =~ ^[0-9]+$ ]] && [ "$tts_port" -ge 1 ] && [ "$tts_port" -le 65535 ] && break
+        echo " Port invalide (1-65535)"
+    done
+    while true; do
+        printf " Port du serveur web [80] : "; read -r port
+        web_port="${port:-80}"
+        [[ "$web_port" =~ ^[0-9]+$ ]] && [ "$web_port" -ge 1 ] && [ "$web_port" -le 65535 ] && break
+        echo " Port invalide (1-65535)"
+    done
+    while true; do
+        printf " Moteur TTS (piper/coqui) [piper] : "; read -r engine
+        engine="${engine:-piper}"
+        [[ "$engine" == "piper" || "$engine" == "coqui" ]] && break
+        echo " Choix invalide (piper ou coqui)"
+    done
 
     mkdir -p "$GLOBAL_DIR"
     cat > "$GLOBAL_DIR/.env" << EOF
@@ -305,13 +296,6 @@ echo " Global  : $GLOBAL_DIR"
 echo " Moteur  : ${TTS_ENGINE:-piper}"
 echo " VoIP    : $VOICE_NAME"
 echo "═══════════════════════════════════════════════════════"
-
-# ─── Mode firmware uniquement ────────────────────────────
-if [ "$FIRMWARE_ONLY" = true ]; then
-    SOURCE_DIR="$PROJECT_DIR"
-    _compile_firmware
-    exit 0
-fi
 
 # ─── Phase 3 : Détection composants + menu ─────────────────
 _show_status
