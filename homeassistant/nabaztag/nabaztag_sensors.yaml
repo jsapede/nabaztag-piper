@@ -53,13 +53,21 @@ template:
         unique_id: nabaztag_firmware_clock_binary
         state: >
           {{ state_attr('sensor.nabaztag_fast_status', 'autoclock') == 1 }}
-...
+      - name: "Demi-heure firmware (état réel)"
+        unique_id: nabaztag_firmware_halftime_binary
+        state: >
           {{ state_attr('sensor.nabaztag_fast_status', 'autohalftime') == 1 }}
-...
+      - name: "Surprise firmware (état réel)"
+        unique_id: nabaztag_firmware_surprise_binary
+        state: >
           {{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == 1 }}
-...
+      - name: "Taichi firmware (état réel)"
+        unique_id: nabaztag_firmware_taichi_binary
+        state: >
           {{ state_attr('sensor.nabaztag_fast_status', 'autotaichi') == 1 }}
-...
+      - name: "Nabaztag endormi (état réel)"
+        unique_id: nabaztag_asleep_binary
+        state: >
           {{ state_attr('sensor.nabaztag_fast_status', 'sleep_state') == 1 }}
 
       - name: "LED Météo (état réel)"
