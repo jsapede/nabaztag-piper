@@ -136,3 +136,21 @@ rest_command:
     url: "http://{{ states('input_text.nabaztag_ip_address') }}/taichi?v={{ level }}"
     method: get
     timeout: 10
+
+
+# =========================
+# Nabaztag - Telnet Commands (info-set, flags)
+# =========================
+
+shell_command:
+  nabaztag_telnet_weather: "printf '%d 1 info-set\n' {{ states('input_number.nabaztag_weather') | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_traffic: "printf '%d 3 info-set\n' {{ states('input_number.nabaztag_traffic') | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_pollution: "printf '%d 7 info-set\n' {{ states('input_number.nabaztag_pollution') | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_clear: "printf 'clear-info\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_clock: "printf '%d autoclock-enabled !\n' {{ clock | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_halftime: "printf '%d autohalftime-enabled !\n' {{ halftime | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_surprise: "printf '%d autosurprise-enabled !\n' {{ surprise | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_taichi_flag: "printf '%d autotaichi-enabled !\n' {{ taichi | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_taichi: "printf '%d taichi\n' {{ intensity | int }} | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_wakeup: "printf 'wake-up\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"
+  nabaztag_telnet_sleep: "printf 'sleep\n' | nc -q 0 {{ states('input_text.nabaztag_ip_address') }} 23"

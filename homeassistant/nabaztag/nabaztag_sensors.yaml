@@ -90,11 +90,11 @@ template:
         unique_id: nabaztag_firmware_clock
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'autoclock') == '1' }}"
         turn_on:
-          - action: rest_command.nabaztag_autocontrol_clock
+          - action: shell_command.nabaztag_telnet_clock
             data:
               clock: "1"
         turn_off:
-          - action: rest_command.nabaztag_autocontrol_clock
+          - action: shell_command.nabaztag_telnet_clock
             data:
               clock: "0"
 
@@ -102,11 +102,11 @@ template:
         unique_id: nabaztag_firmware_halftime
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'autohalftime') == '1' }}"
         turn_on:
-          - action: rest_command.nabaztag_autocontrol_halftime
+          - action: shell_command.nabaztag_telnet_halftime
             data:
               halftime: "1"
         turn_off:
-          - action: rest_command.nabaztag_autocontrol_halftime
+          - action: shell_command.nabaztag_telnet_halftime
             data:
               halftime: "0"
 
@@ -114,11 +114,11 @@ template:
         unique_id: nabaztag_firmware_surprise
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'autosurprise') == '1' }}"
         turn_on:
-          - action: rest_command.nabaztag_autocontrol_surprise
+          - action: shell_command.nabaztag_telnet_surprise
             data:
               surprise: "1"
         turn_off:
-          - action: rest_command.nabaztag_autocontrol_surprise
+          - action: shell_command.nabaztag_telnet_surprise
             data:
               surprise: "0"
 
@@ -126,11 +126,11 @@ template:
         unique_id: nabaztag_firmware_taichi
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'autotaichi') == '1' }}"
         turn_on:
-          - action: rest_command.nabaztag_autocontrol_taichi
+          - action: shell_command.nabaztag_telnet_taichi_flag
             data:
               taichi: "1"
         turn_off:
-          - action: rest_command.nabaztag_autocontrol_taichi
+          - action: shell_command.nabaztag_telnet_taichi_flag
             data:
               taichi: "0"
 
@@ -138,28 +138,22 @@ template:
         unique_id: nabaztag_led_weather
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'weather') not in [None, '-1'] }}"
         turn_on:
-          - action: rest_command.nabaztag_weather
-            data:
-              weather: "{{ states('input_number.nabaztag_weather') | int }}"
+          - action: shell_command.nabaztag_telnet_weather
         turn_off:
-          - action: rest_command.nabaztag_clear
+          - action: shell_command.nabaztag_telnet_clear
 
       - name: "LED Trafic"
         unique_id: nabaztag_led_traffic
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'traffic') not in [None, '-1'] }}"
         turn_on:
-          - action: rest_command.nabaztag_traffic
-            data:
-              traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
+          - action: shell_command.nabaztag_telnet_traffic
         turn_off:
-          - action: rest_command.nabaztag_clear
+          - action: shell_command.nabaztag_telnet_clear
 
       - name: "LED Pollution"
         unique_id: nabaztag_led_pollution
         state: "{{ state_attr('sensor.nabaztag_fast_status', 'pollution') not in [None, '-1'] }}"
         turn_on:
-          - action: rest_command.nabaztag_pollution
-            data:
-              pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
+          - action: shell_command.nabaztag_telnet_pollution
         turn_off:
-          - action: rest_command.nabaztag_clear
+          - action: shell_command.nabaztag_telnet_clear

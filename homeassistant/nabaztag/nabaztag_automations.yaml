@@ -28,11 +28,17 @@ automation:
     action:
       - action: rest_command.nabaztag_setup
       - action: script.nabaztag_restore_leds
-      - action: rest_command.nabaztag_autocontrol
+      - action: shell_command.nabaztag_telnet_clock
         data:
           clock: "{{ '1' if states('switch.nabaztag_firmware_clock') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_halftime
+        data:
           halftime: "{{ '1' if states('switch.nabaztag_firmware_halftime') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_surprise
+        data:
           surprise: "{{ '1' if states('switch.nabaztag_firmware_surprise') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_taichi_flag
+        data:
           taichi: "{{ '1' if states('switch.nabaztag_firmware_taichi') == 'on' else '0' }}"
 
   # ========== GESTION LEDs PAR INTERRUPTEUR ==========
@@ -101,7 +107,5 @@ automation:
         entity_id: input_boolean.nabaztag_traffic_enabled
         state: "on"
     action:
-      - action: rest_command.nabaztag_traffic
-        data:
-          traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
+      - action: shell_command.nabaztag_telnet_traffic
 
