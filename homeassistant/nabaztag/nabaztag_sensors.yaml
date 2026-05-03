@@ -29,6 +29,9 @@ rest:
           - streaming_state
           - rev
           - info
+          - info_weather
+          - info_traffic
+          - info_pollution
 
 
 # =========================
@@ -61,14 +64,14 @@ template:
       - name: "LED Météo (état réel)"
         unique_id: nabaztag_led_weather_binary
         state: >
-          {{ state_attr('sensor.nabaztag_status', 'info').get('weather', -1) not in [None, -1] }}
+          {{ state_attr('sensor.nabaztag_status', 'info_weather') not in [None, -1] }}
 
       - name: "LED Trafic (état réel)"
         unique_id: nabaztag_led_traffic_binary
         state: >
-          {{ state_attr('sensor.nabaztag_status', 'info').get('traffic', -1) not in [None, -1] }}
+          {{ state_attr('sensor.nabaztag_status', 'info_traffic') not in [None, -1] }}
 
       - name: "LED Pollution (état réel)"
         unique_id: nabaztag_led_pollution_binary
         state: >
-          {{ state_attr('sensor.nabaztag_status', 'info').get('pollution', -1) not in [None, -1] }}
+          {{ state_attr('sensor.nabaztag_status', 'info_pollution') not in [None, -1] }}
