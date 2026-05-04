@@ -11,8 +11,8 @@ cards:
     entities:
       - entity: binary_sensor.configuration_firmware_synchronisee
         name: Configuration synchro
-      - entity: input_boolean.nabaztag_config_desync
-        name: Alerte désynchro
+      - entity: input_boolean.nabaztag_config_desync_alert
+        name: Alerte désynchro (>2min)
       - entity: binary_sensor.nabaztag_rebooted
         name: Redémarrage détecté
 
@@ -23,14 +23,14 @@ cards:
       {% set wm = state_attr('sensor.nabaztag_status', 'wake_minute') | int(-1) %}
       {% set b = state_attr('sensor.nabaztag_status', 'go_to_bed') | int(-1) %}
       {% set bm = state_attr('sensor.nabaztag_status', 'bed_minute') | int(-1) %}
-      {% set dst = state_attr('sensor.nabaztag_status', 'dst') %}
+      {% set t = state_attr('sensor.nabaztag_status', 'time') %}
       {% set lang = state_attr('sensor.nabaztag_status', 'language') %}
-      {% set tz = state_attr('sensor.nabaztag_status', 'timezone_city_code') %}
       - **Réveil** : {{ '%02d' | format(w) }}h{{ '%02d' | format(wm) if wm >= 0 else '??' }}
       - **Coucher** : {{ '%02d' | format(b) }}h{{ '%02d' | format(bm) if bm >= 0 else '??' }}
-      - **DST** : {{ '✅' if dst == 1 else '❌' }} ({{ dst }})
+      - **DST** : {{ '✅' if t and t.dst == 1 else '❌' }} ({{ t.dst if t else '?' }})
+      - **Offset** : {{ t.offset if t else '?' }}
+      - **Heure lapin** : {{ t.ts if t else '?' }}
       - **Langue** : {{ lang or '?' }}
-      - **Fuseau** : {{ tz or '?' }}
       - **Uptime** : {{ state_attr('sensor.nabaztag_telnet_status', 'uptime') }}s
 
   - type: entities

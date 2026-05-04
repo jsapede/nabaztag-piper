@@ -169,8 +169,8 @@ input_boolean:
     initial: on
     icon: mdi:air-filter
 
-  nabaztag_config_desync:
-    name: "Configuration désynchronisée"
+  nabaztag_config_desync_alert:
+    name: "Alerte désynchro"
     initial: off
     icon: mdi:alert
 

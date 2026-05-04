@@ -35,6 +35,7 @@ rest:
           - info_pollution
           - info_auto_weather
           - info_auto_pollution
+          - time
 
 
 # =========================
@@ -77,13 +78,11 @@ template:
           {{ state_attr('sensor.nabaztag_telnet_status', 'pollution') not in [None, -1] }}
       - name: "Nabaztag rebooted"
         unique_id: nabaztag_rebooted
-        device_class: connectivity
         state: >
           {{ state_attr('sensor.nabaztag_telnet_status', 'uptime') is not none 
              and state_attr('sensor.nabaztag_telnet_status', 'uptime') | int(9999) < 30 }}
       - name: "Configuration firmware synchronisée"
         unique_id: nabaztag_config_sync
-        device_class: connectivity
         state: >
           {% set c = states('input_boolean.nabaztag_firmware_clock') == 'on' %}
           {% set h = states('input_boolean.nabaztag_firmware_halftime') == 'on' %}
@@ -94,3 +93,7 @@ template:
           {% set asu = state_attr('sensor.nabaztag_telnet_status', 'autosurprise') == 1 %}
           {% set at = state_attr('sensor.nabaztag_telnet_status', 'autotaichi') == 1 %}
           {{ c == ac and h == ah and s == asu and t == at }}
+      - name: "Configuration firmware désynchronisée"
+        unique_id: nabaztag_config_desync
+        state: >
+          {{ is_state('binary_sensor.configuration_firmware_synchronisee', 'off') }}
