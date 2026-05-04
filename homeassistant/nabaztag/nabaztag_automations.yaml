@@ -214,7 +214,7 @@ automation:
         entity_id: sensor.nabaztag_telnet_status
     condition:
       - condition: state
-        entity_id: binary_sensor.nabaztag_config_sync
+        entity_id: binary_sensor.configuration_firmware_synchronisee
         state: "off"
       - condition: state
         entity_id: binary_sensor.ping_nabaztag
@@ -242,13 +242,13 @@ automation:
     mode: single
     trigger:
       - platform: state
-        entity_id: binary_sensor.nabaztag_config_sync
+        entity_id: binary_sensor.configuration_firmware_synchronisee
         to: "off"
         for:
           minutes: 2
     condition:
       - condition: state
-        entity_id: binary_sensor.nabaztag_config_sync
+        entity_id: binary_sensor.configuration_firmware_synchronisee
         state: "off"
     action:
       - action: input_boolean.turn_on
@@ -261,7 +261,7 @@ automation:
     mode: single
     trigger:
       - platform: state
-        entity_id: binary_sensor.nabaztag_config_sync
+        entity_id: binary_sensor.configuration_firmware_synchronisee
         to: "on"
     action:
       - action: input_boolean.turn_off
