@@ -43,6 +43,8 @@ const FORTH_MEMORY_AUTOCLOCK_ENABLED  = (1<<29) + 44;;
 const FORTH_MEMORY_AUTOHALFTIME_ENABLED = (1<<29) + 45;;
 const FORTH_MEMORY_AUTOSURPRISE_ENABLED = (1<<29) + 46;;
 const FORTH_MEMORY_AUTOTAICHI_ENABLED  = (1<<29) + 47;;
+const FORTH_MEMORY_INFO_AUTO_WEATHER   = (1<<29) + 48;;
+const FORTH_MEMORY_INFO_AUTO_POLLUTION = (1<<29) + 49;;
 
 type MemoryBlock = [
     memory_block_size   // size of the memory block
@@ -168,6 +170,10 @@ fun _forth_memory_get_special f addr=
         [int:_autosurprise_enabled]
     else if addr == FORTH_MEMORY_AUTOTAICHI_ENABLED then
         [int:_autotaichi_enabled]
+    else if addr == FORTH_MEMORY_INFO_AUTO_WEATHER then
+        [int:_info_auto_weather]
+    else if addr == FORTH_MEMORY_INFO_AUTO_POLLUTION then
+        [int:_info_auto_pollution]
     else if addr == FORTH_MEMORY_INFO_DURATION then
         [int:info_duration]
     else if addr >= FORTH_MEMORY_INFO_PALETTE && addr < FORTH_MEMORY_INFO_PALETTE + FORTH_MEMORY_INFO_PALETTE_SIZE then
@@ -223,6 +229,12 @@ fun _forth_memory_set_special f addr value=
     )
     else if addr == FORTH_MEMORY_AUTOTAICHI_ENABLED then (
         set _autotaichi_enabled = value.int; nil
+    )
+    else if addr == FORTH_MEMORY_INFO_AUTO_WEATHER then (
+        set _info_auto_weather = value.int; nil
+    )
+    else if addr == FORTH_MEMORY_INFO_AUTO_POLLUTION then (
+        set _info_auto_pollution = value.int; nil
     )
     else if addr == FORTH_MEMORY_INFO_DURATION then (
         set info_duration = value.int; nil

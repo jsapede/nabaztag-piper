@@ -118,3 +118,11 @@ shell_command:
     python3 /config/python_scripts/nab-telnet.py
     {{ states('input_text.nabaztag_ip_address') }}
     "load-info-animations"
+  nabaztag_telnet_auto_weather: >
+    python3 /config/python_scripts/nab-telnet.py
+    {{ states('input_text.nabaztag_ip_address') }}
+    "{{ auto_weather | int }} info-auto-weather !"
+  nabaztag_telnet_auto_pollution: >
+    python3 /config/python_scripts/nab-telnet.py
+    {{ states('input_text.nabaztag_ip_address') }}
+    "{{ auto_pollution | int }} info-auto-pollution !"

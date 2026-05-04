@@ -159,6 +159,8 @@ fun http_get_json_status sock args=
             (json_int "autohalftime_enabled" _autohalftime_enabled) :: ",\n" ::
             (json_int "autosurprise_enabled" _autosurprise_enabled) :: ",\n" ::
             (json_int "autotaichi_enabled" _autotaichi_enabled) :: ",\n" ::
+            (json_int "info_auto_weather" _info_auto_weather) :: ",\n" ::
+            (json_int "info_auto_pollution" _info_auto_pollution) :: ",\n" ::
             (json_int "streaming_state" streaming_status) :: ",\n" ::
             (json_int "processing_state" chor_processing_status) :: ",\n" ::
             (json_obj "interactive" interactive_json) :: ",\n" ::

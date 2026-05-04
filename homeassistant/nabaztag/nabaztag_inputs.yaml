@@ -145,6 +145,16 @@ input_boolean:
     initial: on
     icon: mdi:yoga
 
+  nabaztag_auto_weather:
+    name: "Auto Météo (Open-Meteo)"
+    initial: on
+    icon: mdi:weather-sync
+
+  nabaztag_auto_pollution:
+    name: "Auto Pollution (Open-Meteo)"
+    initial: on
+    icon: mdi:air-filter
+
 
 input_datetime:
   nabaztag_random_action_time_1:

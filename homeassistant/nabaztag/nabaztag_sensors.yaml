@@ -31,6 +31,8 @@ rest:
           - info_weather
           - info_traffic
           - info_pollution
+          - info_auto_weather
+          - info_auto_pollution
 
 
 # =========================
@@ -71,3 +73,9 @@ template:
         unique_id: nabaztag_led_pollution_binary
         state: >
           {{ state_attr('sensor.nabaztag_telnet_status', 'pollution') not in [None, -1] }}
+      - name: "Nabaztag rebooted"
+        unique_id: nabaztag_rebooted
+        device_class: connectivity
+        state: >
+          {{ state_attr('sensor.nabaztag_telnet_status', 'uptime') is not none 
+             and state_attr('sensor.nabaztag_telnet_status', 'uptime') | int(9999) < 30 }}

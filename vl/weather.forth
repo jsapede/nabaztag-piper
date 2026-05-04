@@ -26,12 +26,13 @@ latitude @ count 0<> longitude @ count 0<> and if
   http-get drop json-parse
   "daily.weathercode[0]" json-get
   dup weather-code !  \ store the weather code
-  meteo>info info-weather !
+  meteo>info
+  info-auto-weather @ 0= if info-weather ! then
   \ air quality
   nil "http://air-quality-api.open-meteo.com/v1/air-quality?latitude=" :: latitude @ :: "&longitude=" :: longitude @ :: "&current=european_aqi&forecast_days=1" :: str-join \
   http-get drop json-parse
   "current.european_aqi" json-get
   dup eaiq !  \ store the eaiq
-  dup nil <> if eaiq>info info-pollution ! then
+  dup nil <> if eaiq>info info-auto-pollution @ 0= if info-pollution ! then then
 then
 ;

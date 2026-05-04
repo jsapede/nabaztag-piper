@@ -30,6 +30,8 @@ var _autoclock_enabled = 1;;
 var _autohalftime_enabled = 1;;
 var _autosurprise_enabled = 1;;
 var _autotaichi_enabled = 1;;
+var _info_auto_weather = 1;;
+var _info_auto_pollution = 1;;
 
 proto forth_compare_words 2;;
 proto forth_dict_to_str 2;;

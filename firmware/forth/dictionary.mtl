@@ -196,6 +196,9 @@ fun forth_init_dictionary=
         [ [str:"autohalftime-enabled"] [ code:{[int:FORTH_MEMORY_AUTOHALFTIME_ENABLED]} ]] ::  // Auto halftime enabled
         [ [str:"autosurprise-enabled"] [ code:{[int:FORTH_MEMORY_AUTOSURPRISE_ENABLED]} ]] ::  // Auto surprise enabled
         [ [str:"autotaichi-enabled"  ] [ code:{[int:FORTH_MEMORY_AUTOTAICHI_ENABLED]} ]] ::   // Auto taichi enabled
+        // Info auto-update flags
+        [ [str:"info-auto-weather"   ] [ code:{[int:FORTH_MEMORY_INFO_AUTO_WEATHER]} ]] ::    // Auto-update weather from Open-Meteo
+        [ [str:"info-auto-pollution" ] [ code:{[int:FORTH_MEMORY_INFO_AUTO_POLLUTION]} ]] ::  // Auto-update pollution from Open-Meteo
         // Status
         [ [str:"status-all"         ] [ func:#forth_status_all ]] ::                          // Print all status values
         nil -> d in

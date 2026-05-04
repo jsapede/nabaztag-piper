@@ -21,6 +21,9 @@ automation:
         to: "on"
       - trigger: homeassistant
         event: start
+      - trigger: state
+        entity_id: binary_sensor.nabaztag_rebooted
+        to: "on"
     condition:
       - condition: state
         entity_id: binary_sensor.ping_nabaztag
@@ -31,6 +34,20 @@ automation:
           seconds: 2
       - action: shell_command.nabaztag_telnet_load_animations
       - action: script.nabaztag_restore_leds
+      # Écrire les flags HA → lapin
+      - action: shell_command.nabaztag_telnet_clock
+        data:
+          clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_halftime
+        data:
+          halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_surprise_flag
+        data:
+          surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_taichi_flag
+        data:
+          taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+      # Lire l'état réel du lapin → ajuster input_booleans HA
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -227,6 +244,51 @@ automation:
       - action: shell_command.nabaztag_telnet_taichi_flag
         data:
           taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+      - delay:
+          seconds: 1
+      - action: homeassistant.update_entity
+        target:
+          entity_id: sensor.nabaztag_telnet_status
+
+
+  # ========== INFO AUTO-UPDATE TOGGLE ==========
+  # Permet de désactiver la mise à jour automatique Open-Meteo
+  # pour la météo et la pollution (override par HA)
+
+  - id: nabaztag_auto_weather_toggle
+    alias: "Nabaztag - Toggle Auto Weather"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: input_boolean.nabaztag_auto_weather
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - action: shell_command.nabaztag_telnet_auto_weather
+        data:
+          auto_weather: "{{ '1' if states('input_boolean.nabaztag_auto_weather') == 'on' else '0' }}"
+      - delay:
+          seconds: 1
+      - action: homeassistant.update_entity
+        target:
+          entity_id: sensor.nabaztag_telnet_status
+
+  - id: nabaztag_auto_pollution_toggle
+    alias: "Nabaztag - Toggle Auto Pollution"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: input_boolean.nabaztag_auto_pollution
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - action: shell_command.nabaztag_telnet_auto_pollution
+        data:
+          auto_pollution: "{{ '1' if states('input_boolean.nabaztag_auto_pollution') == 'on' else '0' }}"
       - delay:
           seconds: 1
       - action: homeassistant.update_entity
