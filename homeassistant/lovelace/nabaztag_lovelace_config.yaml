@@ -40,3 +40,11 @@ cards:
       - entity: input_number.nabaztag_taichi_freq
         name: Fréquence Taichi (t)
         icon: mdi:yoga
+
+  - type: button
+    name: Forcer l'envoi de la configuration
+    icon: mdi:send
+    tap_action:
+      action: call-service
+      service: rest_command.nabaztag_setup
+      target: {}

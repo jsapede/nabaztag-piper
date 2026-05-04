@@ -29,6 +29,7 @@ cards:
       - **Coucher** : {{ '%02d' | format(b) }}h{{ '%02d' | format(bm) if bm >= 0 else '??' }}
       - **DST** : {{ '✅' if t and t.dst == 1 else '❌' }} ({{ t.dst if t else '?' }})
       - **Offset** : {{ t.offset if t else '?' }}
+      - **Fuseau** : {{ t.city_code if t and t.city_code else '?' }}
       - **Heure lapin** : {{ t.ts if t else '?' }}
       - **Langue** : {{ lang or '?' }}
       - **Uptime** : {{ state_attr('sensor.nabaztag_telnet_status', 'uptime') }}s
