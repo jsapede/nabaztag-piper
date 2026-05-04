@@ -16,6 +16,8 @@ const FORTH_MEMORY_LATITUDE = (1<<29) + 5;;
 const FORTH_MEMORY_LONGITUDE = (1<<29) + 6;;
 const FORTH_MEMORY_WAKE_UP = (1<<29) + 7;;
 const FORTH_MEMORY_GO_TO_BED = (1<<29) + 8;;
+const FORTH_MEMORY_WAKE_MINUTE = (1<<29) + 50;;
+const FORTH_MEMORY_BED_MINUTE = (1<<29) + 51;;
 const FORTH_MEMORY_NTP_SERVER = (1<<29) + 9;;
 const FORTH_MEMORY_USERNAME = (1<<29) + 10;;
 const FORTH_MEMORY_MD5_PASSWORD = (1<<29) + 11;;
@@ -156,6 +158,10 @@ fun _forth_memory_get_special f addr=
         [int:config_get_wake_up]
     else if addr == FORTH_MEMORY_GO_TO_BED then
         [int:config_get_go_to_bed]
+    else if addr == FORTH_MEMORY_WAKE_MINUTE then
+        [int:config_get_wake_minute]
+    else if addr == FORTH_MEMORY_BED_MINUTE then
+        [int:config_get_bed_minute]
     else if addr == FORTH_MEMORY_NTP_SERVER then
         [str:ntp_server]
     else if addr == FORTH_MEMORY_MD5_PASSWORD then
@@ -209,6 +215,10 @@ fun _forth_memory_set_special f addr value=
         config_set_wake_up value.int
     else if addr == FORTH_MEMORY_GO_TO_BED then
         config_set_go_to_bed value.int
+    else if addr == FORTH_MEMORY_WAKE_MINUTE then
+        config_set_wake_minute value.int
+    else if addr == FORTH_MEMORY_BED_MINUTE then
+        config_set_bed_minute value.int
     else if addr == FORTH_MEMORY_NTP_SERVER then
         set ntp_server = value.str
     else if addr == FORTH_MEMORY_SERVER_URL then

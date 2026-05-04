@@ -1,0 +1,52 @@
+type: vertical-stack
+cards:
+  - type: markdown
+    content: |
+      # 🐇 **État firmware Nabaztag**
+      État réel du lapin, lu par telnet toutes les 30s.
+
+  - type: entities
+    title: 🔄 Synchronisation HA ↔ Lapin
+    show_header_toggle: false
+    entities:
+      - entity: binary_sensor.configuration_firmware_synchronisee
+        name: Configuration synchro
+      - entity: input_boolean.nabaztag_config_desync
+        name: Alerte désynchro
+      - entity: binary_sensor.nabaztag_rebooted
+        name: Redémarrage détecté
+
+  - type: entities
+    title: 🤖 Flags firmware (état réel)
+    show_header_toggle: false
+    entities:
+      - entity: binary_sensor.horloge_firmware_etat_reel
+        name: Horloge
+      - entity: binary_sensor.demi_heure_firmware_etat_reel
+        name: Demi-heure
+      - entity: binary_sensor.surprise_firmware_etat_reel
+        name: Surprise
+      - entity: binary_sensor.taichi_firmware_etat_reel
+        name: Taichi
+
+  - type: entities
+    title: 💡 Services info (état réel)
+    show_header_toggle: false
+    entities:
+      - entity: binary_sensor.led_meteo_etat_reel
+        name: Météo
+      - entity: binary_sensor.led_trafic_etat_reel
+        name: Trafic
+      - entity: binary_sensor.led_pollution_etat_reel
+        name: Pollution
+      - entity: binary_sensor.nabaztag_endormi_etat_reel
+        name: Endormi
+
+  - type: entities
+    title: ⚙️ Auto-update Open-Meteo
+    show_header_toggle: false
+    entities:
+      - entity: input_boolean.nabaztag_auto_weather
+        name: Auto météo
+      - entity: input_boolean.nabaztag_auto_pollution
+        name: Auto pollution

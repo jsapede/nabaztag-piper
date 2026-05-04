@@ -37,15 +37,17 @@ time&date drop drop drop swap drop swap drop ;
 : get-minute ( -- minute )  \ Get the current minute
 time&date drop drop drop drop swap drop ;
 
-: sleeping-time? ( -- flag )  \ Check if current hour is in the sleep interval
+: sleeping-time? ( -- flag )  \ Check if current minute-of-day is in the sleep interval
 wake-up-at @ go-to-bed-at @ = if  \ always awake if equal
   false
 else
-  get-hour
-  dup \ dup hour
-  wake-up-at @ <
-  swap \ swap hour and flag
-  go-to-bed-at @ >=
+  get-hour 60 * get-minute +        \ current minute-of-day
+  dup
+  wake-up-at @ 60 * wake-minute @ +  \ wake-up minute-of-day
+  <
+  swap
+  go-to-bed-at @ 60 * bed-minute @ + \ go-to-bed minute-of-day
+  >=
   or
 then ;
 

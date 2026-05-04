@@ -153,6 +153,8 @@ fun http_get_json_status sock args=
             (json_str "longitude" config_get_longitude) :: ",\n" ::
             (json_int "wake_up" config_get_wake_up) :: ",\n" ::
             (json_int "go_to_bed" config_get_go_to_bed) :: ",\n" ::
+            (json_int "wake_minute" config_get_wake_minute) :: ",\n" ::
+            (json_int "bed_minute" config_get_bed_minute) :: ",\n" ::
             (json_int "taichi_freq" config_get_taichi_freq) :: ",\n" ::
             (json_int "sleep_state" sleep_is_sleeping) :: ",\n" ::
             (json_int "autoclock_enabled" _autoclock_enabled) :: ",\n" ::
@@ -410,7 +412,9 @@ fun http_get_setup sock args=
     config_set_latitude http_arg_str args 'j';        // set latitude
     config_set_longitude http_arg_str args 'k';       // set longitude
     config_set_wake_up http_arg_int args 'w';         // set wake up time
+    if http_arg_int args 'wu' != nil then config_set_wake_minute http_arg_int args 'wu';  // set wake up minute
     config_set_go_to_bed http_arg_int args 'b';       // set go to bed time
+    if http_arg_int args 'bu' != nil then config_set_bed_minute http_arg_int args 'bu';   // set go to bed minute
     config_set_taichi_freq http_arg_int args 't';     // set taichi frequency
     let http_arg_str args 'u' -> server_url in         // set server URL (pour mode SERVERLESS)
         if server_url != nil then

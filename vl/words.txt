@@ -123,7 +123,7 @@ SAY            ( text --  )                             Text to speech
 SAY-PUSH       ( str -- ) (internal)                    Push a string onto the Forth stack for the say word
 SET-INFO-ANIMATION ( data n -- )                        Set info animation n from json
 SLEEP          ( -- )                                   Put the Nabaztag into sleep mode
-SLEEPING-TIME? ( -- flag )                              Check if current hour is in the sleep interval
+SLEEPING-TIME? ( -- flag )                              Check if current minute-of-day is in the sleep interval
 SLEEPING?      ( -- flag)                               Return true if the Nabaztag is in sleep mode
 SPACE          ( -- )                                   Display space
 START-TASK     ( text delay name -- )                   Start a new task with the given name, delay, and text to execute.
@@ -165,6 +165,7 @@ AUTOCLOCK-ENABLED                                       Auto clock enabled
 AUTOHALFTIME-ENABLED                                    Auto halftime enabled
 AUTOSURPRISE-ENABLED                                    Auto surprise enabled
 AUTOTAICHI-ENABLED                                      Auto taichi enabled
+BED-MINUTE                                              Go to bed at (minute)
 CITY-CODE                                               City code (timezone)
 CRONTAB-LAST-MINUTE                                     Crontab last checked minute
 DST                                                     Daylight Saving Time
@@ -198,5 +199,6 @@ SURPRISE-NEXT-TIME                                      Next surprise time
 TAICHI-FREQ                                             Tai Chi frequency
 TAICHI-NEXT-TIME                                        Next taichi time
 USERNAME                                                Login username
+WAKE-MINUTE                                             Wake up at (minute)
 WAKE-UP-AT                                              Wake up at (hour)
 WEATHER-CODE                                            Weather code

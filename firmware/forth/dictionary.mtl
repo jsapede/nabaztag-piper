@@ -171,6 +171,8 @@ fun forth_init_dictionary=
         [ [str:"longitude"         ] [ code:{[int:FORTH_MEMORY_LONGITUDE]} ]] ::        // Longitude (weather/air quality)
         [ [str:"wake-up-at"        ] [ code:{[int:FORTH_MEMORY_WAKE_UP]} ]] ::          // Wake up at (hour)
         [ [str:"go-to-bed-at"      ] [ code:{[int:FORTH_MEMORY_GO_TO_BED]} ]] ::        // Go to bed at (hour)
+        [ [str:"wake-minute"       ] [ code:{[int:FORTH_MEMORY_WAKE_MINUTE]} ]] ::      // Wake up at (minute)
+        [ [str:"bed-minute"        ] [ code:{[int:FORTH_MEMORY_BED_MINUTE]} ]] ::       // Go to bed at (minute)
         [ [str:"taichi-freq"       ] [ code:{[int:FORTH_MEMORY_TAICHI_FREQ]} ]] ::      // Tai Chi frequency
         [ [str:"ntp-server"        ] [ code:{[int:FORTH_MEMORY_NTP_SERVER]} ]] ::       // NTP server
         [ [str:"username"          ] [ code:{[int:FORTH_MEMORY_USERNAME]} ]] ::         // Login username

@@ -9,17 +9,22 @@ try:
     s = socket.socket()
     s.settimeout(3)
     s.connect((ip, 23))
+    s.settimeout(0.5)
+    try: s.recv(8192)          # lire le banner
+    except: pass
+    s.settimeout(3)
     s.send(b'status-all\r\n')
     time.sleep(1.0)
     try: d = s.recv(8192)
     except: d = b''
     s.close()
     for l in d.split(b'\n'):
-        if b'>' not in l: continue
-        parts = l.split(b'>')[1].split()
+        parts = l.split()
         if len(parts) >= 8:
-            vals = [int(p) for p in parts[:len(keys)]]
-            result = dict(zip(keys[:len(vals)], vals))
-            break
+            try:
+                vals = [int(p) for p in parts[:len(keys)]]
+                result = dict(zip(keys[:len(vals)], vals))
+                break
+            except: pass
 except: pass
 print(json.dumps(result))

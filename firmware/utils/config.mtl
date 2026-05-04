@@ -26,7 +26,9 @@ const CONF_LATITUDE=208;;	    //8     Latitude (string)
 const CONF_LONGITUDE=216;;	    //8     Longitude (string)
 const CONF_WAKE_UP=224;;	    //1     Wake up at (hour)
 const CONF_GO_TO_BED=225;;      //1     Go to bed at (hour)
-const CONF_LENGTH=226;;
+const CONF_WAKE_MINUTE=226;;    //1     Wake up at (minute)
+const CONF_BED_MINUTE=227;;     //1     Go to bed at (minute)
+const CONF_LENGTH=228;;
 
 var _config_data;;
 var config_username = "nabaztag";; // HTTP login user
@@ -129,6 +131,14 @@ fun config_get_wake_up =
 fun config_get_go_to_bed =
     strget _config_get CONF_GO_TO_BED 1 0;;
 
+// Get wake up at (minute)
+fun config_get_wake_minute =
+    strget _config_get CONF_WAKE_MINUTE 1 0;;
+
+// Get go to bed at (minute)
+fun config_get_bed_minute =
+    strget _config_get CONF_BED_MINUTE 1 0;;
+
 // Get Tai Chi frequency
 fun config_get_taichi_freq =
     strget _config_get CONF_TAICHI_FREQ 1 0;;
@@ -164,6 +174,14 @@ fun config_set_wake_up val =
 // Set go to bed at (hour)
 fun config_set_go_to_bed val =
     strset _config_data CONF_GO_TO_BED val;;
+
+// Set wake up at (minute)
+fun config_set_wake_minute val =
+    strset _config_data CONF_WAKE_MINUTE val;;
+
+// Set go to bed at (minute)
+fun config_set_bed_minute val =
+    strset _config_data CONF_BED_MINUTE val;;
 
 // Set Tai Chi frequency
 fun config_set_taichi_freq val =

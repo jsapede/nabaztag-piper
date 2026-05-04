@@ -25,6 +25,8 @@ rest:
           - language
           - wake_up
           - go_to_bed
+          - wake_minute
+          - bed_minute
           - taichi_freq
           - streaming_state
           - rev

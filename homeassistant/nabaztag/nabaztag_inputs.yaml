@@ -94,6 +94,20 @@ input_number:
     step: 1
     initial: 23
 
+  nabaztag_wake_minute:
+    name: "Minute réveil (pour /setup)"
+    min: 0
+    max: 59
+    step: 1
+    initial: 0
+
+  nabaztag_sleep_minute:
+    name: "Minute coucher (pour /setup)"
+    min: 0
+    max: 59
+    step: 1
+    initial: 0
+
 
 input_boolean:
   nabaztag_daylight_saving:

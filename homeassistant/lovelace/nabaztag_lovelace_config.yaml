@@ -26,10 +26,16 @@ cards:
         name: Heure d'été (d)
         icon: mdi:weather-sunny
       - entity: input_number.nabaztag_wake_hour
-        name: Heure de réveil (w)
+        name: Heure réveil (w)
+        icon: mdi:alarm
+      - entity: input_number.nabaztag_wake_minute
+        name: Minute réveil (wu)
         icon: mdi:alarm
       - entity: input_number.nabaztag_sleep_hour
-        name: Heure de coucher (b)
+        name: Heure coucher (b)
+        icon: mdi:sleep
+      - entity: input_number.nabaztag_sleep_minute
+        name: Minute coucher (bu)
         icon: mdi:sleep
       - entity: input_number.nabaztag_taichi_freq
         name: Fréquence Taichi (t)
