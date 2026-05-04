@@ -16,6 +16,23 @@ cards:
       - entity: binary_sensor.nabaztag_rebooted
         name: Redémarrage détecté
 
+  - type: markdown
+    content: |
+      ### ⏰ Horaires (lus depuis le lapin)
+      {% set w = state_attr('sensor.nabaztag_status', 'wake_up') | int(-1) %}
+      {% set wm = state_attr('sensor.nabaztag_status', 'wake_minute') | int(-1) %}
+      {% set b = state_attr('sensor.nabaztag_status', 'go_to_bed') | int(-1) %}
+      {% set bm = state_attr('sensor.nabaztag_status', 'bed_minute') | int(-1) %}
+      {% set dst = state_attr('sensor.nabaztag_status', 'dst') %}
+      {% set lang = state_attr('sensor.nabaztag_status', 'language') %}
+      {% set tz = state_attr('sensor.nabaztag_status', 'timezone_city_code') %}
+      - **Réveil** : {{ '%02d' | format(w) }}h{{ '%02d' | format(wm) if wm >= 0 else '??' }}
+      - **Coucher** : {{ '%02d' | format(b) }}h{{ '%02d' | format(bm) if bm >= 0 else '??' }}
+      - **DST** : {{ '✅' if dst == 1 else '❌' }} ({{ dst }})
+      - **Langue** : {{ lang or '?' }}
+      - **Fuseau** : {{ tz or '?' }}
+      - **Uptime** : {{ state_attr('sensor.nabaztag_telnet_status', 'uptime') }}s
+
   - type: entities
     title: 🤖 Flags firmware (état réel)
     show_header_toggle: false
@@ -47,6 +64,6 @@ cards:
     show_header_toggle: false
     entities:
       - entity: input_boolean.nabaztag_auto_weather
-        name: Auto météo
+        name: Auto météo (firmware)
       - entity: input_boolean.nabaztag_auto_pollution
-        name: Auto pollution
+        name: Auto pollution (firmware)
