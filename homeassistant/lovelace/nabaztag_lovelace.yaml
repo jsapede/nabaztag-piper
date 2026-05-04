@@ -27,3 +27,7 @@ cards:
         name: Surprise
       - entity: input_boolean.nabaztag_firmware_taichi
         name: Taichi
+      - entity: input_boolean.nabaztag_auto_weather
+        name: Auto Météo (Open-Meteo)
+      - entity: input_boolean.nabaztag_auto_pollution
+        name: Auto Pollution (Open-Meteo)

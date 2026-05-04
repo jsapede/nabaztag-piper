@@ -61,10 +61,10 @@ cards:
         name: Endormi
 
   - type: entities
-    title: ⚙️ Auto-update Open-Meteo
+    title: ⚙️ Auto-update Open-Meteo (état réel)
     show_header_toggle: false
     entities:
-      - entity: input_boolean.nabaztag_auto_weather
-        name: Auto météo (firmware)
-      - entity: input_boolean.nabaztag_auto_pollution
-        name: Auto pollution (firmware)
+      - entity: binary_sensor.auto_meteo_etat_reel
+        name: Auto météo
+      - entity: binary_sensor.auto_pollution_etat_reel
+        name: Auto pollution

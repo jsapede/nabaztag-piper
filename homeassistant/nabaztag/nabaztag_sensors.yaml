@@ -76,6 +76,14 @@ template:
         unique_id: nabaztag_led_pollution_binary
         state: >
           {{ state_attr('sensor.nabaztag_telnet_status', 'pollution') not in [None, -1] }}
+      - name: "Auto Météo (état réel)"
+        unique_id: nabaztag_auto_weather_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_telnet_status', 'info_auto_weather') == 1 }}
+      - name: "Auto Pollution (état réel)"
+        unique_id: nabaztag_auto_pollution_binary
+        state: >
+          {{ state_attr('sensor.nabaztag_telnet_status', 'info_auto_pollution') == 1 }}
       - name: "Nabaztag rebooted"
         unique_id: nabaztag_rebooted
         state: >
