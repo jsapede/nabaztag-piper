@@ -47,56 +47,6 @@ automation:
       - action: shell_command.nabaztag_telnet_taichi_flag
         data:
           taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
-      # Lire l'état réel du lapin → ajuster input_booleans HA
-      - action: homeassistant.update_entity
-        target:
-          entity_id: sensor.nabaztag_telnet_status
-      - delay:
-          seconds: 2
-      - if:
-          - condition: template
-            value_template: "{{ state_attr('sensor.nabaztag_telnet_status', 'autoclock') == 1 }}"
-        then:
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.nabaztag_firmware_clock
-        else:
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.nabaztag_firmware_clock
-      - if:
-          - condition: template
-            value_template: "{{ state_attr('sensor.nabaztag_telnet_status', 'autohalftime') == 1 }}"
-        then:
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.nabaztag_firmware_halftime
-        else:
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.nabaztag_firmware_halftime
-      - if:
-          - condition: template
-            value_template: "{{ state_attr('sensor.nabaztag_telnet_status', 'autosurprise') == 1 }}"
-        then:
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.nabaztag_firmware_surprise
-        else:
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.nabaztag_firmware_surprise
-      - if:
-          - condition: template
-            value_template: "{{ state_attr('sensor.nabaztag_telnet_status', 'autotaichi') == 1 }}"
-        then:
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.nabaztag_firmware_taichi
-        else:
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.nabaztag_firmware_taichi
 
   # ========== GESTION LEDs PAR INTERRUPTEUR ==========
   # Quand utilisateur toggle un switch (weather/traffic/pollution/nose)
@@ -251,7 +201,72 @@ automation:
           entity_id: sensor.nabaztag_telnet_status
 
 
-  # ========== INFO AUTO-UPDATE TOGGLE ==========
+  # ========== AUTO-CORRECT SI DÉSYNCHRO ==========
+  # Déclenché quand le capteur telnet se met à jour
+  # et que la config firmware est désynchronisée
+
+  - id: nabaztag_auto_correct
+    alias: "Nabaztag - Auto-correct config"
+    description: "Re-synchronise les flags firmware si désynchronisation détectée"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: sensor.nabaztag_telnet_status
+    condition:
+      - condition: state
+        entity_id: binary_sensor.nabaztag_config_sync
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - action: shell_command.nabaztag_telnet_clock
+        data:
+          clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_halftime
+        data:
+          halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_surprise_flag
+        data:
+          surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
+      - action: shell_command.nabaztag_telnet_taichi_flag
+        data:
+          taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+
+  # ========== ALERTE DÉSYNCHRO PERSISTANTE ==========
+  # Allume un input_boolean si la désynchro dure > 2 min
+
+  - id: nabaztag_desync_alert
+    alias: "Nabaztag - Alerte désynchro"
+    description: "Allume nabaztag_config_desync si désynchro persistante après 2 min"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.nabaztag_config_sync
+        to: "off"
+        for:
+          minutes: 2
+    condition:
+      - condition: state
+        entity_id: binary_sensor.nabaztag_config_sync
+        state: "off"
+    action:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.nabaztag_config_desync
+
+  - id: nabaztag_desync_clear
+    alias: "Nabaztag - Alerte désynchro fin"
+    description: "Éteint nabaztag_config_desync quand la synchro est rétablie"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.nabaztag_config_sync
+        to: "on"
+    action:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.nabaztag_config_desync  # ========== INFO AUTO-UPDATE TOGGLE ==========
   # Permet de désactiver la mise à jour automatique Open-Meteo
   # pour la météo et la pollution (override par HA)
 

@@ -5,7 +5,7 @@
 rest:
   - resource_template: "http://{{ states('input_text.nabaztag_ip_address') }}/status"
     method: GET
-    scan_interval: 300
+    scan_interval: 120
     timeout: 10
     sensor:
       - name: "Nabaztag Status"
@@ -79,3 +79,16 @@ template:
         state: >
           {{ state_attr('sensor.nabaztag_telnet_status', 'uptime') is not none 
              and state_attr('sensor.nabaztag_telnet_status', 'uptime') | int(9999) < 30 }}
+      - name: "Configuration firmware synchronisée"
+        unique_id: nabaztag_config_sync
+        device_class: connectivity
+        state: >
+          {% set c = states('input_boolean.nabaztag_firmware_clock') == 'on' %}
+          {% set h = states('input_boolean.nabaztag_firmware_halftime') == 'on' %}
+          {% set s = states('input_boolean.nabaztag_firmware_surprise') == 'on' %}
+          {% set t = states('input_boolean.nabaztag_firmware_taichi') == 'on' %}
+          {% set ac = state_attr('sensor.nabaztag_telnet_status', 'autoclock') == 1 %}
+          {% set ah = state_attr('sensor.nabaztag_telnet_status', 'autohalftime') == 1 %}
+          {% set asu = state_attr('sensor.nabaztag_telnet_status', 'autosurprise') == 1 %}
+          {% set at = state_attr('sensor.nabaztag_telnet_status', 'autotaichi') == 1 %}
+          {{ c == ac and h == ah and s == asu and t == at }}
