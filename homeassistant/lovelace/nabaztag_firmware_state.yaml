@@ -11,7 +11,7 @@ cards:
     entities:
       - entity: binary_sensor.configuration_firmware_synchronisee
         name: Configuration synchro
-      - entity: input_boolean.nabaztag_config_desync_alert
+      - entity: binary_sensor.configuration_firmware_desynchronisee
         name: Alerte désynchro (>2min)
       - entity: binary_sensor.nabaztag_rebooted
         name: Redémarrage détecté

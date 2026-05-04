@@ -97,3 +97,5 @@ template:
         unique_id: nabaztag_config_desync
         state: >
           {{ is_state('binary_sensor.configuration_firmware_synchronisee', 'off') }}
+        delay_on:
+          minutes: 2

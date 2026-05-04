@@ -169,11 +169,6 @@ input_boolean:
     initial: on
     icon: mdi:air-filter
 
-  nabaztag_config_desync_alert:
-    name: "Alerte désynchro"
-    initial: off
-    icon: mdi:alert
-
 
 input_datetime:
   nabaztag_random_action_time_1:

@@ -236,50 +236,7 @@ automation:
   # ========== ALERTE DÉSYNCHRO PERSISTANTE ==========
   # Allume un input_boolean si la désynchro dure > 2 min
 
-  - id: nabaztag_desync_alert
-    alias: "Nabaztag - Alerte désynchro"
-    description: "Allume nabaztag_config_desync_alert si désynchro persistante après 2 min"
-    mode: single
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.configuration_firmware_synchronisee
-        to: "off"
-        for:
-          minutes: 2
-    condition:
-      - condition: state
-        entity_id: binary_sensor.configuration_firmware_synchronisee
-        state: "off"
-    action:
-      - action: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.nabaztag_config_desync_alert
-
-  - id: nabaztag_desync_clear
-    alias: "Nabaztag - Alerte désynchro fin"
-    description: "Éteint nabaztag_config_desync_alert quand la synchro est rétablie"
-    mode: single
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.configuration_firmware_synchronisee
-        to: "on"
-    action:
-      - action: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.nabaztag_config_desync_alert
-
-  - id: nabaztag_desync_clear
-    alias: "Nabaztag - Alerte désynchro fin"
-    description: "Éteint nabaztag_config_desync quand la synchro est rétablie"
-    mode: single
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.configuration_firmware_synchronisee
-        to: "on"
-    action:
-      - action: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.nabaztag_config_desync  # ========== INFO AUTO-UPDATE TOGGLE ==========
+  # ========== INFO AUTO-UPDATE TOGGLE ==========
   # Permet de désactiver la mise à jour automatique Open-Meteo
   # pour la météo et la pollution (override par HA)
 
