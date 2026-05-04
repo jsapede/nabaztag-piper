@@ -9,18 +9,19 @@ Exemples:
   python3 nab-telnet.py 192.168.0.58 "1 autoclock-enabled !"
   python3 nab-telnet.py 192.168.0.58 "clear-info"
 """
-import socket, sys, time
+import socket, sys, time, re
 
-ip = sys.argv[1]
-cmd = sys.argv[2]
+ip = sys.argv[1] if len(sys.argv) > 1 else ''
+cmd = sys.argv[2] if len(sys.argv) > 2 else ''
 
-s = socket.socket()
-s.settimeout(5)
-try:
-    s.connect((ip, 23))
-    s.send((cmd + '\r\n').encode())
-    time.sleep(0.2)
-except Exception:
-    pass  # silencieux (comme || true)
-finally:
-    s.close()
+if re.match(r'^\d+\.\d+\.\d+\.\d+$', ip) and ip != '0.0.0.0':
+    s = socket.socket()
+    s.settimeout(5)
+    try:
+        s.connect((ip, 23))
+        s.send((cmd + '\r\n').encode())
+        time.sleep(0.2)
+    except Exception:
+        pass
+    finally:
+        s.close()
