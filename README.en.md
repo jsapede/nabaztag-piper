@@ -148,7 +148,7 @@ config/
 ├── configuration.yaml
 ├── python_scripts/              # ← Create if it doesn't exist
 │   ├── nab-telnet.py            # Send Forth commands via telnet
-│   └── nab-read-status.py       # Read all 8 flags via status-all
+│   └── nab-read-status.py       # Read all 11 values via status-all
 └── nabaztag/
     ├── nabaztag_inputs.yaml       # Entities (text, select, number, boolean)
     ├── nabaztag_commands.yaml     # REST + shell (telnet) commands
@@ -172,19 +172,21 @@ Reload HA configuration (`ha_reload_core(target="all")`), then set the rabbit's 
 
 > **Note**: telnet sensors and `shell_command` use Python with `\r\n` (RFC Telnet) — no external binary (`nc`, `netcat`) is required.
 
-### Lovelace — Dashboard and LED guide
+### Lovelace — Dashboard, firmware state and LED guide
 
-The `homeassistant/lovelace/` folder contains three YAML files to import as cards in your HA dashboard:
+The `homeassistant/lovelace/` folder contains four YAML files to import as cards in your HA dashboard:
 
-**`nabaztag_lovelace.yaml`** — the main dashboard gathering LED controls (weather, traffic, pollution, nose) and firmware switches (clock, halftime, surprise, taichi) on one screen.
+**`nabaztag_lovelace.yaml`** — the main dashboard with LED controls (weather, traffic, pollution, nose), firmware switches (clock, halftime, surprise, taichi) and auto-update toggles.
 
-**`nabaztag_lovelace_config.yaml`** — a dedicated card for advanced settings: language, timezone, wake/sleep hours, taichi frequency.
+**`nabaztag_lovelace_config.yaml`** — advanced settings: language, timezone, wake/sleep hours with minutes precision, taichi frequency, with a button to force configuration push.
+
+**`nabaztag_firmware_state.yaml`** — diagnostic card showing actual firmware state: HA↔rabbit sync status, wake/sleep times and DST read from the rabbit, real-time firmware flags and info services.
 
 **`nabaztag_led_guide.yaml`** — a visual reference explaining LED color meanings (sun, rain, storm, traffic, pollution, nose).
 
 To import a card: open the HA dashboard → click the pencil icon → **Add card** → switch to **YAML editor** → paste the file contents.
 
-> **Note**: the telnet sensor (`nab-read-status.py`) uses the `status-all` Forth word to read all 8 flags in one compiled call (~800ms). No external binary required — standard Python is sufficient.
+> **Note**: the telnet sensor (`nab-read-status.py`) uses the `status-all` Forth word to read all 11 values (sleep_state, 4 firmware flags, 3 info services, 2 auto-update flags, uptime) in one compiled call (~800ms). No external binary required — standard Python is sufficient.
 
 Detailed HA integration documentation (entities, REST commands, scripts, automations, sound guide) is available in [`homeassistant/docs/`](homeassistant/docs/INDEX.md).
 

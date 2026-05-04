@@ -148,7 +148,7 @@ config/
 ├── configuration.yaml
 ├── python_scripts/              # ← À créer si inexistant
 │   ├── nab-telnet.py            # Envoi de commandes Forth par telnet
-│   └── nab-read-status.py       # Lecture des 8 flags via status-all
+│   └── nab-read-status.py       # Lecture des 11 valeurs via status-all
 └── nabaztag/
     ├── nabaztag_inputs.yaml       # Entités (text, select, number, boolean)
     ├── nabaztag_commands.yaml     # Commandes REST + shell (telnet)
@@ -172,21 +172,23 @@ Recharger la configuration HA (`ha_reload_core(target="all")`), puis renseigner 
 
 > **Note** : les sensors telnet et les `shell_command` utilisent Python avec `\r\n` (RFC Telnet) — aucun binaire externe (`nc`, `netcat`) n'est requis.
 
-Les 6 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
+Les 7 fichiers du package sont automatiquement chargés et créent toutes les entités, commandes, scripts et automatisations décrits ci-dessus.
 
-### Lovelace — Tableau de bord et guide des LEDs
+### Lovelace — Tableau de bord, état firmware et guide des LEDs
 
-Le dossier `homeassistant/lovelace/` contient trois fichiers YAML à importer comme cartes dans votre tableau de bord HA :
+Le dossier `homeassistant/lovelace/` contient quatre fichiers YAML à importer comme cartes dans votre tableau de bord HA :
 
-**`nabaztag_lovelace.yaml`** — le tableau de bord principal qui regroupe en un écran le contrôle des LEDs (météo, trafic, pollution, nez) et les switches firmware (horloge, demi-heure, surprise, taichi).
+**`nabaztag_lovelace.yaml`** — le tableau de bord principal qui regroupe le contrôle des LEDs (météo, trafic, pollution, nez), les switches firmware (horloge, demi-heure, surprise, taichi) et les toggles auto-update Open-Meteo.
 
-**`nabaztag_lovelace_config.yaml`** — une carte dédiée aux réglages avancés : langue, fuseau horaire, heures de réveil/coucher, fréquence taichi.
+**`nabaztag_lovelace_config.yaml`** — une carte dédiée aux réglages avancés : langue, fuseau horaire, heures de réveil/coucher (avec minutes), fréquence taichi, avec un bouton pour forcer l'envoi de la configuration.
+
+**`nabaztag_firmware_state.yaml`** — une carte de diagnostic qui affiche l'état réel du firmware : synchronisation HA↔lapin, horaires réveil/coucher et DST lus depuis le lapin, flags firmware et services info en temps réel.
 
 **`nabaztag_led_guide.yaml`** — un pense-bête visuel qui explique la signification des couleurs des LEDs (soleil, pluie, orage, trafic, pollution, nez).
 
 Pour importer une carte : ouvrir le tableau de bord HA → cliquer sur l'icône crayon → **Ajouter carte** → passer en **éditeur YAML** → coller le contenu du fichier.
 
-> **Note** : le capteur telnet (`nab-read-status.py`) utilise le mot Forth `status-all` pour lire les 8 flags en un appel compilé (~800ms). Aucun binaire externe n'est nécessaire — Python standard suffit.
+> **Note** : le capteur telnet (`nab-read-status.py`) utilise le mot Forth `status-all` pour lire les 11 valeurs (sleep_state, 4 flags firmware, 3 services info, 2 flags auto-update, uptime) en un appel compilé (~800ms). Aucun binaire externe n'est nécessaire — Python standard suffit.
 
 Une documentation détaillée de l'intégration HA (entités, commandes REST, scripts, automatisations, guide des sons) est disponible dans [`homeassistant/docs/`](homeassistant/docs/INDEX.md).
 
