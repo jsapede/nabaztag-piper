@@ -47,7 +47,7 @@ deploy: firmware
 	fi
 	scp vl/bc.jsp vl/*.forth vl/index.html vl/words.txt vl/info_animations.json $(DEPLOY_TARGET)
 	# Also copy to server root (firmware expects .forth and info_animations.json at root)
-	set -e; for f in vl/*.forth vl/info_animations.json; do \
+	set -e; for f in vl/*.forth vl/info_animations.json vl/index.html; do \
 		scp $$f `dirname $(DEPLOY_TARGET)`/`basename $$f`; \
 	done
 

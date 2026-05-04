@@ -439,6 +439,8 @@ fun http_get_autocontrol sock args=
     let http_arg_int args 'h' -> halftime in
     let http_arg_int args 's' -> surprise in
     let http_arg_int args 't' -> taichi in
+    let http_arg_int args 'aw' -> auto_weather in
+    let http_arg_int args 'ap' -> auto_pollution in
     let strcatlist
         (if clock != nil then itoa clock else "") ::
         (if clock != nil then " autoclock-enabled ! " else "") ::
@@ -448,6 +450,10 @@ fun http_get_autocontrol sock args=
         (if surprise != nil then " autosurprise-enabled ! " else "") ::
         (if taichi != nil then itoa taichi else "") ::
         (if taichi != nil then " autotaichi-enabled ! " else "") ::
+        (if auto_weather != nil then itoa auto_weather else "") ::
+        (if auto_weather != nil then " info-auto-weather ! " else "") ::
+        (if auto_pollution != nil then itoa auto_pollution else "") ::
+        (if auto_pollution != nil then " info-auto-pollution ! " else "") ::
         nil -> code in
     forth_interpreter_ex code nil nil nil (fixarg2 #_http_autocontrol_cb sock);;
 

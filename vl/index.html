@@ -186,6 +186,80 @@ input, select, textarea {
     </div>
   </div>
 
+  <h3 class="title">Auto-control</h3>
+
+  <div class="row">
+    <div class="column column-25">
+      <form action="/autocontrol" method="GET">
+        <fieldset>
+            <label for="autoclockField">Clock</label>
+            <select name="c" id="autoclockField" onchange="this.form.submit()">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+            </select>
+        </fieldset>
+      </form>
+    </div>
+    <div class="column column-25">
+      <form action="/autocontrol" method="GET">
+        <fieldset>
+            <label for="autohalftimeField">Half-time</label>
+            <select name="h" id="autohalftimeField" onchange="this.form.submit()">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+            </select>
+        </fieldset>
+      </form>
+    </div>
+    <div class="column column-25">
+      <form action="/autocontrol" method="GET">
+        <fieldset>
+            <label for="autosurpriseField">Surprise</label>
+            <select name="s" id="autosurpriseField" onchange="this.form.submit()">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+            </select>
+        </fieldset>
+      </form>
+    </div>
+    <div class="column column-25">
+      <form action="/autocontrol" method="GET">
+        <fieldset>
+            <label for="autotaichiField">Tai Chi</label>
+            <select name="t" id="autotaichiField" onchange="this.form.submit()">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+            </select>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="column column-25">
+      <form action="/autocontrol" method="GET">
+        <fieldset>
+            <label for="autoWeatherField">Auto weather</label>
+            <select name="aw" id="autoWeatherField" onchange="this.form.submit()">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+            </select>
+        </fieldset>
+      </form>
+    </div>
+    <div class="column column-25">
+      <form action="/autocontrol" method="GET">
+        <fieldset>
+            <label for="autoPollutionField">Auto pollution</label>
+            <select name="ap" id="autoPollutionField" onchange="this.form.submit()">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+            </select>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+
   <h3 class="title">Ears</h3>
 
   <form action="/left" method="GET">
@@ -444,12 +518,20 @@ input, select, textarea {
             </select>
         </div>
         <div class="column">
-            <label for="wakeUpField">Wake up</label>
+            <label for="wakeUpField">Wake up (h)</label>
             <input name="w" type="number" min="0" max="23" placeholder="7" id="wakeUpField" />
         </div>
         <div class="column">
-            <label for="goToBedField">Go to bed</label>
+            <label for="wakeMinField">Wake up (min)</label>
+            <input name="wu" type="number" min="0" max="59" placeholder="0" id="wakeMinField" />
+        </div>
+        <div class="column">
+            <label for="goToBedField">Bed (h)</label>
             <input name="b" type="number" min="0" max="23" placeholder="22" id="goToBedField" />
+        </div>
+        <div class="column">
+            <label for="bedMinField">Bed (min)</label>
+            <input name="bu" type="number" min="0" max="59" placeholder="0" id="bedMinField" />
         </div>
       </div>
     </fieldset>
@@ -525,6 +607,8 @@ async function onLoad() {
     document.getElementById("longitudeField").value = status.longitude;
     document.getElementById("wakeUpField").value = status.wake_up;
     document.getElementById("goToBedField").value = status.go_to_bed;
+    document.getElementById("wakeMinField").value = status.wake_minute;
+    document.getElementById("bedMinField").value = status.bed_minute;
 
     document.querySelector('#weatherField').value = status.info.weather;
     document.querySelector('#pollutionField').value = status.info.pollution;
@@ -534,6 +618,13 @@ async function onLoad() {
     document.querySelector('#stockField').value = status.info.stock;
     document.querySelector('#emailsField').value = status.info.emails;
     document.querySelector('#noseField').value = status.info.messages;
+
+    document.querySelector('#autoclockField').value = status.autoclock_enabled;
+    document.querySelector('#autohalftimeField').value = status.autohalftime_enabled;
+    document.querySelector('#autosurpriseField').value = status.autosurprise_enabled;
+    document.querySelector('#autotaichiField').value = status.autotaichi_enabled;
+    document.querySelector('#autoWeatherField').value = status.info_auto_weather;
+    document.querySelector('#autoPollutionField').value = status.info_auto_pollution;
 
     document.getElementById("ledNoseField").value = formatColor(status.leds.overrides.nose);
     document.getElementById("ledLeftField").value = formatColor(status.leds.overrides.left);
