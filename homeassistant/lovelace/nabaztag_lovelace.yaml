@@ -10,25 +10,22 @@ cards:
       {% if u > 0 %}Uptime : **{{ d }}j {{ h }}h {{ m }}m**{% else %}🔄 Reboot en cours...{% endif %}
 
   # ========== SYNCHRONISATION ==========
-  - type: entities
-    title: 🔄 Synchronisation HA ↔ Lapin
-    show_header_toggle: false
-    entities:
-      - entity: binary_sensor.configuration_firmware_synchronisee
-        name: Configuration
-      - entity: sensor.nabaztag_telnet_status
-        attribute: uptime
-        name: Redémarrage détecté
-      - entity: sensor.nabaztag_telnet_status
-        attribute: sleep_state
-        name: Lapin endormi
-      - type: button
-        name: Forcer setup complet
-        icon: mdi:send
-        tap_action:
-          action: call-service
-          service: rest_command.nabaztag_setup
-          target: {}
+  - type: markdown
+    content: >
+      ### 🔄 Synchronisation HA ↔ Lapin
+
+      {% set ac = state_attr('sensor.nabaztag_telnet_status', 'autoclock') %}
+      {% set ah = state_attr('sensor.nabaztag_telnet_status', 'autohalftime') %}
+      {% set as = state_attr('sensor.nabaztag_telnet_status', 'autosurprise') %}
+      {% set at = state_attr('sensor.nabaztag_telnet_status', 'autotaichi') %}
+      {% set c = states('input_boolean.nabaztag_firmware_clock') == 'on' %}
+      {% set h = states('input_boolean.nabaztag_firmware_halftime') == 'on' %}
+      {% set s = states('input_boolean.nabaztag_firmware_surprise') == 'on' %}
+      {% set t = states('input_boolean.nabaztag_firmware_taichi') == 'on' %}
+      {% set sync = (c == (ac == 1)) and (h == (ah == 1)) and (s == (as == 1)) and (t == (at == 1)) %}
+      **Configuration :** {{ '✅ Synchronisée' if sync else '❌ Désynchronisée' }}
+      **Uptime :** {{ state_attr('sensor.nabaztag_telnet_status', 'uptime') | int(0) // 86400 }}j
+      **Lapin :** {{ '💤 endormi' if state_attr('sensor.nabaztag_telnet_status', 'sleep_state') == 1 else '👀 éveillé' }}
 
   # ========== CONFIGURATION ==========
   - type: entities
