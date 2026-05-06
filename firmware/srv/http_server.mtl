@@ -402,19 +402,16 @@ fun http_post_leds sock args=
  * Set up configuration parameters from HTTP request arguments.
  */
 fun http_get_setup sock args=
-    config_set_lang http_arg_str args 'l';            // set language
-    config_set_city http_arg_str args 'c';            // set city code
-    config_set_dst http_arg_int args 'd';             // set Daylight Saving Time
-    config_set_latitude http_arg_str args 'j';        // set latitude
-    config_set_longitude http_arg_str args 'k';       // set longitude
-    config_set_wake_up http_arg_int args 'w';         // set wake up time
-    config_set_go_to_bed http_arg_int args 'b';       // set go to bed time
-    config_set_taichi_freq http_arg_int args 't';     // set taichi frequency
-    let http_arg_str args 'u' -> server_url in         // set server URL (pour mode SERVERLESS)
-        if server_url != nil then
-            config_set_server_url server_url;
+    let http_arg_str args 'l' -> l in if l != nil then config_set_lang l;  // set language
+    let http_arg_str args 'c' -> c in if c != nil then config_set_city c;  // set city
+    let http_arg_int args 'd' -> d in if d != nil then config_set_dst d;  // set DST
+    let http_arg_str args 'j' -> j in if j != nil then config_set_latitude j;  // set latitude
+    let http_arg_str args 'k' -> k in if k != nil then config_set_longitude k;  // set longitude
+    let http_arg_int args 'w' -> w in if w != nil then config_set_wake_up w;  // set wake up time
+    let http_arg_int args 'b' -> b in if b != nil then config_set_go_to_bed b;  // set bed time
+    let http_arg_int args 't' -> t in if t != nil then config_set_taichi_freq t;  // set taichi freq
+    let http_arg_str args 'u' -> u in if u != nil then config_set_server_url u;  // set server URL
     config_save;
-    forth_interpreter WORD_UPDATE_WEATHER;
     http_send_header_and_close HTTP_204 nil sock;;
 
 /**

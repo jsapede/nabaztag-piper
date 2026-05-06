@@ -1,29 +1,233 @@
 type: vertical-stack
 cards:
-  # ========== CONTRÔLE PRINCIPAL ==========
-  - type: entities
-    title: 🎭 Nabaztag - Contrôle principal
-    entities:
-      - entity: input_boolean.nabaztaglife
-        name: Animations vivantes (HA)
-      - entity: input_boolean.nabaztag_weather_enabled
-        name: LED Météo
-      - entity: input_boolean.nabaztag_traffic_enabled
-        name: LED Trafic
-      - entity: input_boolean.nabaztag_pollution_enabled
-        name: LED Qualité air
-      - entity: input_boolean.nabaztag_nose_enabled
-        name: LED Nez
+  # ========== HEADER ==========
+  - type: markdown
+    content: |
+      # 🐇 **Nabaztag**
+      État firmware interrogé par telnet toutes les 30s.
+      {% set u = state_attr('sensor.nabaztag_telnet_status', 'uptime') | int(0) %}
+      {% set d = u // 86400 %} {% set h = (u % 86400) // 3600 %} {% set m = (u % 3600) // 60 %}
+      {% if u > 0 %}Uptime : **{{ d }}j {{ h }}h {{ m }}m**{% else %}🔄 Reboot en cours...{% endif %}
 
-  # ========== FIRMWARE AUTO CONTROL ==========
+  # ========== SYNCHRONISATION ==========
   - type: entities
-    title: 🤖 Automatismes firmware
+    title: 🔄 Synchronisation HA ↔ Lapin
+    show_header_toggle: false
     entities:
-      - entity: input_boolean.nabaztag_firmware_clock
-        name: Horloge (heur)
-      - entity: input_boolean.nabaztag_firmware_halftime
-        name: Demi-heure
-      - entity: input_boolean.nabaztag_firmware_surprise
-        name: Surprise
-      - entity: input_boolean.nabaztag_firmware_taichi
-        name: Taichi
+      - entity: binary_sensor.configuration_firmware_synchronisee
+        name: Configuration
+      - entity: binary_sensor.nabaztag_rebooted
+        name: Redémarrage détecté
+      - entity: binary_sensor.nabaztag_asleep_binary
+        name: Lapin endormi
+      - type: button
+        name: Forcer setup complet
+        icon: mdi:send
+        tap_action:
+          action: call-service
+          service: rest_command.nabaztag_setup
+          target: {}
+
+  # ========== CONFIGURATION ==========
+  - type: entities
+    title: Configuration
+    show_header_toggle: false
+    state_color: false
+    entities:
+      - entity: input_select.nabaztag_language
+        name: Langue
+      - entity: input_select.nabaztag_timezone_city
+        name: Ville / fuseau
+      - entity: input_boolean.nabaztag_auto_dst
+        name: Auto DST
+      - entity: input_number.nabaztag_wake_hour
+        name: Réveil heure
+      - entity: input_number.nabaztag_sleep_hour
+        name: Coucher heure
+      - entity: input_number.nabaztag_taichi_freq
+        name: Fréquence Taichi
+      - entity: input_text.nabaztag_message
+        name: Message à dire
+      - type: button
+        name: Dire le message
+        icon: mdi:volume-high
+        tap_action:
+          action: call-service
+          service: script.nabaztag_talk
+          target: {}
+
+  # ========== PARAMETRES ==========
+  - type: markdown
+    content: "## ⚙️ Paramètres"
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_firmware_clock
+        icon: mdi:clock-outline
+        primary: Annonce heure
+        color: |
+          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_clock_binary', 'on') %}
+            green
+          {% elif is_state(entity, 'on') %}
+            orange
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_firmware_halftime
+        icon: mdi:bell-ring-outline
+        primary: Annonce 1/2 heure
+        color: |
+          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_halftime_binary', 'on') %}
+            green
+          {% elif is_state(entity, 'on') %}
+            orange
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_firmware_surprise
+        icon: mdi:gift-outline
+        primary: Sons surprise
+        color: |
+          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_surprise_binary', 'on') %}
+            green
+          {% elif is_state(entity, 'on') %}
+            orange
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_firmware_taichi
+        icon: mdi:meditation
+        primary: Anim Taichi
+        color: |
+          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_taichi_binary', 'on') %}
+            green
+          {% elif is_state(entity, 'on') %}
+            orange
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_weather_enabled
+        icon: mdi:weather-partly-cloudy
+        primary: LED météo
+        color: |
+          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_led_weather_binary', 'on') %}
+            green
+          {% elif is_state(entity, 'on') %}
+            orange
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_traffic_enabled
+        icon: mdi:car
+        primary: LED trafic
+        color: |
+          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_led_traffic_binary', 'on') %}
+            green
+          {% elif is_state(entity, 'on') %}
+            orange
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_pollution_enabled
+        icon: mdi:factory
+        primary: LED pollution
+        color: |
+          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_led_pollution_binary', 'on') %}
+            green
+          {% elif is_state(entity, 'on') %}
+            orange
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_nose_enabled
+        icon: mdi:lightbulb-on-outline
+        primary: LED Nez
+        color: |
+          {% if is_state(entity, 'on') %}
+            green
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_traffic_auto_update
+        icon: mdi:car-clock
+        primary: Màj trafic auto HA
+        color: |
+          {% if is_state(entity, 'on') %}
+            green
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_weather_auto_update
+        icon: mdi:weather-sync
+        primary: Màj météo auto HA
+        color: |
+          {% if is_state(entity, 'on') %}
+            green
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+
+      - type: custom:mushroom-template-card
+        entity: input_boolean.nabaztag_pollution_auto_update
+        icon: mdi:air-filter
+        primary: Màj pollution auto HA
+        color: |
+          {% if is_state(entity, 'on') %}
+            green
+          {% else %}
+            disabled
+          {% endif %}
+        tap_action:
+          action: toggle
+        vertical: false
+

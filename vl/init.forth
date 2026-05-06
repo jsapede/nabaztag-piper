@@ -42,11 +42,15 @@ wake-up-at @ go-to-bed-at @ = if  \ always awake if equal
   false
 else
   get-hour
-  dup \ dup hour
+  dup
   wake-up-at @ <
-  swap \ swap hour and flag
+  swap
   go-to-bed-at @ >=
-  or
+  wake-up-at @ go-to-bed-at @ > if  \ cross-midnight (bed < wake): need AND
+    and
+  else                             \ normal (wake < bed): need OR
+    or
+  then
 then ;
 
 : daytime ( -- )  \ Display the current time (UTC)
@@ -55,18 +59,14 @@ utc>string . cr ;
 "config.forth" load-srv
 "consts.forth" load-srv
 "hooks.forth" load-srv
-"weather.forth" load-srv
 "telnet.forth" load-srv
 "crontab.forth" load-srv
 "choreography.forth" load-srv
-\ "palette.forth" load-srv
 
 : on-connect ( -- )
 "interpreter" 23 "telnet" tcp-listen  \ start telnet server
 "daytime" 21 "daytime" tcp-listen  \ start daytime server
-"update-weather" weather-time-delay "weather" task-start \ start weather update
 "crontab" 59000 "crontab" task-start  \ start crontab
-crontab
-update-weather
+load-info-animations  \ load LED animations from server
 sleeping-time? if sleep else wake-up then
 ;

@@ -32,7 +32,7 @@ proto main 0;;
 #define WIFI_REBOOT_ON_LOST
 
 const PORT_HTTP = 80;;
-const BYTECODE_REVISION_STR = "$Rev: 202604300755$";;
+const BYTECODE_REVISION_STR = "$Rev: 202605061922$";;
 const STD_NET_TIMEOUT = 10000;;
 const LED_TIMEOUT = 600;; // 10 minutes
 

@@ -3,7 +3,6 @@
 # =========================
 #
 # Architecture:
-# - Nabaztag Life: actions aléatoires (nabaztag_life.yaml)
 # - Reconnexion: /setup + restore LEDs au démarrage HA ou reconnexion Nabaztag
 
 automation:
@@ -192,4 +191,134 @@ automation:
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
+
+  # ========== AUTO DST ==========
+  - id: nabaztag_auto_dst
+    alias: "Nabaztag - Auto DST"
+    description: "Déclenche /setup pour appliquer DST (calculé par HA)"
+    mode: single
+    trigger:
+      - trigger: homeassistant
+        event: start
+      - trigger: time_pattern
+        hours: /1
+      - trigger: state
+        entity_id: input_boolean.nabaztag_auto_dst
+    condition:
+      - condition: state
+        entity_id: input_boolean.nabaztag_auto_dst
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - action: rest_command.nabaztag_setup_dst
+
+  # ========== WAZE → TRAFFIC ==========
+  - id: nabaztag_waze_traffic
+    alias: "Nabaztag - Waze Traffic"
+    description: "Quand le niveau trafic Waze change, met à jour input_number"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: sensor.trafic_niveau
+      - trigger: state
+        entity_id: input_boolean.nabaztag_traffic_auto_update
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.nabaztag_traffic_auto_update
+        state: "on"
+      - condition: template
+        value_template: "{{ states('sensor.trafic_niveau') not in ['unavailable', 'none', 'unknown'] }}"
+    action:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.nabaztag_traffic
+        data:
+          value: "{{ states('sensor.trafic_niveau') | int }}"
+
+  # ========== MÉTÉO → WEATHER ==========
+  - id: nabaztag_weather_auto
+    alias: "Nabaztag - Météo Auto"
+    description: "weather_code → input_number → forwardé au lapin"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: sensor.meteo_niveau
+      - trigger: state
+        entity_id: input_boolean.nabaztag_weather_auto_update
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.nabaztag_weather_auto_update
+        state: "on"
+      - condition: template
+        value_template: "{{ states('sensor.meteo_niveau') not in ['unavailable', 'none', 'unknown'] }}"
+    action:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.nabaztag_weather
+        data:
+          value: "{{ states('sensor.meteo_niveau') | int }}"
+
+  # ========== WEATHER → LAPIN ==========
+  - id: nabaztag_weather_update
+    alias: "Nabaztag - Update Weather"
+    description: "Envoie météo au lapin quand input_number change"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: input_number.nabaztag_weather
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.nabaztag_weather_enabled
+        state: "on"
+    action:
+      - action: shell_command.nabaztag_telnet_weather
+
+  # ========== POLLUTION → INPUT ==========
+  - id: nabaztag_pollution_auto
+    alias: "Nabaztag - Pollution Auto"
+    description: "sensor AQI → input_number → forwardé au lapin"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: sensor.pollution_niveau
+      - trigger: state
+        entity_id: input_boolean.nabaztag_pollution_auto_update
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.nabaztag_pollution_auto_update
+        state: "on"
+      - condition: template
+        value_template: "{{ states('sensor.pollution_niveau') not in ['unavailable', 'none', 'unknown'] }}"
+    action:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.nabaztag_pollution
+        data:
+          value: "{{ states('sensor.pollution_niveau') | int }}"
+
+  # ========== POLLUTION → LAPIN ==========
+  - id: nabaztag_pollution_update
+    alias: "Nabaztag - Update Pollution"
+    description: "Envoie pollution au lapin quand input_number change"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: input_number.nabaztag_pollution
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.nabaztag_pollution_enabled
+        state: "on"
+    action:
+      - action: shell_command.nabaztag_telnet_pollution
 

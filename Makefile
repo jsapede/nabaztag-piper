@@ -33,11 +33,13 @@ words:
 
 .PHONY: firmware
 firmware: words
-	@./scripts/make_nominal.sh
-	@$(COMPILER) -s "nominal.mtl" "bootcode.bin"
-	@rm -f nominal.mtl
-	@cp bootcode.bin vl/bc.jsp
-	@echo "Firmware copied to $$PWD/vl/bc.jsp"
+	@REVISION=$$(date +%Y%m%d%H%M); \
+	sed -i "s|URL_BYTECODE_REVISION = \"[^\"]*\"|URL_BYTECODE_REVISION = \"$$REVISION\"|" firmware/utils/url.mtl; \
+	sed -i "s|BYTECODE_REVISION_STR = \"[^\"]*\"|BYTECODE_REVISION_STR = \"\$$Rev: $$REVISION\$$\"|" firmware/main.mtl; \
+	./scripts/make_nominal.sh; \
+	$(COMPILER) -s "nominal.mtl" "bootcode.bin"; \
+	cp bootcode.bin vl/bc.jsp; \
+	echo "Firmware revision $$REVISION copied to $$PWD/vl/bc.jsp"
 
 .PHONY: deploy
 deploy: firmware

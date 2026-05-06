@@ -2,19 +2,19 @@ type: markdown
 title: 💡 Nabaztag - Guide des LEDs
 content: |
   ## Signification des LEDs du Nabaztag
-  
+
   ### 🌤️ Météo (LEDs du ventre — flares)
 
   Chaque niveau alterne entre centre allumé et côtés allumés (flare), tempo unique (~5s/cycle) :
 
   | Niveau | Flare | Couleur |
   |--------|-------|---------|
-  | 0 **Soleil** | `⚫🟡⚫ ↔ 🟡⚫🟡` | 🟡 Jaune |
-  | 1 **Nuage** | `⚫🟡⚫ ↔ 🌑⚫🌑` | 🟡🌑 Jaune+gris |
-  | 2 **Brouillard** | `⚫🌑⚫ ↔ 🌑⚫🌑` | 🌑 Gris |
-  | 3 **Pluie** | `⚫🔵⚫ ↔ 🔵⚫🔵` | 🔵 Bleu |
-  | 4 **Neige** | `⚫⬜⚫ ↔ ⬜⚫⬜` | ⬜ Blanc |
-  | 5 **Orage** | `🟡🔵🟡 ↔ 🔵🟡🔵` | 🟡🔵 Jaune+bleu |
+  | 0 **Soleil** | ⚫🟡⚫ ↔ 🟡⚫🟡 | 🟡 Jaune |
+  | 1 **Nuage** | ⚫🟡⚫ ↔ 🌑⚫🌑 | 🟡🌑 Jaune+gris |
+  | 2 **Brouillard** | ⚫🌑⚫ ↔ 🌑⚫🌑 | 🌑 Gris |
+  | 3 **Pluie** | ⚫🔵⚫ ↔ 🔵⚫🔵 | 🔵 Bleu |
+  | 4 **Neige** | ⚫⬜⚫ ↔ ⬜⚫⬜ | ⬜ Blanc |
+  | 5 **Orage** | 🟡🔵🟡 ↔ 🔵🟡🔵 | 🟡🔵 Jaune+bleu |
 
   ### 🚗 Trafic (LEDs du ventre — snake)
 
@@ -22,13 +22,13 @@ content: |
 
   | Niveau | Temps | Couleur | Chenillard |
   |--------|-------|---------|------------|
-  | 0 **Libre** | 2s 🏃 | 🟢 Vert | `🟢○○ → 🟢🟢○ → 🟢🟢🟢 → ○🟢🟢 → ○○🟢 → ○○○` |
-  | 1 **Correct** | 3s 🚶 | 🟢🟠 Vert+orange | `🟠○○ → 🟢🟠○ → 🟢🟢🟠 → ○🟢🟢 → ○○🟢 → ○○○` |
-  | 2 **Modéré** | 4s 🐢 | 🟢🟠 2 orange | `🟠○○ → 🟠🟠○ → 🟢🟠🟠 → ○🟢🟠 → ○○🟢 → ○○○` |
-  | 3 **Dense** | 5s ↔ | 🟠 Orange | `🟠○○ → 🟠🟠○ → 🟠🟠🟠 → ○🟠🟠 → ○○🟠 → ○○○` |
-  | 4 **Embouteillage** | 6s 🐌 | 🟠🔴 Rouge+orange | `🔴○○ → 🔴🟠○ → 🔴🟠🟠 → ○🔴🟠 → ○○🔴 → ○○○` |
-  | 5 **Très chargé** | 7s 🐌 | 🔴🔴🟠 Rouge | `🔴○○ → 🔴🔴○ → 🔴🔴🟠 → ○🔴🟠 → ○○🔴 → ○○○` |
-  | 6 **Extrême** | 8s 🕐 | 🔴🔴🔴 Rouge vif | `🔴○○ → 🔴🔴○ → 🔴🔴🔴 → ○🔴🔴 → ○○🔴 → ○○○` |
+  | 0 **Libre** | 2s 🏃 | 🟢 Vert | 🟢○○ → 🟢🟢○ → 🟢🟢🟢 → ○🟢🟢 → ○○🟢 → ○○○ |
+  | 1 **Correct** | 3s 🚶 | 🟢🟠 Vert+orange | 🟠○○ → 🟢🟠○ → 🟢🟢🟠 → ○🟢🟢 → ○○🟢 → ○○○ |
+  | 2 **Modéré** | 4s 🐢 | 🟢🟠 2 orange | 🟠○○ → 🟠🟠○ → 🟢🟠🟠 → ○🟢🟠 → ○○🟢 → ○○○ |
+  | 3 **Dense** | 5s ↔ | 🟠 Orange | 🟠○○ → 🟠🟠○ → 🟠🟠🟠 → ○🟠🟠 → ○○🟠 → ○○○ |
+  | 4 **Embouteillage** | 6s 🐌 | 🟠🔴 Rouge+orange | 🔴○○ → 🟠🔴○ → 🟠🟠🔴 → ○🟠🟠 → ○○🟠 → ○○○ |
+  | 5 **Très chargé** | 7s 🐌 | 🔴🔴🟠 Rouge | 🔴○○ → 🔴🔴○ → 🟠🔴🔴 → ○🟠🔴 → ○○🟠 → ○○○ |
+  | 6 **Extrême** | 8s 🕐 | 🔴🔴🔴 Rouge vif | 🔴○○ → 🔴🔴○ → 🔴🔴🔴 → ○🔴🔴 → ○○🔴 → ○○○ |
 
   ### 💨 Pollution (LEDs du ventre — bargraph + clignotement)
 
@@ -36,15 +36,15 @@ content: |
 
   | Niveaux | Couleur | Séquence |
   |---------|---------|----------|
-  | 0-1 **Bon** | 🟢 Vert | `🟢○○ → 🟢🟢○ → 🟢🟢🟢 → ○○○ → 🟢🟢🟢 → ○○○ → 🟢🟢🟢 → ○○○` |
-  | 2-3 **Correct** | 🟢🟠 Vert+jaune | `🟢○○ → 🟢🟢○ → 🟢🟢🟠 → ○○○ → 🟢🟢🟠 → ○○○ → 🟢🟢🟠 → ○○○` |
-  | 4-5 **Moyen** | 🟢🟠 Vert+orange | `🟢○○ → 🟢🟠○ → 🟢🟠🟠 → ○○○ → 🟢🟠🟠 → ○○○ → 🟢🟠🟠 → ○○○` |
-  | 6-7 **Médiocre** | 🟠 Orange | `🟠○○ → 🟠🟠○ → 🟠🟠🟠 → ○○○ → 🟠🟠🟠 → ○○○ → 🟠🟠🟠 → ○○○` |
-  | 8-9 **Mauvais** | 🟠🔴 Orange+rouge | `🟠○○ → 🟠🟠○ → 🟠🟠🔴 → ○○○ → 🟠🟠🔴 → ○○○ → 🟠🟠🔴 → ○○○` |
-  | 10 **Très mauvais** | 🔴🔴🔴 Rouge | `🟠○○ → 🟠🔴○ → 🟠🔴🔴 → ○○○ → 🟠🔴🔴 → ○○○ → 🟠🔴🔴 → ○○○` |
-  
+  | 0-1 **Bon** | 🟢 Vert | 🟢○○ → 🟢🟢○ → 🟢🟢🟢 → ○○○ → 🟢🟢🟢 → ○○○ → 🟢🟢🟢 → ○○○ |
+  | 2-3 **Correct** | 🟢🟠 Vert+jaune | 🟢○○ → 🟢🟢○ → 🟢🟢🟠 → ○○○ → 🟢🟢🟠 → ○○○ → 🟢🟢🟠 → ○○○ |
+  | 4-5 **Moyen** | 🟢🟠 Vert+orange | 🟢○○ → 🟢🟠○ → 🟢🟠🟠 → ○○○ → 🟢🟠🟠 → ○○○ → 🟢🟠🟠 → ○○○ |
+  | 6-7 **Médiocre** | 🟠 Orange | 🟠○○ → 🟠🟠○ → 🟠🟠🟠 → ○○○ → 🟠🟠🟠 → ○○○ → 🟠🟠🟠 → ○○○ |
+  | 8-9 **Mauvais** | 🟠🔴 Orange+rouge | 🟠○○ → 🟠🟠○ → 🟠🟠🔴 → ○○○ → 🟠🟠🔴 → ○○○ → 🟠🟠🔴 → ○○○ |
+  | 10 **Très mauvais** | 🔴🔴🔴 Rouge | 🟠○○ → 🟠🔴○ → 🟠🔴🔴 → ○○○ → 🟠🔴🔴 → ○○○ → 🟠🔴🔴 → ○○○ |
+
   ### 👃 Nez (LED du nez)
-  
+
   | État | Signification |
   |------|---------------|
   | Éteint | ⬤ Noir |
@@ -54,18 +54,18 @@ content: |
   | 3 clignotements | 🚨 Panic |
   | Clignote violet | 📧 Emails |
   | Clignote rouge | ⬇️ Réception données |
-  
+
   ---
-  
+
   ### 🎵 Sons disponibles
-  
+
   - **Ack** : Son de confirmation
   - **Abort** : Son d'annulation
   - **Communication** : Son de communication
   - **Ministop** : Son stop
-  
+
   ### 🎭 Oreilles (positions 0-16)
-  
+
   - 0 : Rabattues vers l'arrière
   - 8 : Debout droites
   - 16 : Rabattues vers l'avant

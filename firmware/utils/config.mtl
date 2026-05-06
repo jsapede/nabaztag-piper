@@ -44,7 +44,12 @@ fun config_save =
  */
 fun config_load =
     set _config_data = strnew CONF_LENGTH;
-    load _config_data 0 "conf.bin" 0 CONF_LENGTH;;
+    load _config_data 0 "conf.bin" 0 CONF_LENGTH;
+    // Valeurs par défaut si flash pas initialisée (0xFF = 255)
+    if strget _config_data CONF_WAKE_UP > 23 then
+        strset _config_data CONF_WAKE_UP 7;
+    if strget _config_data CONF_GO_TO_BED > 23 then
+        strset _config_data CONF_GO_TO_BED 22;;
 
 fun _config_get i len= strsub _config_data i len;;
 

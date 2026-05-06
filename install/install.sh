@@ -257,9 +257,19 @@ TTS_PORT="${TTS_PORT:-6790}"
 # ─── Phase 2 : Compilation firmware (TOUJOURS) ──────────────
 _compile_firmware() {
     local build_dir=$(mktemp -d)
-    local old_revision=""
-    # Sauvegarder l'ancienne révision si fichier déjà modifié
-    [ -f "$SOURCE_DIR/firmware/utils/url.mtl" ] && old_revision=$(grep -oP 'XXX_REVISION_XXX' "$SOURCE_DIR/firmware/utils/url.mtl" || echo "")
+
+    echo ""
+    echo " ╔══════════════════════════════════════════════════════"
+    echo " ║  Build système (Makefile du projet)"
+    echo " ║"
+    echo " ║  La révision du firmware est automatiquement injectée"
+    echo " ║  par le Makefile : date +%Y%m%d%H%M"
+    echo " ║"
+    echo " ║  AVANT de compiler, vérifiez que la date et l'heure"
+    echo " ║  de votre système sont correctes !"
+    echo " ║  Date actuelle : $(date '+%Y-%m-%d %H:%M')"
+    echo " ║"
+    echo " ╚══════════════════════════════════════════════════════"
 
     # Copier les sources dans un répertoire temporaire pour ne pas polluer le repo
     run cp -r "$SOURCE_DIR/compiler" "$build_dir/" 2>/dev/null || true
@@ -271,11 +281,7 @@ _compile_firmware() {
     # Injecter l'IP du TTS dans la copie (pas dans l'original)
     run sed -i "s|XXX\.XXX\.XXX\.XXX:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|;s|[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]*|$TTS_SERVER_IP:$TTS_PORT|" \
         "$build_dir/vl/config.forth" 2>/dev/null || true
-    # Injecter le timestamp dans les copies (pas dans l'original)
-    REVISION_STAMP=$(date +%Y%m%d%H%M)
-    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$build_dir/firmware/utils/url.mtl" 2>/dev/null || true
-    run sed -i "s|XXX_REVISION_XXX|$REVISION_STAMP|" "$build_dir/firmware/main.mtl" 2>/dev/null || true
-    echo "   Revision firmware: $REVISION_STAMP"
+    echo "   IP TTS injectée dans config.forth"
 
     # Compiler depuis le répertoire temporaire
     run make -C "$build_dir" compiler 2>&1 || echo "   Compilateur déjà présent ou absent (pre-compilé utilisé)"
@@ -285,7 +291,8 @@ _compile_firmware() {
     run mkdir -p "$GLOBAL_DIR/firmware/vl"
     run cp -r "$build_dir/vl/." "$GLOBAL_DIR/firmware/vl/" 2>/dev/null || true
     if [ -f "$GLOBAL_DIR/firmware/vl/bc.jsp" ]; then
-        echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp"
+        local built_revision=$(strings "$GLOBAL_DIR/firmware/vl/bc.jsp" 2>/dev/null | grep "Rev:" | head -1 | sed 's/.*Rev: \([0-9]*\)\$$/\1/')
+        echo "   Firmware -> $GLOBAL_DIR/firmware/vl/bc.jsp (rev: ${built_revision:-?})"
     else
         echo "   AVERTISSEMENT: firmware non compilé - utiliser un binaire pre-compilé"
     fi

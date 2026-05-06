@@ -248,27 +248,6 @@ script:
     sequence:
       - action: shell_command.nabaztag_telnet_taichi
         data:
-          level: "{{ intensity }}"
+          intensity: "{{ intensity }}"
 
-  # ========== NABAZTAG LIFE ==========
 
-  nabaztag_generate_random_action_times:
-    alias: "Générer heures actions aléatoires"
-    description: "Génère 2 heures aléatoires (9h-22h) pour Nabaztag Life"
-    sequence:
-      - variables:
-          h1: "{{ range(9, 22) | random }}"
-          m1: "{{ range(0, 60) | random }}"
-      - action: input_datetime.set_datetime
-        target:
-          entity_id: input_datetime.nabaztag_random_action_time_1
-        data:
-          time: "{{ '%02d:%02d:00' | format(h1, m1) }}"
-      - variables:
-          h2: "{{ range(9, 22) | random }}"
-          m2: "{{ range(0, 60) | random }}"
-      - action: input_datetime.set_datetime
-        target:
-          entity_id: input_datetime.nabaztag_random_action_time_2
-        data:
-          time: "{{ '%02d:%02d:00' | format(h2, m2) }}"
