@@ -15,4 +15,3 @@ command_line:
         - weather
         - traffic
         - pollution
-        - uptime

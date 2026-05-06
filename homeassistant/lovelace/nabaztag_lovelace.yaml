@@ -5,9 +5,6 @@ cards:
     content: |
       # 🐇 **Nabaztag**
       État firmware interrogé par telnet toutes les 30s.
-      {% set u = state_attr('sensor.nabaztag_telnet_status', 'uptime') | int(0) %}
-      {% set d = u // 86400 %} {% set h = (u % 86400) // 3600 %} {% set m = (u % 3600) // 60 %}
-      {% if u > 0 %}Uptime : **{{ d }}j {{ h }}h {{ m }}m**{% else %}🔄 Reboot en cours...{% endif %}
 
   # ========== CONFIGURATION ==========
   - type: entities
