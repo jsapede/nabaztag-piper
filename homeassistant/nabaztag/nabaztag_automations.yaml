@@ -127,7 +127,7 @@ automation:
         data:
           clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
       - delay:
-          seconds: 1
+          seconds: 5
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -147,7 +147,7 @@ automation:
         data:
           halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
       - delay:
-          seconds: 1
+          seconds: 5
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -167,7 +167,7 @@ automation:
         data:
           surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
       - delay:
-          seconds: 1
+          seconds: 5
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -187,7 +187,7 @@ automation:
         data:
           taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
       - delay:
-          seconds: 1
+          seconds: 5
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
