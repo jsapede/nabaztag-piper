@@ -245,18 +245,7 @@ Ce fichier documente tous les inputs (entrées) utilisés par l'intégration Nab
 
 ## Input Boolean (Interrupteurs)
 
-### nabaztaglife
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Nabaztag Life |
-| Type | input_boolean |
-| Valeur initiale | on |
-| Icône | mdi:rabbit |
-
-**Influence**: Active ou désactive toutes les actions vivantes (Nabaztag Life). Quand `off`, aucune automation de réveil/coucher/actions aléatoires ne s'exécute.
-
-**Comportement**:
+### nabaztag_daylight_saving
 - `on`: Réveil automatique, actions aléatoires, pause déjeuner actifs
 - `off`: Lapin en mode "dodo" (pas d'actions automatiques)
 
@@ -323,32 +312,6 @@ Ce fichier documente tous les inputs (entrées) utilisés par l'intégration Nab
 | Valeur initiale | off |
 
 **Influence**: Envoyée au Nabaztag via `/setup` pour l'ajustement horaire (DST).
-
----
-
-## Input DateTime (Déclencheurs Nabaztag Life)
-
-### nabaztag_random_action_time_1
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Temps action aléatoire 1 |
-| Type | input_datetime |
-| Option | has_time: true |
-
-**Influence**: Première heure d'action aléatoire (9h-21h). Générée automatiquement par `nabaztag_generate_random_action_times`.
-
----
-
-### nabaztag_random_action_time_2
-
-| Propriété | Valeur |
-|-----------|--------|
-| Nom affiché | Temps action aléatoire 2 |
-| Type | input_datetime |
-| Option | has_time: true |
-
-**Influence**: Deuxième heure d'action aléatoire (9h-21h). Générée automatiquement par `nabaztag_generate_random_action_times`.
 
 ---
 

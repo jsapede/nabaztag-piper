@@ -314,23 +314,6 @@ Ces scripts vérifient que le boolean correspondant est `on` avant d'exécuter l
 
 ---
 
-### nabaztag_generate_random_action_times
-
-| Propriété | Valeur |
-|-----------|--------|
-| ID | nabaztag_generate_random_action_times |
-| Alias | Générer heures actions aléatoires |
-
-**Description**: Génère 2 heures aléatoires pour les actions Nabaztag Life (entre 9h et 21h).
-
-**Sequence**:
-1. Génère h1 aléatoire (9-21), m1 aléatoire (0-59)
-2. Met à jour `input_datetime.nabaztag_random_action_time_1`
-3. Génère h2 aléatoire (9-21), m2 aléatoire (0-59)
-4. Met à jour `input_datetime.nabaztag_random_action_time_2`
-
----
-
 ## Scripts de gestion LEDs
 
 ### nabaztag_reset_leds

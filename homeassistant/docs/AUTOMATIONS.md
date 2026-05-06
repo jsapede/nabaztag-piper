@@ -21,9 +21,7 @@ device_tracker.nmap_nabaztag → nabaztag_online → rest_command.nabaztag_setup
 
 ### Conditions globales
 
-Toutes les automations liées au "Nabaztag Life" vérifient que `input_boolean.nabaztaglife = on` avant de s'exécuter.
-
-> Le **réveil et le coucher** sont gérés nativement par le firmware via les variables `wake-up-at` et `go-to-bed-at` configurées dans `/setup`. Les heures de réveil et coucher sont paramétrables depuis HA via `input_number.nabaztag_wake_hour` et `input_number.nabaztag_sleep_hour`, envoyées au firmware lors du `/setup` (automatisé au démarrage ou via le bouton Lovelace). Aucune automation HA supplémentaire n'est nécessaire.
+> Le **réveil et le coucher** sont gérés nativement par le firmware via les variables `wake-up-at` et `go-to-bed-at` configurées dans `/setup`. Les heures sont paramétrables depuis HA via `input_number.nabaztag_wake_hour` et `input_number.nabaztag_sleep_hour`. Aucune automation HA supplémentaire n'est nécessaire.
 
 ---
 
@@ -81,7 +79,7 @@ Toutes les automations liées au "Nabaztag Life" vérifient que `input_boolean.n
   to: "home"
 ```
 
-**Conditions**: Aucune (s'exécute même si nabaztaglife = off)
+**Conditions**: Aucune (s'exécute toujours)
 
 **Actions**:
 1. Envoie `/setup` (configuration complète)
