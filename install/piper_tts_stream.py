@@ -309,7 +309,8 @@ def text_to_phonemes(text):
         cmd = [ESPEAK_BINARY, "-v", ESPEAK_VOICE, "--ipa=3", "-q", text]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
         if result.returncode == 0 and result.stdout.strip():
-            phonemes = result.stdout.strip()
+            phonemes = result.stdout.strip().replace('\n', ' ').replace('\r', '')
+            logger.info(f"IPA phonemes: {phonemes[:100]}...")
             return f"[[{phonemes}]]"
         else:
             logger.warning(f"espeak-ng failed or empty: {result.stderr}")

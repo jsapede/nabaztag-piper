@@ -16,9 +16,11 @@ cards:
     entities:
       - entity: binary_sensor.configuration_firmware_synchronisee
         name: Configuration
-      - entity: binary_sensor.nabaztag_rebooted
+      - entity: sensor.nabaztag_telnet_status
+        attribute: uptime
         name: Redémarrage détecté
-      - entity: binary_sensor.nabaztag_asleep_binary
+      - entity: sensor.nabaztag_telnet_status
+        attribute: sleep_state
         name: Lapin endormi
       - type: button
         name: Forcer setup complet
@@ -68,7 +70,7 @@ cards:
         icon: mdi:clock-outline
         primary: Annonce heure
         color: |
-          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_clock_binary', 'on') %}
+          {% if is_state(entity, 'on') and state_attr('sensor.nabaztag_telnet_status', 'autoclock') == 1 %}
             green
           {% elif is_state(entity, 'on') %}
             orange
@@ -84,7 +86,7 @@ cards:
         icon: mdi:bell-ring-outline
         primary: Annonce 1/2 heure
         color: |
-          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_halftime_binary', 'on') %}
+          {% if is_state(entity, 'on') and state_attr('sensor.nabaztag_telnet_status', 'autohalftime') == 1 %}
             green
           {% elif is_state(entity, 'on') %}
             orange
@@ -100,7 +102,7 @@ cards:
         icon: mdi:gift-outline
         primary: Sons surprise
         color: |
-          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_surprise_binary', 'on') %}
+          {% if is_state(entity, 'on') and state_attr('sensor.nabaztag_telnet_status', 'autosurprise') == 1 %}
             green
           {% elif is_state(entity, 'on') %}
             orange
@@ -116,7 +118,7 @@ cards:
         icon: mdi:meditation
         primary: Anim Taichi
         color: |
-          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_firmware_taichi_binary', 'on') %}
+          {% if is_state(entity, 'on') and state_attr('sensor.nabaztag_telnet_status', 'autotaichi') == 1 %}
             green
           {% elif is_state(entity, 'on') %}
             orange
@@ -132,7 +134,7 @@ cards:
         icon: mdi:weather-partly-cloudy
         primary: LED météo
         color: |
-          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_led_weather_binary', 'on') %}
+          {% if is_state(entity, 'on') and state_attr('sensor.nabaztag_telnet_status', 'weather') not in [None, -1] %}
             green
           {% elif is_state(entity, 'on') %}
             orange
@@ -148,7 +150,7 @@ cards:
         icon: mdi:car
         primary: LED trafic
         color: |
-          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_led_traffic_binary', 'on') %}
+          {% if is_state(entity, 'on') and state_attr('sensor.nabaztag_telnet_status', 'traffic') not in [None, -1] %}
             green
           {% elif is_state(entity, 'on') %}
             orange
@@ -164,7 +166,7 @@ cards:
         icon: mdi:factory
         primary: LED pollution
         color: |
-          {% if is_state(entity, 'on') and is_state('binary_sensor.nabaztag_led_pollution_binary', 'on') %}
+          {% if is_state(entity, 'on') and state_attr('sensor.nabaztag_telnet_status', 'pollution') not in [None, -1] %}
             green
           {% elif is_state(entity, 'on') %}
             orange
