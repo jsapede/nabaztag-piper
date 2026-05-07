@@ -2,13 +2,9 @@
 # Nabaztag - Switches (template)
 # =========================
 #
-# Template switches qui :
-#   1. Envoient la commande telnet (shell_command avec templates)
-#   2. Attendent 1s
-#   3. Forcent une relecture du sensor (update_entity)
-#   4. value_template lit l'attribut du sensor → immédiat
-#
-# Temps total ~2s pour voir le changement.
+# Template switches avec lecture immédiate via update_entity :
+#   Toggle → shell_command (telnet) → delay 1s → update_entity sensor
+#   → value_template lit l'attribut → état du switch à jour en ~2s
 #
 
 switch:
@@ -19,150 +15,124 @@ switch:
         value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'autoclock') == 1 else 'off' }}"
         turn_on:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: clock
-              action: on
-          - delay:
-              seconds: 1
+            data: { feature: clock, action: on }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
         turn_off:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: clock
-              action: off
-          - delay:
-              seconds: 1
+            data: { feature: clock, action: off }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
 
       nabaztag_halftime:
         friendly_name: "Nabaztag Halftime"
         value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'autohalftime') == 1 else 'off' }}"
         turn_on:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: halftime
-              action: on
-          - delay:
-              seconds: 1
+            data: { feature: halftime, action: on }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
         turn_off:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: halftime
-              action: off
-          - delay:
-              seconds: 1
+            data: { feature: halftime, action: off }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
 
       nabaztag_surprise:
         friendly_name: "Nabaztag Surprise"
         value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'autosurprise') == 1 else 'off' }}"
         turn_on:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: surprise
-              action: on
-          - delay:
-              seconds: 1
+            data: { feature: surprise, action: on }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
         turn_off:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: surprise
-              action: off
-          - delay:
-              seconds: 1
+            data: { feature: surprise, action: off }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
 
       nabaztag_taichi:
         friendly_name: "Nabaztag Taichi"
         value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'autotaichi') == 1 else 'off' }}"
         turn_on:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: taichi
-              action: on
-          - delay:
-              seconds: 1
+            data: { feature: taichi, action: on }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
         turn_off:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: taichi
-              action: off
-          - delay:
-              seconds: 1
+            data: { feature: taichi, action: off }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
 
       nabaztag_weather:
         friendly_name: "Nabaztag Weather"
         value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'weather') != -1 else 'off' }}"
-
-  - switch:
-      name: "Nabaztag Traffic"
-      friendly_name: "Nabaztag Traffic"
-      value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'traffic') != -1 else 'off' }}"
-
-  - switch:
-      name: "Nabaztag Pollution"
-      friendly_name: "Nabaztag Pollution"
-      value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'pollution') != -1 else 'off' }}"
         turn_on:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: pollution
-              action: on
-          - delay:
-              seconds: 1
+            data: { feature: weather, action: on }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
         turn_off:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: pollution
-              action: off
-          - delay:
-              seconds: 1
+            data: { feature: weather, action: off }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
+
+      nabaztag_traffic:
+        friendly_name: "Nabaztag Traffic"
+        value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'traffic') != -1 else 'off' }}"
+        turn_on:
+          - action: shell_command.nabaztag_switch
+            data: { feature: traffic, action: on }
+          - delay: { seconds: 1 }
+          - action: homeassistant.update_entity
+            target: { entity_id: sensor.nabaztag_telnet_status }
+        turn_off:
+          - action: shell_command.nabaztag_switch
+            data: { feature: traffic, action: off }
+          - delay: { seconds: 1 }
+          - action: homeassistant.update_entity
+            target: { entity_id: sensor.nabaztag_telnet_status }
+
+      nabaztag_pollution:
+        friendly_name: "Nabaztag Pollution"
+        value_template: "{{ 'on' if state_attr('sensor.nabaztag_telnet_status', 'pollution') != -1 else 'off' }}"
+        turn_on:
+          - action: shell_command.nabaztag_switch
+            data: { feature: pollution, action: on }
+          - delay: { seconds: 1 }
+          - action: homeassistant.update_entity
+            target: { entity_id: sensor.nabaztag_telnet_status }
+        turn_off:
+          - action: shell_command.nabaztag_switch
+            data: { feature: pollution, action: off }
+          - delay: { seconds: 1 }
+          - action: homeassistant.update_entity
+            target: { entity_id: sensor.nabaztag_telnet_status }
 
       nabaztag_nose:
         friendly_name: "Nabaztag Nose"
         turn_on:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: nose
-              action: on
-          - delay:
-              seconds: 1
+            data: { feature: nose, action: on }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
         turn_off:
           - action: shell_command.nabaztag_switch
-            data:
-              feature: nose
-              action: off
-          - delay:
-              seconds: 1
+            data: { feature: nose, action: off }
+          - delay: { seconds: 1 }
           - action: homeassistant.update_entity
-            target:
-              entity_id: sensor.nabaztag_telnet_status
+            target: { entity_id: sensor.nabaztag_telnet_status }
