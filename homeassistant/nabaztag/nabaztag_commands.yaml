@@ -34,6 +34,9 @@ rest_command:
 # =========================
 
 shell_command:
+  nabaztag_switch: >
+    python3 /config/python_scripts/nab-switch.py
+    {{ feature }} {{ action }}
   nabaztag_telnet_weather: >
     python3 /config/python_scripts/nab-telnet.py
     {{ states('input_text.nabaztag_ip_address') }}
