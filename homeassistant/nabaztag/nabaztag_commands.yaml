@@ -46,10 +46,6 @@ shell_command:
     python3 /config/python_scripts/nab-telnet.py
     {{ states('input_text.nabaztag_ip_address') }}
     "{{ states('input_number.nabaztag_pollution') | int }} 7 info-set"
-  nabaztag_telnet_clear: >
-    python3 /config/python_scripts/nab-telnet.py
-    {{ states('input_text.nabaztag_ip_address') }}
-    "clear-info"
   nabaztag_telnet_clock: >
     python3 /config/python_scripts/nab-telnet.py
     {{ states('input_text.nabaztag_ip_address') }}
