@@ -330,7 +330,7 @@ automation:
   # ========== AUTO-CORRECT ==========
   - id: nabaztag_auto_correct
     alias: "Nabaztag - Auto-correct"
-    description: "Vérifie et corrige les flags firmware si désynchronisés"
+    description: "Vérifie et corrige flags firmware + LEDs si désynchronisés"
     mode: single
     trigger:
       - trigger: state
@@ -343,6 +343,12 @@ automation:
         entity_id: input_boolean.nabaztag_firmware_surprise
       - trigger: state
         entity_id: input_boolean.nabaztag_firmware_taichi
+      - trigger: state
+        entity_id: input_boolean.nabaztag_weather_enabled
+      - trigger: state
+        entity_id: input_boolean.nabaztag_traffic_enabled
+      - trigger: state
+        entity_id: input_boolean.nabaztag_pollution_enabled
     condition:
       - condition: state
         entity_id: binary_sensor.ping_nabaztag
@@ -353,10 +359,19 @@ automation:
         telnet_halftime: "{{ state_attr('sensor.nabaztag_telnet_status', 'autohalftime') }}"
         telnet_surprise: "{{ state_attr('sensor.nabaztag_telnet_status', 'autosurprise') }}"
         telnet_taichi: "{{ state_attr('sensor.nabaztag_telnet_status', 'autotaichi') }}"
+        telnet_weather: "{{ state_attr('sensor.nabaztag_telnet_status', 'weather') }}"
+        telnet_traffic: "{{ state_attr('sensor.nabaztag_telnet_status', 'traffic') }}"
+        telnet_pollution: "{{ state_attr('sensor.nabaztag_telnet_status', 'pollution') }}"
         want_clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
         want_halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
         want_surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
         want_taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+        want_weather: "{{ states('input_number.nabaztag_weather') | int }}"
+        want_traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
+        want_pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
+        weather_on: "{{ states('input_boolean.nabaztag_weather_enabled') == 'on' }}"
+        traffic_on: "{{ states('input_boolean.nabaztag_traffic_enabled') == 'on' }}"
+        pollution_on: "{{ states('input_boolean.nabaztag_pollution_enabled') == 'on' }}"
       - if:
           - condition: template
             value_template: "{{ telnet_clock != want_clock | int }}"
@@ -385,4 +400,34 @@ automation:
           - action: shell_command.nabaztag_telnet_taichi_flag
             data:
               taichi: "{{ want_taichi }}"
+      - if:
+          - condition: template
+            value_template: "{{ weather_on and (telnet_weather == -1 or telnet_weather != want_weather) }}"
+        then:
+          - action: shell_command.nabaztag_telnet_weather
+        else:
+          - condition: template
+            value_template: "{{ not weather_on and telnet_weather != -1 }}"
+        then:
+          - action: shell_command.nabaztag_telnet_clear
+      - if:
+          - condition: template
+            value_template: "{{ traffic_on and (telnet_traffic == -1 or telnet_traffic != want_traffic) }}"
+        then:
+          - action: shell_command.nabaztag_telnet_traffic
+        else:
+          - condition: template
+            value_template: "{{ not traffic_on and telnet_traffic != -1 }}"
+        then:
+          - action: shell_command.nabaztag_telnet_clear
+      - if:
+          - condition: template
+            value_template: "{{ pollution_on and (telnet_pollution == -1 or telnet_pollution != want_pollution) }}"
+        then:
+          - action: shell_command.nabaztag_telnet_pollution
+        else:
+          - condition: template
+            value_template: "{{ not pollution_on and telnet_pollution != -1 }}"
+        then:
+          - action: shell_command.nabaztag_telnet_clear
 
