@@ -4,7 +4,7 @@ cards:
   - type: markdown
     content: |
       # 🐇 **Nabaztag**
-      État firmware interrogé par telnet toutes les 30s.
+      Switches → commande telnet directe. État vérifié par telnet toutes les 30s.
 
   # ========== CONFIGURATION ==========
   - type: entities
@@ -36,13 +36,13 @@ cards:
 
   # ========== PARAMETRES ==========
   - type: markdown
-    content: "## ⚙️ Paramètres"
+    content: "## ⚙️ Paramètres (switches)"
   - type: grid
     columns: 2
     square: false
     cards:
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_firmware_clock
+        entity: switch.nabaztag_clock
         icon: mdi:clock-outline
         primary: Annonce heure
         color: |
@@ -58,7 +58,7 @@ cards:
         vertical: false
 
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_firmware_halftime
+        entity: switch.nabaztag_halftime
         icon: mdi:bell-ring-outline
         primary: Annonce 1/2 heure
         color: |
@@ -74,7 +74,7 @@ cards:
         vertical: false
 
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_firmware_surprise
+        entity: switch.nabaztag_surprise
         icon: mdi:gift-outline
         primary: Sons surprise
         color: |
@@ -90,7 +90,7 @@ cards:
         vertical: false
 
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_firmware_taichi
+        entity: switch.nabaztag_taichi
         icon: mdi:meditation
         primary: Anim Taichi
         color: |
@@ -106,7 +106,7 @@ cards:
         vertical: false
 
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_weather_enabled
+        entity: switch.nabaztag_weather
         icon: mdi:weather-partly-cloudy
         primary: LED météo
         color: |
@@ -122,7 +122,7 @@ cards:
         vertical: false
 
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_traffic_enabled
+        entity: switch.nabaztag_traffic
         icon: mdi:car
         primary: LED trafic
         color: |
@@ -138,7 +138,7 @@ cards:
         vertical: false
 
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_pollution_enabled
+        entity: switch.nabaztag_pollution
         icon: mdi:factory
         primary: LED pollution
         color: |
@@ -154,7 +154,7 @@ cards:
         vertical: false
 
       - type: custom:mushroom-template-card
-        entity: input_boolean.nabaztag_nose_enabled
+        entity: switch.nabaztag_nose
         icon: mdi:lightbulb-on-outline
         primary: LED Nez
         color: |

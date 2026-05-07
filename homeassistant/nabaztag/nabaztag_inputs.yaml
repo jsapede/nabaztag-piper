@@ -120,42 +120,12 @@ input_boolean:
     initial: on
     icon: mdi:air-filter
 
-  nabaztag_weather_enabled:
-    name: "LED Météo"
-    initial: on
-    icon: mdi:weather-partly-cloudy
-
-  nabaztag_traffic_enabled:
-    name: "LED Trafic"
-    initial: off
-    icon: mdi:traffic-light
-
-  nabaztag_pollution_enabled:
-    name: "LED Pollution"
-    initial: off
-    icon: mdi:factory
-
-  nabaztag_nose_enabled:
-    name: "LED Nez"
-    initial: off
-    icon: mdi:led-on
-
-  nabaztag_firmware_clock:
-    name: "Horloge (autoclock)"
-    initial: on
-    icon: mdi:clock
-
-  nabaztag_firmware_halftime:
-    name: "Demi-heure (autohalftime)"
-    initial: on
-    icon: mdi:clock-outline
-
-  nabaztag_firmware_surprise:
-    name: "Surprise (autosurprise)"
-    initial: on
-    icon: mdi:emoticon-excited
-
-  nabaztag_firmware_taichi:
-    name: "Taichi (autotaichi)"
-    initial: on
-    icon: mdi:yoga
+  # Supprimés — remplacés par command_line switches (nabaztag_switches.yaml):
+  # nabaztag_weather_enabled → switch.nabaztag_weather
+  # nabaztag_traffic_enabled → switch.nabaztag_traffic
+  # nabaztag_pollution_enabled → switch.nabaztag_pollution
+  # nabaztag_nose_enabled → switch.nabaztag_nose
+  # nabaztag_firmware_clock → switch.nabaztag_clock
+  # nabaztag_firmware_halftime → switch.nabaztag_halftime
+  # nabaztag_firmware_surprise → switch.nabaztag_surprise
+  # nabaztag_firmware_taichi → switch.nabaztag_taichi

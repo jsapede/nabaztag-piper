@@ -4,15 +4,16 @@
 #
 # Architecture:
 # - Reconnexion: /setup + restore LEDs au démarrage HA ou reconnexion Nabaztag
+# - Toggles: gérés par les command_line switches (nabaztag_switches.yaml)
+# - Auto-correct: supprimé — les switches vérifient leur état via command_state
 
 automation:
 
   # ========== RECONNEXION - SETUP + RESTORE LEDs ==========
-  # Déclenché quand HA démarre OU Nabaztag se reconnecte
 
   - id: nabaztag_reconnexion
     alias: "Nabaztag - Reconnexion"
-    description: "Envoie /setup et restaure LEDs enabled au démarrage HA ou reconnexion"
+    description: "Setup + restore tous les flags et LEDs"
     mode: single
     trigger:
       - trigger: state
@@ -29,76 +30,22 @@ automation:
       - action: script.nabaztag_restore_leds
       - action: shell_command.nabaztag_telnet_clock
         data:
-          clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
+          clock: "{{ '1' if states('switch.nabaztag_clock') == 'on' else '0' }}"
       - action: shell_command.nabaztag_telnet_halftime
         data:
-          halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
+          halftime: "{{ '1' if states('switch.nabaztag_halftime') == 'on' else '0' }}"
       - action: shell_command.nabaztag_telnet_surprise_flag
         data:
-          surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
+          surprise: "{{ '1' if states('switch.nabaztag_surprise') == 'on' else '0' }}"
       - action: shell_command.nabaztag_telnet_taichi_flag
         data:
-          taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
-
-  # ========== GESTION LEDs PAR INTERRUPTEUR ==========
-  # Quand utilisateur toggle un switch (weather/traffic/pollution/nose)
-
-  - id: nabaztag_led_toggle
-    alias: "Nabaztag - Toggle LED"
-    description: "Enable/disable LED spécifique selon input_boolean"
-    mode: single
-    trigger:
-      - trigger: state
-        entity_id: input_boolean.nabaztag_weather_enabled
-        id: weather
-      - trigger: state
-        entity_id: input_boolean.nabaztag_traffic_enabled
-        id: traffic
-      - trigger: state
-        entity_id: input_boolean.nabaztag_pollution_enabled
-        id: pollution
-      - trigger: state
-        entity_id: input_boolean.nabaztag_nose_enabled
-        id: nose
-    condition:
-      - condition: state
-        entity_id: binary_sensor.ping_nabaztag
-        state: "on"
-    action:
-      - choose:
-          - conditions:
-              - condition: trigger
-                id: weather
-            sequence:
-              - action: script.nabaztag_toggle_weather
-          - conditions:
-              - condition: trigger
-                id: traffic
-            sequence:
-              - action: script.nabaztag_toggle_traffic
-          - conditions:
-              - condition: trigger
-                id: pollution
-            sequence:
-              - action: script.nabaztag_toggle_pollution
-          - conditions:
-              - condition: trigger
-                id: nose
-            sequence:
-              - action: script.nabaztag_toggle_nose
-      - delay:
-          seconds: 1
-      - action: homeassistant.update_entity
-        target:
-          entity_id: sensor.nabaztag_telnet_status
+          taichi: "{{ '1' if states('switch.nabaztag_taichi') == 'on' else '0' }}"
 
   # ========== MISE À JOUR TRAFIC ==========
-  # Envoie la valeur du trafic au lapin quand input_number change
-  # La source peut être Waze (automatique) ou manuelle (HA)
 
   - id: nabaztag_traffic_update
     alias: "Nabaztag - Update Traffic"
-    description: "Envoie traffic au Nabaztag quand input_number.nabaztag_traffic change"
+    description: "Envoie traffic au lapin quand input_number change"
     mode: single
     trigger:
       - trigger: state
@@ -108,99 +55,16 @@ automation:
         entity_id: binary_sensor.ping_nabaztag
         state: "on"
       - condition: state
-        entity_id: input_boolean.nabaztag_traffic_enabled
+        entity_id: switch.nabaztag_traffic
         state: "on"
     action:
       - action: shell_command.nabaztag_telnet_traffic
 
-
-  # ========== FIRMWARE FLAGS TOGGLE ==========
-  # Envoie la commande telnet quand l'input_boolean change
-
-  - id: nabaztag_firmware_toggle_clock
-    alias: "Nabaztag - Toggle Clock"
-    mode: single
-    trigger:
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_clock
-    condition:
-      - condition: state
-        entity_id: binary_sensor.ping_nabaztag
-        state: "on"
-    action:
-      - action: shell_command.nabaztag_telnet_clock
-        data:
-          clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
-      - delay:
-          seconds: 1
-      - action: homeassistant.update_entity
-        target:
-          entity_id: sensor.nabaztag_telnet_status
-
-  - id: nabaztag_firmware_toggle_halftime
-    alias: "Nabaztag - Toggle Halftime"
-    mode: single
-    trigger:
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_halftime
-    condition:
-      - condition: state
-        entity_id: binary_sensor.ping_nabaztag
-        state: "on"
-    action:
-      - action: shell_command.nabaztag_telnet_halftime
-        data:
-          halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
-      - delay:
-          seconds: 1
-      - action: homeassistant.update_entity
-        target:
-          entity_id: sensor.nabaztag_telnet_status
-
-  - id: nabaztag_firmware_toggle_surprise
-    alias: "Nabaztag - Toggle Surprise"
-    mode: single
-    trigger:
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_surprise
-    condition:
-      - condition: state
-        entity_id: binary_sensor.ping_nabaztag
-        state: "on"
-    action:
-      - action: shell_command.nabaztag_telnet_surprise_flag
-        data:
-          surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
-      - delay:
-          seconds: 1
-      - action: homeassistant.update_entity
-        target:
-          entity_id: sensor.nabaztag_telnet_status
-
-  - id: nabaztag_firmware_toggle_taichi
-    alias: "Nabaztag - Toggle Taichi"
-    mode: single
-    trigger:
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_taichi
-    condition:
-      - condition: state
-        entity_id: binary_sensor.ping_nabaztag
-        state: "on"
-    action:
-      - action: shell_command.nabaztag_telnet_taichi_flag
-        data:
-          taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
-      - delay:
-          seconds: 1
-      - action: homeassistant.update_entity
-        target:
-          entity_id: sensor.nabaztag_telnet_status
-
   # ========== AUTO DST ==========
+
   - id: nabaztag_auto_dst
     alias: "Nabaztag - Auto DST"
-    description: "Déclenche /setup pour appliquer DST (calculé par HA)"
+    description: "Déclenche /setup pour appliquer DST"
     mode: single
     trigger:
       - trigger: homeassistant
@@ -220,9 +84,10 @@ automation:
       - action: rest_command.nabaztag_setup_dst
 
   # ========== WAZE → TRAFFIC ==========
+
   - id: nabaztag_waze_traffic
     alias: "Nabaztag - Waze Traffic"
-    description: "Quand le niveau trafic Waze change, met à jour input_number"
+    description: "Waze → input_number.nabaztag_traffic"
     mode: single
     trigger:
       - trigger: state
@@ -244,9 +109,10 @@ automation:
           value: "{{ states('sensor.trafic_niveau') | int }}"
 
   # ========== MÉTÉO → WEATHER ==========
+
   - id: nabaztag_weather_auto
     alias: "Nabaztag - Météo Auto"
-    description: "weather_code → input_number → forwardé au lapin"
+    description: "weather_code → input_number.nabaztag_weather"
     mode: single
     trigger:
       - trigger: state
@@ -268,6 +134,7 @@ automation:
           value: "{{ states('sensor.meteo_niveau') | int }}"
 
   # ========== WEATHER → LAPIN ==========
+
   - id: nabaztag_weather_update
     alias: "Nabaztag - Update Weather"
     description: "Envoie météo au lapin quand input_number change"
@@ -280,15 +147,16 @@ automation:
         entity_id: binary_sensor.ping_nabaztag
         state: "on"
       - condition: state
-        entity_id: input_boolean.nabaztag_weather_enabled
+        entity_id: switch.nabaztag_weather
         state: "on"
     action:
       - action: shell_command.nabaztag_telnet_weather
 
   # ========== POLLUTION → INPUT ==========
+
   - id: nabaztag_pollution_auto
     alias: "Nabaztag - Pollution Auto"
-    description: "sensor AQI → input_number → forwardé au lapin"
+    description: "AQI → input_number.nabaztag_pollution"
     mode: single
     trigger:
       - trigger: state
@@ -310,6 +178,7 @@ automation:
           value: "{{ states('sensor.pollution_niveau') | int }}"
 
   # ========== POLLUTION → LAPIN ==========
+
   - id: nabaztag_pollution_update
     alias: "Nabaztag - Update Pollution"
     description: "Envoie pollution au lapin quand input_number change"
@@ -322,112 +191,7 @@ automation:
         entity_id: binary_sensor.ping_nabaztag
         state: "on"
       - condition: state
-        entity_id: input_boolean.nabaztag_pollution_enabled
+        entity_id: switch.nabaztag_pollution
         state: "on"
     action:
       - action: shell_command.nabaztag_telnet_pollution
-
-  # ========== AUTO-CORRECT ==========
-  - id: nabaztag_auto_correct
-    alias: "Nabaztag - Auto-correct"
-    description: "Vérifie et corrige flags firmware + LEDs si désynchronisés"
-    mode: single
-    trigger:
-      - trigger: state
-        entity_id: sensor.nabaztag_telnet_status
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_clock
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_halftime
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_surprise
-      - trigger: state
-        entity_id: input_boolean.nabaztag_firmware_taichi
-      - trigger: state
-        entity_id: input_boolean.nabaztag_weather_enabled
-      - trigger: state
-        entity_id: input_boolean.nabaztag_traffic_enabled
-      - trigger: state
-        entity_id: input_boolean.nabaztag_pollution_enabled
-    condition:
-      - condition: state
-        entity_id: binary_sensor.ping_nabaztag
-        state: "on"
-    action:
-      - variables:
-        telnet_clock: "{{ state_attr('sensor.nabaztag_telnet_status', 'autoclock') }}"
-        telnet_halftime: "{{ state_attr('sensor.nabaztag_telnet_status', 'autohalftime') }}"
-        telnet_surprise: "{{ state_attr('sensor.nabaztag_telnet_status', 'autosurprise') }}"
-        telnet_taichi: "{{ state_attr('sensor.nabaztag_telnet_status', 'autotaichi') }}"
-        telnet_weather: "{{ state_attr('sensor.nabaztag_telnet_status', 'weather') }}"
-        telnet_traffic: "{{ state_attr('sensor.nabaztag_telnet_status', 'traffic') }}"
-        telnet_pollution: "{{ state_attr('sensor.nabaztag_telnet_status', 'pollution') }}"
-        want_clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
-        want_halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
-        want_surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
-        want_taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
-        want_weather: "{{ states('input_number.nabaztag_weather') | int }}"
-        want_traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
-        want_pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
-        weather_on: "{{ states('input_boolean.nabaztag_weather_enabled') == 'on' }}"
-        traffic_on: "{{ states('input_boolean.nabaztag_traffic_enabled') == 'on' }}"
-        pollution_on: "{{ states('input_boolean.nabaztag_pollution_enabled') == 'on' }}"
-      - if:
-          - condition: template
-            value_template: "{{ telnet_clock != want_clock | int }}"
-        then:
-          - action: shell_command.nabaztag_telnet_clock
-            data:
-              clock: "{{ want_clock }}"
-      - if:
-          - condition: template
-            value_template: "{{ telnet_halftime != want_halftime | int }}"
-        then:
-          - action: shell_command.nabaztag_telnet_halftime
-            data:
-              halftime: "{{ want_halftime }}"
-      - if:
-          - condition: template
-            value_template: "{{ telnet_surprise != want_surprise | int }}"
-        then:
-          - action: shell_command.nabaztag_telnet_surprise_flag
-            data:
-              surprise: "{{ want_surprise }}"
-      - if:
-          - condition: template
-            value_template: "{{ telnet_taichi != want_taichi | int }}"
-        then:
-          - action: shell_command.nabaztag_telnet_taichi_flag
-            data:
-              taichi: "{{ want_taichi }}"
-      - if:
-          - condition: template
-            value_template: "{{ weather_on and (telnet_weather == -1 or telnet_weather != want_weather) }}"
-        then:
-          - action: shell_command.nabaztag_telnet_weather
-      - if:
-          - condition: template
-            value_template: "{{ not weather_on and telnet_weather != -1 }}"
-        then:
-          - action: shell_command.nabaztag_telnet_clear
-      - if:
-          - condition: template
-            value_template: "{{ traffic_on and (telnet_traffic == -1 or telnet_traffic != want_traffic) }}"
-        then:
-          - action: shell_command.nabaztag_telnet_traffic
-      - if:
-          - condition: template
-            value_template: "{{ not traffic_on and telnet_traffic != -1 }}"
-        then:
-          - action: shell_command.nabaztag_telnet_clear
-      - if:
-          - condition: template
-            value_template: "{{ pollution_on and (telnet_pollution == -1 or telnet_pollution != want_pollution) }}"
-        then:
-          - action: shell_command.nabaztag_telnet_pollution
-      - if:
-          - condition: template
-            value_template: "{{ not pollution_on and telnet_pollution != -1 }}"
-        then:
-          - action: shell_command.nabaztag_telnet_clear
-

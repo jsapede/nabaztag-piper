@@ -9,179 +9,37 @@ script:
 
   nabaztag_restore_leds:
     alias: "Nabaztag - Restore LEDs"
-    description: "Restaure toutes les LEDs enabled"
+    description: "Restaure toutes les LEDs enabled via switches"
     sequence:
       - if:
           - condition: state
-            entity_id: input_boolean.nabaztag_weather_enabled
+            entity_id: switch.nabaztag_weather
             state: "on"
         then:
           - action: shell_command.nabaztag_telnet_weather
-            data:
-              weather: "{{ states('input_number.nabaztag_weather') | int }}"
       - if:
           - condition: state
-            entity_id: input_boolean.nabaztag_traffic_enabled
+            entity_id: switch.nabaztag_traffic
             state: "on"
         then:
           - action: shell_command.nabaztag_telnet_traffic
-            data:
-              traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
       - if:
           - condition: state
-            entity_id: input_boolean.nabaztag_pollution_enabled
+            entity_id: switch.nabaztag_pollution
             state: "on"
         then:
           - action: shell_command.nabaztag_telnet_pollution
-            data:
-              pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
       - if:
           - condition: state
-            entity_id: input_boolean.nabaztag_nose_enabled
+            entity_id: switch.nabaztag_nose
             state: "on"
         then:
           - action: rest_command.nabaztag_nose
             data:
               state: "{{ states('input_number.nabaztag_nose_state') | int }}"
 
-  # ========== TOGGLE WEATHER ==========
-
-  nabaztag_toggle_weather:
-    alias: "Nabaztag - Toggle Weather"
-    description: "Enable/disable LED météo"
-    sequence:
-      - if:
-          - condition: state
-            entity_id: input_boolean.nabaztag_weather_enabled
-            state: "on"
-        then:
-          - action: shell_command.nabaztag_telnet_weather
-        else:
-          - action: shell_command.nabaztag_telnet_clear
-          - delay: "00:00:01"
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_traffic_enabled
-                state: "on"
-            then:
-              - action: shell_command.nabaztag_telnet_traffic
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_pollution_enabled
-                state: "on"
-            then:
-              - action: shell_command.nabaztag_telnet_pollution
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_nose_enabled
-                state: "on"
-            then:
-              - action: rest_command.nabaztag_nose
-                data:
-                  state: "{{ states('input_number.nabaztag_nose_state') | int }}"
-
-  # ========== TOGGLE TRAFFIC ==========
-
-  nabaztag_toggle_traffic:
-    alias: "Nabaztag - Toggle Traffic"
-    description: "Enable/disable LED traffic"
-    sequence:
-      - if:
-          - condition: state
-            entity_id: input_boolean.nabaztag_traffic_enabled
-            state: "on"
-        then:
-          - action: shell_command.nabaztag_telnet_traffic
-            data:
-              traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
-        else:
-          - action: shell_command.nabaztag_telnet_clear
-          - delay: "00:00:01"
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_weather_enabled
-                state: "on"
-            then:
-              - action: shell_command.nabaztag_telnet_weather
-                data:
-                  weather: "{{ states('input_number.nabaztag_weather') | int }}"
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_pollution_enabled
-                state: "on"
-            then:
-              - action: shell_command.nabaztag_telnet_pollution
-                data:
-                  pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_nose_enabled
-                state: "on"
-            then:
-              - action: rest_command.nabaztag_nose
-                data:
-                  state: "{{ states('input_number.nabaztag_nose_state') | int }}"
-
-  # ========== TOGGLE POLLUTION ==========
-
-  nabaztag_toggle_pollution:
-    alias: "Nabaztag - Toggle Pollution"
-    description: "Enable/disable LED pollution"
-    sequence:
-      - if:
-          - condition: state
-            entity_id: input_boolean.nabaztag_pollution_enabled
-            state: "on"
-        then:
-          - action: shell_command.nabaztag_telnet_pollution
-            data:
-              pollution: "{{ states('input_number.nabaztag_pollution') | int }}"
-        else:
-          - action: shell_command.nabaztag_telnet_clear
-          - delay: "00:00:01"
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_weather_enabled
-                state: "on"
-            then:
-              - action: shell_command.nabaztag_telnet_weather
-                data:
-                  weather: "{{ states('input_number.nabaztag_weather') | int }}"
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_traffic_enabled
-                state: "on"
-            then:
-              - action: shell_command.nabaztag_telnet_traffic
-                data:
-                  traffic: "{{ states('input_number.nabaztag_traffic') | int }}"
-          - if:
-              - condition: state
-                entity_id: input_boolean.nabaztag_nose_enabled
-                state: "on"
-            then:
-              - action: rest_command.nabaztag_nose
-                data:
-                  state: "{{ states('input_number.nabaztag_nose_state') | int }}"
-
-  # ========== TOGGLE NOSE ==========
-
-  nabaztag_toggle_nose:
-    alias: "Nabaztag - Toggle Nose"
-    description: "Enable/disable nez"
-    sequence:
-      - if:
-          - condition: state
-            entity_id: input_boolean.nabaztag_nose_enabled
-            state: "on"
-        then:
-          - action: rest_command.nabaztag_nose
-            data:
-              state: "{{ states('input_number.nabaztag_nose_state') | int }}"
-        else:
-          - action: rest_command.nabaztag_nose
-            data:
-              state: "0"
+  # ========== TOGGLES ==========
+  # Supprimés — remplacés par command_line switches (nabaztag_switches.yaml)
 
   # ========== PAROLE ==========
 
