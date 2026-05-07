@@ -2,58 +2,68 @@
 # Nabaztag - Switches (command_line)
 # =========================
 #
-# Chaque switch est un vrai switch HA :
-#   command_on/off  → appel telnet pour modifier le flag
-#   command_state   → appel telnet pour lire le flag
-#   value_template  → extrait l'état du JSON
+# Format command_line unifié HA (compatible HA 2026.x)
 #
 
-switch:
-  - platform: command_line
-    scan_interval: 30
-    switches:
-      nabaztag_clock:
-        command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autoclock-enabled !\""
-        command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autoclock-enabled !\""
-        command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
-        value_template: "{{ value_json.autoclock == 1 }}"
+command_line:
+  - switch:
+      name: "Nabaztag Clock"
+      unique_id: nabaztag_clock
+      command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autoclock-enabled !\""
+      command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autoclock-enabled !\""
+      command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
+      value_template: "{{ value_json.autoclock == 1 }}"
 
-      nabaztag_halftime:
-        command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autohalftime-enabled !\""
-        command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autohalftime-enabled !\""
-        command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
-        value_template: "{{ value_json.autohalftime == 1 }}"
+  - switch:
+      name: "Nabaztag Halftime"
+      unique_id: nabaztag_halftime
+      command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autohalftime-enabled !\""
+      command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autohalftime-enabled !\""
+      command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
+      value_template: "{{ value_json.autohalftime == 1 }}"
 
-      nabaztag_surprise:
-        command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autosurprise-enabled !\""
-        command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autosurprise-enabled !\""
-        command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
-        value_template: "{{ value_json.autosurprise == 1 }}"
+  - switch:
+      name: "Nabaztag Surprise"
+      unique_id: nabaztag_surprise
+      command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autosurprise-enabled !\""
+      command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autosurprise-enabled !\""
+      command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
+      value_template: "{{ value_json.autosurprise == 1 }}"
 
-      nabaztag_taichi:
-        command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autotaichi-enabled !\""
-        command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autotaichi-enabled !\""
-        command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
-        value_template: "{{ value_json.autotaichi == 1 }}"
+  - switch:
+      name: "Nabaztag Taichi"
+      unique_id: nabaztag_taichi
+      command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"1 autotaichi-enabled !\""
+      command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"0 autotaichi-enabled !\""
+      command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
+      value_template: "{{ value_json.autotaichi == 1 }}"
 
-      nabaztag_weather:
-        command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"{{ states('input_number.nabaztag_weather') | int }} 1 info-set\""
-        command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"clear-info\""
-        command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
-        value_template: "{{ value_json.weather != -1 }}"
+  - switch:
+      name: "Nabaztag Weather"
+      unique_id: nabaztag_weather
+      command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"{{ states('input_number.nabaztag_weather') | int }} 1 info-set\""
+      command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"clear-info\""
+      command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
+      value_template: "{{ value_json.weather != -1 }}"
 
-      nabaztag_traffic:
-        command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"{{ states('input_number.nabaztag_traffic') | int }} 3 info-set\""
-        command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"clear-info\""
-        command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
-        value_template: "{{ value_json.traffic != -1 }}"
+  - switch:
+      name: "Nabaztag Traffic"
+      unique_id: nabaztag_traffic
+      command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"{{ states('input_number.nabaztag_traffic') | int }} 3 info-set\""
+      command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"clear-info\""
+      command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
+      value_template: "{{ value_json.traffic != -1 }}"
 
-      nabaztag_pollution:
-        command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"{{ states('input_number.nabaztag_pollution') | int }} 7 info-set\""
-        command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"clear-info\""
-        command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
-        value_template: "{{ value_json.pollution != -1 }}"
+  - switch:
+      name: "Nabaztag Pollution"
+      unique_id: nabaztag_pollution
+      command_on: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"{{ states('input_number.nabaztag_pollution') | int }} 7 info-set\""
+      command_off: "python3 /config/python_scripts/nab-telnet.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }} \"clear-info\""
+      command_state: "python3 /config/python_scripts/nab-read-status.py {{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}"
+      value_template: "{{ value_json.pollution != -1 }}"
 
-      nabaztag_nose:
-        command_on: "curl -s http://{{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}/nose?v={{ states('input_number.nabaztag_nose_state') | int }}"
-        command_off: "curl -s http://{{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}/nose?v=0"
+  - switch:
+      name: "Nabaztag Nose"
+      unique_id: nabaztag_nose
+      command_on: "curl -s http://{{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}/nose?v={{ states('input_number.nabaztag_nose_state') | int }}"
+      command_off: "curl -s http://{{ states('input_text.nabaztag_ip_address') | default('192.168.0.58') }}/nose?v=0"
