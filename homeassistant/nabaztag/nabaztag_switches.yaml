@@ -13,7 +13,7 @@ command_line:
       command_on: "python3 /config/python_scripts/nab-switch.py clock on"
       command_off: "python3 /config/python_scripts/nab-switch.py clock off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
-      value_template: "{{ value_json.autoclock == 1 }}"
+      value_template: "{{ (value | from_json).autoclock == 1 }}"
 
   - switch:
       name: "Nabaztag Halftime"
@@ -21,7 +21,7 @@ command_line:
       command_on: "python3 /config/python_scripts/nab-switch.py halftime on"
       command_off: "python3 /config/python_scripts/nab-switch.py halftime off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
-      value_template: "{{ value_json.autohalftime == 1 }}"
+      value_template: "{{ (value | from_json).autohalftime == 1 }}"
 
   - switch:
       name: "Nabaztag Surprise"
@@ -29,7 +29,7 @@ command_line:
       command_on: "python3 /config/python_scripts/nab-switch.py surprise on"
       command_off: "python3 /config/python_scripts/nab-switch.py surprise off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
-      value_template: "{{ value_json.autosurprise == 1 }}"
+      value_template: "{{ (value | from_json).autosurprise == 1 }}"
 
   - switch:
       name: "Nabaztag Taichi"
@@ -37,7 +37,7 @@ command_line:
       command_on: "python3 /config/python_scripts/nab-switch.py taichi on"
       command_off: "python3 /config/python_scripts/nab-switch.py taichi off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
-      value_template: "{{ value_json.autotaichi == 1 }}"
+      value_template: "{{ (value | from_json).autotaichi == 1 }}"
 
   - switch:
       name: "Nabaztag Weather"
@@ -45,7 +45,7 @@ command_line:
       command_on: "python3 /config/python_scripts/nab-switch.py weather on"
       command_off: "python3 /config/python_scripts/nab-switch.py weather off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
-      value_template: "{{ value_json.weather != -1 }}"
+      value_template: "{{ (value | from_json).weather != -1 }}"
 
   - switch:
       name: "Nabaztag Traffic"
@@ -53,7 +53,7 @@ command_line:
       command_on: "python3 /config/python_scripts/nab-switch.py traffic on"
       command_off: "python3 /config/python_scripts/nab-switch.py traffic off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
-      value_template: "{{ value_json.traffic != -1 }}"
+      value_template: "{{ (value | from_json).traffic != -1 }}"
 
   - switch:
       name: "Nabaztag Pollution"
@@ -61,7 +61,7 @@ command_line:
       command_on: "python3 /config/python_scripts/nab-switch.py pollution on"
       command_off: "python3 /config/python_scripts/nab-switch.py pollution off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
-      value_template: "{{ value_json.pollution != -1 }}"
+      value_template: "{{ (value | from_json).pollution != -1 }}"
 
   - switch:
       name: "Nabaztag Nose"
