@@ -327,3 +327,62 @@ automation:
     action:
       - action: shell_command.nabaztag_telnet_pollution
 
+  # ========== AUTO-CORRECT ==========
+  - id: nabaztag_auto_correct
+    alias: "Nabaztag - Auto-correct"
+    description: "Vérifie et corrige les flags firmware si désynchronisés"
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: sensor.nabaztag_telnet_status
+      - trigger: state
+        entity_id: input_boolean.nabaztag_firmware_clock
+      - trigger: state
+        entity_id: input_boolean.nabaztag_firmware_halftime
+      - trigger: state
+        entity_id: input_boolean.nabaztag_firmware_surprise
+      - trigger: state
+        entity_id: input_boolean.nabaztag_firmware_taichi
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ping_nabaztag
+        state: "on"
+    action:
+      - variables:
+        telnet_clock: "{{ state_attr('sensor.nabaztag_telnet_status', 'autoclock') }}"
+        telnet_halftime: "{{ state_attr('sensor.nabaztag_telnet_status', 'autohalftime') }}"
+        telnet_surprise: "{{ state_attr('sensor.nabaztag_telnet_status', 'autosurprise') }}"
+        telnet_taichi: "{{ state_attr('sensor.nabaztag_telnet_status', 'autotaichi') }}"
+        want_clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
+        want_halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
+        want_surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
+        want_taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
+      - if:
+          - condition: template
+            value_template: "{{ telnet_clock != want_clock | int }}"
+        then:
+          - action: shell_command.nabaztag_telnet_clock
+            data:
+              clock: "{{ want_clock }}"
+      - if:
+          - condition: template
+            value_template: "{{ telnet_halftime != want_halftime | int }}"
+        then:
+          - action: shell_command.nabaztag_telnet_halftime
+            data:
+              halftime: "{{ want_halftime }}"
+      - if:
+          - condition: template
+            value_template: "{{ telnet_surprise != want_surprise | int }}"
+        then:
+          - action: shell_command.nabaztag_telnet_surprise_flag
+            data:
+              surprise: "{{ want_surprise }}"
+      - if:
+          - condition: template
+            value_template: "{{ telnet_taichi != want_taichi | int }}"
+        then:
+          - action: shell_command.nabaztag_telnet_taichi_flag
+            data:
+              taichi: "{{ want_taichi }}"
+
