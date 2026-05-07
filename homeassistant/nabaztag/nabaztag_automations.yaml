@@ -86,6 +86,11 @@ automation:
                 id: nose
             sequence:
               - action: script.nabaztag_toggle_nose
+      - delay:
+          seconds: 2
+      - action: homeassistant.update_entity
+        target:
+          entity_id: sensor.nabaztag_telnet_status
 
   # ========== MISE À JOUR TRAFIC ==========
   # Envoie la valeur du trafic au lapin quand input_number change
