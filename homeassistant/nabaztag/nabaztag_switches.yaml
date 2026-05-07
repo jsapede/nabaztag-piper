@@ -2,70 +2,69 @@
 # Nabaztag - Switches (command_line)
 # =========================
 #
-# Format command_line unifié HA 2026.x.
-# Template {{ }} non supportés dans command_on/off/state.
-# IP hardcodée (192.168.0.58). Valeurs info-set = défaut.
+# Toute la logique est dans python_scripts/nab-switch.py.
+# Plus de templates HA dans les commandes (non supportés en format unifié).
 #
 
 command_line:
   - switch:
       name: "Nabaztag Clock"
       unique_id: nabaztag_clock
-      command_on: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"1 autoclock-enabled !\""
-      command_off: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"0 autoclock-enabled !\""
+      command_on: "python3 /config/python_scripts/nab-switch.py clock on"
+      command_off: "python3 /config/python_scripts/nab-switch.py clock off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
       value_template: "{{ value_json.autoclock == 1 }}"
 
   - switch:
       name: "Nabaztag Halftime"
       unique_id: nabaztag_halftime
-      command_on: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"1 autohalftime-enabled !\""
-      command_off: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"0 autohalftime-enabled !\""
+      command_on: "python3 /config/python_scripts/nab-switch.py halftime on"
+      command_off: "python3 /config/python_scripts/nab-switch.py halftime off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
       value_template: "{{ value_json.autohalftime == 1 }}"
 
   - switch:
       name: "Nabaztag Surprise"
       unique_id: nabaztag_surprise
-      command_on: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"1 autosurprise-enabled !\""
-      command_off: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"0 autosurprise-enabled !\""
+      command_on: "python3 /config/python_scripts/nab-switch.py surprise on"
+      command_off: "python3 /config/python_scripts/nab-switch.py surprise off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
       value_template: "{{ value_json.autosurprise == 1 }}"
 
   - switch:
       name: "Nabaztag Taichi"
       unique_id: nabaztag_taichi
-      command_on: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"1 autotaichi-enabled !\""
-      command_off: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"0 autotaichi-enabled !\""
+      command_on: "python3 /config/python_scripts/nab-switch.py taichi on"
+      command_off: "python3 /config/python_scripts/nab-switch.py taichi off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
       value_template: "{{ value_json.autotaichi == 1 }}"
 
   - switch:
       name: "Nabaztag Weather"
       unique_id: nabaztag_weather
-      command_on: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"1 1 info-set\""
-      command_off: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"clear-info\""
+      command_on: "python3 /config/python_scripts/nab-switch.py weather on"
+      command_off: "python3 /config/python_scripts/nab-switch.py weather off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
       value_template: "{{ value_json.weather != -1 }}"
 
   - switch:
       name: "Nabaztag Traffic"
       unique_id: nabaztag_traffic
-      command_on: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"3 3 info-set\""
-      command_off: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"clear-info\""
+      command_on: "python3 /config/python_scripts/nab-switch.py traffic on"
+      command_off: "python3 /config/python_scripts/nab-switch.py traffic off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
       value_template: "{{ value_json.traffic != -1 }}"
 
   - switch:
       name: "Nabaztag Pollution"
       unique_id: nabaztag_pollution
-      command_on: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"1 7 info-set\""
-      command_off: "python3 /config/python_scripts/nab-telnet.py 192.168.0.58 \"clear-info\""
+      command_on: "python3 /config/python_scripts/nab-switch.py pollution on"
+      command_off: "python3 /config/python_scripts/nab-switch.py pollution off"
       command_state: "python3 /config/python_scripts/nab-read-status.py 192.168.0.58"
       value_template: "{{ value_json.pollution != -1 }}"
 
   - switch:
       name: "Nabaztag Nose"
       unique_id: nabaztag_nose
-      command_on: "curl -s http://192.168.0.58/nose?v=3"
-      command_off: "curl -s http://192.168.0.58/nose?v=0"
+      command_on: "python3 /config/python_scripts/nab-switch.py nose on"
+      command_off: "python3 /config/python_scripts/nab-switch.py nose off"
