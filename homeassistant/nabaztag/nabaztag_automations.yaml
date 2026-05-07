@@ -87,7 +87,7 @@ automation:
             sequence:
               - action: script.nabaztag_toggle_nose
       - delay:
-          seconds: 5
+          seconds: 1
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -132,7 +132,7 @@ automation:
         data:
           clock: "{{ '1' if states('input_boolean.nabaztag_firmware_clock') == 'on' else '0' }}"
       - delay:
-          seconds: 5
+          seconds: 1
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -152,7 +152,7 @@ automation:
         data:
           halftime: "{{ '1' if states('input_boolean.nabaztag_firmware_halftime') == 'on' else '0' }}"
       - delay:
-          seconds: 5
+          seconds: 1
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -172,7 +172,7 @@ automation:
         data:
           surprise: "{{ '1' if states('input_boolean.nabaztag_firmware_surprise') == 'on' else '0' }}"
       - delay:
-          seconds: 5
+          seconds: 1
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -192,7 +192,7 @@ automation:
         data:
           taichi: "{{ '1' if states('input_boolean.nabaztag_firmware_taichi') == 'on' else '0' }}"
       - delay:
-          seconds: 5
+          seconds: 1
       - action: homeassistant.update_entity
         target:
           entity_id: sensor.nabaztag_telnet_status
@@ -405,7 +405,7 @@ automation:
             value_template: "{{ weather_on and (telnet_weather == -1 or telnet_weather != want_weather) }}"
         then:
           - action: shell_command.nabaztag_telnet_weather
-        else:
+      - if:
           - condition: template
             value_template: "{{ not weather_on and telnet_weather != -1 }}"
         then:
@@ -415,7 +415,7 @@ automation:
             value_template: "{{ traffic_on and (telnet_traffic == -1 or telnet_traffic != want_traffic) }}"
         then:
           - action: shell_command.nabaztag_telnet_traffic
-        else:
+      - if:
           - condition: template
             value_template: "{{ not traffic_on and telnet_traffic != -1 }}"
         then:
@@ -425,7 +425,7 @@ automation:
             value_template: "{{ pollution_on and (telnet_pollution == -1 or telnet_pollution != want_pollution) }}"
         then:
           - action: shell_command.nabaztag_telnet_pollution
-        else:
+      - if:
           - condition: template
             value_template: "{{ not pollution_on and telnet_pollution != -1 }}"
         then:
